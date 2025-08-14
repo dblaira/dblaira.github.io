@@ -314,6 +314,20 @@
         <div class="header">
             <h1>🚀 Breakthrough Dashboard</h1>
             <p>Concentrate effort on the 20% that creates 80% of your results</p>
+            <button onclick="DashboardStorage.saveAll()" style="
+                background: rgba(255,255,255,0.2);
+                color: white;
+                border: 2px solid white;
+                padding: 8px 16px;
+                border-radius: 8px;
+                cursor: pointer;
+                margin-top: 10px;
+                font-weight: bold;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='rgba(255,255,255,0.3)'" 
+               onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                💾 Save Progress
+            </button>
         </div>
 
         <div class="main-grid">
@@ -565,8 +579,8 @@
 
                 // Load activities
                 const activities = this.load('activities');
-                if (activities) {
-                    // Clear default activities first
+                if (activities && (activities.high?.length > 0 || activities.low?.length > 0)) {
+                    // Clear ALL default activities first
                     document.getElementById('highImpact').innerHTML = '';
                     document.getElementById('lowImpact').innerHTML = '';
                     
@@ -579,6 +593,11 @@
                         const chip = createActivityChip(text, false);
                         document.getElementById('lowImpact').appendChild(chip);
                     });
+                } else {
+                    // First load - save the default activities
+                    setTimeout(() => {
+                        DashboardStorage.saveAll();
+                    }, 100);
                 }
 
                 // Load selected tools
@@ -764,12 +783,27 @@
             // Load saved data
             DashboardStorage.loadAll();
             
-            // If no saved data, show demo progress
+            // Add save triggers to all text inputs and textareas
+            document.querySelectorAll('input[type="text"], textarea').forEach(element => {
+                element.addEventListener('change', autoSave);
+                element.addEventListener('blur', autoSave);
+            });
+            
+            // Add save trigger to checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach(element => {
+                element.addEventListener('change', function() {
+                    updateAptitude();
+                });
+            });
+            
+            // If no saved data, show demo progress and save initial state
             if (!DashboardStorage.load('lastSaved')) {
                 setTimeout(() => {
                     document.getElementById('purpose-progress').style.width = '40%';
                     document.getElementById('flowScore').textContent = '50%';
                     document.getElementById('focusTime').textContent = '2.5h';
+                    // Save initial state with default activities
+                    DashboardStorage.saveAll();
                 }, 1000);
             }
             
@@ -782,6 +816,12 @@
                 }
             `;
             document.head.appendChild(style);
+            
+            // Auto-save every 30 seconds as backup
+            setInterval(() => {
+                DashboardStorage.saveAll();
+                console.log('Auto-save completed');
+            }, 30000);
         }
     </script>
 </body>

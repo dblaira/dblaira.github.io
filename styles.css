@@ -1,0 +1,31 @@
+import React from "react";
+
+export default function HomePage() {
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section - Black background, white text */}
+      <section className="bg-black text-white py-24 px-6 text-center">
+        <h1 className="text-5xl font-bold mb-4">Welcome to Project Y</h1>
+        <p className="text-xl max-w-2xl mx-auto">
+          Discover how to energize your body, calm your mind, and live with balance.
+        </p>
+      </section>
+
+      {/* Transition Section - Dark grey to grey gradient */}
+      <section className="bg-gradient-to-b from-black via-gray-700 to-gray-200 py-12" />
+
+      {/* Content Section - Grey background, black text */}
+      <section className="bg-gray-200 text-black py-20 px-6 text-center">
+        <h2 className="text-4xl font-semibold mb-4">What We Offer</h2>
+        <p className="text-lg max-w-2xl mx-auto">
+          We teach sustainable fitness strategies through smart eating, strength training, and cardio that fits your life.
+        </p>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-white text-black py-10 text-center border-t">
+        <p className="text-sm">© 2025 Project Y. All rights reserved.</p>
+      </footer>
+    </div>
+  );
+}

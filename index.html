@@ -307,6 +307,11 @@
             color: #718096;
             margin-top: 5px;
         }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -314,6 +319,35 @@
         <div class="header">
             <h1>🚀 Breakthrough Dashboard</h1>
             <p>Concentrate effort on the 20% that creates 80% of your results</p>
+            <button onclick="saveProgress()" style="
+                background: rgba(255,255,255,0.2);
+                color: white;
+                border: 2px solid white;
+                padding: 8px 16px;
+                border-radius: 8px;
+                cursor: pointer;
+                margin-top: 10px;
+                font-weight: bold;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='rgba(255,255,255,0.3)'" 
+               onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                💾 Save Progress
+            </button>
+            <button onclick="loadProgress()" style="
+                background: rgba(255,255,255,0.2);
+                color: white;
+                border: 2px solid white;
+                padding: 8px 16px;
+                border-radius: 8px;
+                cursor: pointer;
+                margin-top: 10px;
+                margin-left: 10px;
+                font-weight: bold;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='rgba(255,255,255,0.3)'" 
+               onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                📂 Load Progress
+            </button>
         </div>
 
         <div class="main-grid">
@@ -384,18 +418,7 @@
                 </div>
                 <div class="pareto-analyzer">
                     <div class="pareto-label" style="background: #94a3b8;">80%</div>
-                    <div class="pareto-activities" id="lowImpact">
-                        <div class="activity-chip" onclick="toggleImpact(this)">Email Management</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Deep Work Sessions</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Strategic Planning</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Meetings</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Learning New Skills</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Exercise</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Social Media</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Networking</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Content Creation</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Admin Tasks</div>
-                    </div>
+                    <div class="pareto-activities" id="lowImpact"></div>
                 </div>
                 <input type="text" class="input-area" placeholder="Add your own activity..." onkeypress="addActivity(event)">
             </div>
@@ -473,10 +496,217 @@
     </div>
 
     <script>
+        // Simple, direct save and load functions
+        function saveProgress() {
+            console.log('Saving progress...');
+            
+            // Save activities
+            const activities = { high: [], low: [] };
+            document.querySelectorAll('#highImpact .activity-chip').forEach(chip => {
+                activities.high.push(chip.textContent);
+            });
+            document.querySelectorAll('#lowImpact .activity-chip').forEach(chip => {
+                activities.low.push(chip.textContent);
+            });
+            localStorage.setItem('breakthrough_activities', JSON.stringify(activities));
+            
+            // Save flow states
+            const flowStates = [];
+            document.querySelectorAll('.flow-question').forEach(q => {
+                flowStates.push(q.classList.contains('active'));
+            });
+            localStorage.setItem('breakthrough_flowStates', JSON.stringify(flowStates));
+            
+            // Save frameworks
+            const frameworks = {};
+            ['purpose', 'meaning', 'economics', 'safety', 'connections'].forEach(domain => {
+                const input = document.querySelector(`input[onchange*="${domain}"]`);
+                if (input) frameworks[domain] = input.value;
+            });
+            localStorage.setItem('breakthrough_frameworks', JSON.stringify(frameworks));
+            
+            // Save tools
+            const tools = [];
+            document.querySelectorAll('.tool-btn.selected').forEach(tool => {
+                tools.push(tool.textContent);
+            });
+            localStorage.setItem('breakthrough_tools', JSON.stringify(tools));
+            
+            // Save aptitudes
+            const aptitudes = [];
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                aptitudes.push(cb.checked);
+            });
+            localStorage.setItem('breakthrough_aptitudes', JSON.stringify(aptitudes));
+            
+            // Save weaknesses
+            const weaknesses = {};
+            document.querySelectorAll('textarea').forEach(textarea => {
+                const label = textarea.previousElementSibling?.textContent;
+                if (label) weaknesses[label] = textarea.value;
+            });
+            localStorage.setItem('breakthrough_weaknesses', JSON.stringify(weaknesses));
+            
+            // Save timestamp
+            localStorage.setItem('breakthrough_lastSaved', new Date().toISOString());
+            
+            // Show confirmation
+            showSaveNotification();
+            console.log('Progress saved successfully');
+        }
+        
+        function loadProgress() {
+            console.log('Loading saved progress...');
+            
+            // Load activities
+            try {
+                const activities = JSON.parse(localStorage.getItem('breakthrough_activities') || '{}');
+                if (activities.high || activities.low) {
+                    // Clear current activities
+                    document.getElementById('highImpact').innerHTML = '';
+                    document.getElementById('lowImpact').innerHTML = '';
+                    
+                    // Add high-impact activities
+                    (activities.high || []).forEach(text => {
+                        const chip = document.createElement('div');
+                        chip.className = 'activity-chip high-impact';
+                        chip.textContent = text;
+                        chip.onclick = function() { toggleImpact(this); };
+                        document.getElementById('highImpact').appendChild(chip);
+                    });
+                    
+                    // Add low-impact activities
+                    (activities.low || []).forEach(text => {
+                        const chip = document.createElement('div');
+                        chip.className = 'activity-chip';
+                        chip.textContent = text;
+                        chip.onclick = function() { toggleImpact(this); };
+                        document.getElementById('lowImpact').appendChild(chip);
+                    });
+                    console.log('Activities loaded');
+                }
+            } catch (e) {
+                console.error('Error loading activities:', e);
+            }
+            
+            // Load flow states
+            try {
+                const flowStates = JSON.parse(localStorage.getItem('breakthrough_flowStates') || '[]');
+                document.querySelectorAll('.flow-question').forEach((q, index) => {
+                    if (flowStates[index]) {
+                        q.classList.add('active');
+                    } else {
+                        q.classList.remove('active');
+                    }
+                });
+                updateFlowScore();
+                console.log('Flow states loaded');
+            } catch (e) {
+                console.error('Error loading flow states:', e);
+            }
+            
+            // Load frameworks
+            try {
+                const frameworks = JSON.parse(localStorage.getItem('breakthrough_frameworks') || '{}');
+                Object.keys(frameworks).forEach(domain => {
+                    const input = document.querySelector(`input[onchange*="${domain}"]`);
+                    if (input && frameworks[domain]) {
+                        input.value = frameworks[domain];
+                        updateProgress(domain, frameworks[domain]);
+                    }
+                });
+                console.log('Frameworks loaded');
+            } catch (e) {
+                console.error('Error loading frameworks:', e);
+            }
+            
+            // Load tools
+            try {
+                const tools = JSON.parse(localStorage.getItem('breakthrough_tools') || '[]');
+                document.querySelectorAll('.tool-btn').forEach(btn => {
+                    if (tools.includes(btn.textContent)) {
+                        btn.classList.add('selected');
+                    } else {
+                        btn.classList.remove('selected');
+                    }
+                });
+                console.log('Tools loaded');
+            } catch (e) {
+                console.error('Error loading tools:', e);
+            }
+            
+            // Load aptitudes
+            try {
+                const aptitudes = JSON.parse(localStorage.getItem('breakthrough_aptitudes') || '[]');
+                document.querySelectorAll('input[type="checkbox"]').forEach((cb, index) => {
+                    cb.checked = aptitudes[index] || false;
+                });
+                updateAptitude();
+                console.log('Aptitudes loaded');
+            } catch (e) {
+                console.error('Error loading aptitudes:', e);
+            }
+            
+            // Load weaknesses
+            try {
+                const weaknesses = JSON.parse(localStorage.getItem('breakthrough_weaknesses') || '{}');
+                document.querySelectorAll('textarea').forEach(textarea => {
+                    const label = textarea.previousElementSibling?.textContent;
+                    if (label && weaknesses[label]) {
+                        textarea.value = weaknesses[label];
+                    }
+                });
+                console.log('Weaknesses loaded');
+            } catch (e) {
+                console.error('Error loading weaknesses:', e);
+            }
+            
+            showLoadNotification();
+        }
+        
+        function showSaveNotification() {
+            const notification = document.createElement('div');
+            notification.textContent = '✓ Progress Saved';
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #10b981, #059669);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: slideIn 0.3s ease;
+                z-index: 1000;
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        function showLoadNotification() {
+            const notification = document.createElement('div');
+            notification.textContent = '✓ Progress Loaded';
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: slideIn 0.3s ease;
+                z-index: 1000;
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
         // Flow State Management
         function toggleFlow(element) {
             element.classList.toggle('active');
             updateFlowScore();
+            saveProgress();
         }
 
         function updateFlowScore() {
@@ -484,7 +714,6 @@
             const score = activeFlows * 50;
             document.getElementById('flowScore').textContent = score + '%';
             
-            // Update momentum indicator
             const momentum = document.getElementById('momentum');
             if (score === 0) momentum.textContent = '→';
             else if (score === 50) momentum.textContent = '↗';
@@ -500,6 +729,7 @@
                     progressBar.style.width = '100%';
                 }, 500);
             }
+            saveProgress();
         }
 
         // Pareto Activity Management
@@ -514,6 +744,7 @@
                 element.classList.add('high-impact');
                 highImpact.appendChild(element);
             }
+            saveProgress();
         }
 
         function addActivity(event) {
@@ -524,18 +755,21 @@
                 newChip.onclick = function() { toggleImpact(this); };
                 document.getElementById('lowImpact').appendChild(newChip);
                 event.target.value = '';
+                saveProgress();
             }
         }
 
         // Tool Selection
         function toggleTool(element) {
             element.classList.toggle('selected');
+            saveProgress();
         }
 
         // Aptitude Tracking
         function updateAptitude() {
             const checked = document.querySelectorAll('input[type="checkbox"]:checked').length;
             document.getElementById('aptitudeScore').textContent = checked + '/6';
+            saveProgress();
         }
 
         // Generate Breakthrough Insight
@@ -562,17 +796,53 @@
         // Analyze Weaknesses
         function analyzeWeaknesses() {
             generateInsight();
+            saveProgress();
         }
 
-        // Initialize some demo data
-        window.onload = function() {
-            // Simulate some initial progress
-            setTimeout(() => {
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, checking for saved data...');
+            
+            // Check if user has saved data
+            const hasSavedData = localStorage.getItem('breakthrough_lastSaved');
+            
+            if (hasSavedData) {
+                console.log('Found saved data from:', hasSavedData);
+                // Load saved data
+                loadProgress();
+            } else {
+                console.log('No saved data found, initializing defaults...');
+                // First time - set up default activities
+                const defaultActivities = [
+                    'Email Management', 'Deep Work Sessions', 'Strategic Planning',
+                    'Meetings', 'Learning New Skills', 'Exercise', 'Social Media',
+                    'Networking', 'Content Creation', 'Admin Tasks'
+                ];
+                
+                defaultActivities.forEach(activity => {
+                    const chip = document.createElement('div');
+                    chip.className = 'activity-chip';
+                    chip.textContent = activity;
+                    chip.onclick = function() { toggleImpact(this); };
+                    document.getElementById('lowImpact').appendChild(chip);
+                });
+                
+                // Set demo progress
                 document.getElementById('purpose-progress').style.width = '40%';
                 document.getElementById('flowScore').textContent = '50%';
                 document.getElementById('focusTime').textContent = '2.5h';
-            }, 1000);
-        }
+            }
+            
+            // Add auto-save to inputs
+            document.querySelectorAll('input[type="text"], textarea').forEach(element => {
+                element.addEventListener('blur', saveProgress);
+            });
+            
+            // Auto-save every 60 seconds
+            setInterval(saveProgress, 60000);
+            
+            console.log('Dashboard initialization complete');
+        });
     </script>
 </body>
 </html>

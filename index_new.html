@@ -42,6 +42,15 @@
             opacity: 0.95;
         }
 
+        .date-display {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
         .main-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -307,6 +316,97 @@
             color: #718096;
             margin-top: 5px;
         }
+
+        /* New styles for data management */
+        .data-controls {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #7c3aed;
+            transform: translateY(-2px);
+        }
+
+        .control-btn.danger {
+            background: #ef4444;
+        }
+
+        .control-btn.danger:hover {
+            background: #dc2626;
+        }
+
+        .save-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .history-viewer {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .history-viewer.show {
+            display: block;
+        }
+
+        .history-entry {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .history-date {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .history-data {
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
@@ -314,20 +414,26 @@
         <div class="header">
             <h1>🚀 Breakthrough Dashboard</h1>
             <p>Concentrate effort on the 20% that creates 80% of your results</p>
-            <button onclick="DashboardStorage.saveAll()" style="
-                background: rgba(255,255,255,0.2);
-                color: white;
-                border: 2px solid white;
-                padding: 8px 16px;
-                border-radius: 8px;
-                cursor: pointer;
-                margin-top: 10px;
-                font-weight: bold;
-                transition: all 0.3s ease;
-            " onmouseover="this.style.background='rgba(255,255,255,0.3)'" 
-               onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                💾 Save Progress
-            </button>
+            <div class="date-display" id="currentDate"></div>
+        </div>
+
+        <!-- Data Controls -->
+        <div class="data-controls">
+            <h3 style="margin-bottom: 15px;">📊 Data Management</h3>
+            <div class="control-buttons">
+                <button class="control-btn" onclick="saveCurrentDay()">💾 Save Today's Entry</button>
+                <button class="control-btn" onclick="toggleHistory()">📜 View History</button>
+                <button class="control-btn" onclick="exportData()">📤 Export All Data</button>
+                <button class="control-btn" onclick="importData()">📥 Import Data</button>
+                <button class="control-btn danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+            </div>
+            <input type="file" id="importFile" style="display: none;" accept=".json" onchange="handleImport(event)">
+        </div>
+
+        <!-- History Viewer -->
+        <div class="history-viewer" id="historyViewer">
+            <h3 style="margin-bottom: 15px;">📅 Your Journey</h3>
+            <div id="historyContent"></div>
         </div>
 
         <div class="main-grid">
@@ -335,10 +441,10 @@
             <div class="card">
                 <h2>⚡ Flow State Check</h2>
                 <div class="flow-checker">
-                    <div class="flow-question" onclick="toggleFlow(this)">
+                    <div class="flow-question" id="flow1" onclick="toggleFlow(this)">
                         <strong>Environment Check:</strong> Does it feel like more is happening than involves me?
                     </div>
-                    <div class="flow-question" onclick="toggleFlow(this)">
+                    <div class="flow-question" id="flow2" onclick="toggleFlow(this)">
                         <strong>Internal Check:</strong> Am I in Flow right now?
                     </div>
                 </div>
@@ -356,6 +462,7 @@
                         <div class="metric-label">Momentum</div>
                     </div>
                 </div>
+                <input type="number" class="input-area" id="focusHours" placeholder="Hours of deep work today" step="0.5" min="0" max="24">
             </div>
 
             <!-- Life Framework Evaluator -->
@@ -363,27 +470,27 @@
                 <h2>🎯 Life Framework Analysis</h2>
                 <div class="life-domain">
                     <h3>1. Purpose</h3>
-                    <input type="text" class="input-area" placeholder="What's your core purpose?" onchange="updateProgress('purpose', this.value)">
+                    <input type="text" class="input-area" id="purpose-input" placeholder="What's your core purpose?" onchange="updateProgress('purpose', this.value)">
                     <div class="progress-bar"><div class="progress-fill" id="purpose-progress" style="width: 0%"></div></div>
                 </div>
                 <div class="life-domain">
                     <h3>2. Meaning & Emotional</h3>
-                    <input type="text" class="input-area" placeholder="What brings emotional fulfillment?" onchange="updateProgress('meaning', this.value)">
+                    <input type="text" class="input-area" id="meaning-input" placeholder="What brings emotional fulfillment?" onchange="updateProgress('meaning', this.value)">
                     <div class="progress-bar"><div class="progress-fill" id="meaning-progress" style="width: 0%"></div></div>
                 </div>
                 <div class="life-domain">
                     <h3>3. Economics</h3>
-                    <input type="text" class="input-area" placeholder="Financial goals & security level?" onchange="updateProgress('economics', this.value)">
+                    <input type="text" class="input-area" id="economics-input" placeholder="Financial goals & security level?" onchange="updateProgress('economics', this.value)">
                     <div class="progress-bar"><div class="progress-fill" id="economics-progress" style="width: 0%"></div></div>
                 </div>
                 <div class="life-domain">
                     <h3>4. Mental/Physical Safety</h3>
-                    <input type="text" class="input-area" placeholder="Health & wellbeing status?" onchange="updateProgress('safety', this.value)">
+                    <input type="text" class="input-area" id="safety-input" placeholder="Health & wellbeing status?" onchange="updateProgress('safety', this.value)">
                     <div class="progress-bar"><div class="progress-fill" id="safety-progress" style="width: 0%"></div></div>
                 </div>
                 <div class="life-domain">
                     <h3>5. Personal Connections</h3>
-                    <input type="text" class="input-area" placeholder="Relationship quality?" onchange="updateProgress('connections', this.value)">
+                    <input type="text" class="input-area" id="connections-input" placeholder="Relationship quality?" onchange="updateProgress('connections', this.value)">
                     <div class="progress-bar"><div class="progress-fill" id="connections-progress" style="width: 0%"></div></div>
                 </div>
             </div>
@@ -411,7 +518,7 @@
                         <div class="activity-chip" onclick="toggleImpact(this)">Admin Tasks</div>
                     </div>
                 </div>
-                <input type="text" class="input-area" placeholder="Add your own activity..." onkeypress="addActivity(event)">
+                <input type="text" class="input-area" id="newActivity" placeholder="Add your own activity..." onkeypress="addActivity(event)">
             </div>
 
             <!-- Tool Integration -->
@@ -434,22 +541,22 @@
                 <h2>💪 Aptitude Development</h2>
                 <div style="display: grid; gap: 10px;">
                     <label style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" onchange="updateAptitude()"> Personal Budget Mastery
+                        <input type="checkbox" id="apt1" onchange="updateAptitude()"> Personal Budget Mastery
                     </label>
                     <label style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" onchange="updateAptitude()"> Framework Creation
+                        <input type="checkbox" id="apt2" onchange="updateAptitude()"> Framework Creation
                     </label>
                     <label style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" onchange="updateAptitude()"> AI Collaboration
+                        <input type="checkbox" id="apt3" onchange="updateAptitude()"> AI Collaboration
                     </label>
                     <label style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" onchange="updateAptitude()"> Sleep Optimization
+                        <input type="checkbox" id="apt4" onchange="updateAptitude()"> Sleep Optimization
                     </label>
                     <label style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" onchange="updateAptitude()"> Diet Management
+                        <input type="checkbox" id="apt5" onchange="updateAptitude()"> Diet Management
                     </label>
                     <label style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" onchange="updateAptitude()"> Visible Achievement
+                        <input type="checkbox" id="apt6" onchange="updateAptitude()"> Visible Achievement
                     </label>
                 </div>
                 <div class="metric" style="margin-top: 15px;">
@@ -464,15 +571,15 @@
                 <div style="display: grid; gap: 15px;">
                     <div>
                         <label style="color: #718096; font-size: 0.9em;">Limiting Beliefs:</label>
-                        <textarea class="input-area" rows="2" placeholder="What beliefs hold you back?"></textarea>
+                        <textarea class="input-area" id="limitingBeliefs" rows="2" placeholder="What beliefs hold you back?"></textarea>
                     </div>
                     <div>
                         <label style="color: #718096; font-size: 0.9em;">Trust Issues:</label>
-                        <textarea class="input-area" rows="2" placeholder="Where do you struggle with trust?"></textarea>
+                        <textarea class="input-area" id="trustIssues" rows="2" placeholder="Where do you struggle with trust?"></textarea>
                     </div>
                     <div>
                         <label style="color: #718096; font-size: 0.9em;">Skill Gaps:</label>
-                        <textarea class="input-area" rows="2" placeholder="What skills need development?"></textarea>
+                        <textarea class="input-area" id="skillGaps" rows="2" placeholder="What skills need development?"></textarea>
                     </div>
                 </div>
                 <button class="action-btn" onclick="analyzeWeaknesses()">Transform Weaknesses</button>
@@ -484,203 +591,254 @@
             <h2>💫 Breakthrough Insight Generated!</h2>
             <p id="insightText" style="margin-top: 15px; font-size: 1.1em;"></p>
         </div>
+
+        <!-- Save Indicator -->
+        <div class="save-indicator" id="saveIndicator">
+            ✅ Data Saved Successfully!
+        </div>
     </div>
 
     <script>
-        // Data Persistence Layer
-        const DashboardStorage = {
-            save: function(key, value) {
-                localStorage.setItem('breakthrough_' + key, JSON.stringify(value));
-            },
-            load: function(key) {
-                const item = localStorage.getItem('breakthrough_' + key);
-                return item ? JSON.parse(item) : null;
-            },
-            saveAll: function() {
-                // Save flow states
-                const flowStates = [];
-                document.querySelectorAll('.flow-question').forEach((q, index) => {
-                    flowStates.push(q.classList.contains('active'));
-                });
-                this.save('flowStates', flowStates);
+        // Initialize date display
+        function updateDateDisplay() {
+            const today = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = today.toLocaleDateString('en-US', options);
+        }
 
-                // Save life framework inputs
-                const frameworks = {};
-                ['purpose', 'meaning', 'economics', 'safety', 'connections'].forEach(domain => {
-                    const input = document.querySelector(`input[onchange*="${domain}"]`);
-                    if (input) frameworks[domain] = input.value;
-                });
-                this.save('frameworks', frameworks);
+        // Local Storage Management
+        const STORAGE_KEY = 'breakthroughDashboard';
+        
+        function getCurrentDateKey() {
+            return new Date().toISOString().split('T')[0];
+        }
 
-                // Save activities
-                const activities = {
-                    high: [],
-                    low: []
-                };
-                document.querySelectorAll('#highImpact .activity-chip').forEach(chip => {
-                    activities.high.push(chip.textContent);
-                });
-                document.querySelectorAll('#lowImpact .activity-chip').forEach(chip => {
-                    activities.low.push(chip.textContent);
-                });
-                this.save('activities', activities);
+        function saveToLocalStorage() {
+            const data = collectCurrentData();
+            const dateKey = getCurrentDateKey();
+            
+            // Get existing data
+            let allData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            
+            // Save today's data
+            allData[dateKey] = data;
+            
+            // Save to localStorage
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
+            
+            // Show save indicator
+            showSaveIndicator();
+        }
 
-                // Save selected tools
-                const tools = [];
-                document.querySelectorAll('.tool-btn.selected').forEach(tool => {
-                    tools.push(tool.textContent);
-                });
-                this.save('tools', tools);
+        function collectCurrentData() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                flowState: {
+                    environmentCheck: document.getElementById('flow1').classList.contains('active'),
+                    internalCheck: document.getElementById('flow2').classList.contains('active'),
+                    score: document.getElementById('flowScore').textContent,
+                    focusHours: document.getElementById('focusHours').value || '0'
+                },
+                lifeFramework: {
+                    purpose: document.getElementById('purpose-input').value,
+                    meaning: document.getElementById('meaning-input').value,
+                    economics: document.getElementById('economics-input').value,
+                    safety: document.getElementById('safety-input').value,
+                    connections: document.getElementById('connections-input').value
+                },
+                activities: {
+                    highImpact: Array.from(document.getElementById('highImpact').children).map(el => el.textContent),
+                    lowImpact: Array.from(document.getElementById('lowImpact').children).map(el => el.textContent)
+                },
+                tools: Array.from(document.querySelectorAll('.tool-btn.selected')).map(el => el.textContent),
+                aptitudes: {
+                    budget: document.getElementById('apt1').checked,
+                    framework: document.getElementById('apt2').checked,
+                    ai: document.getElementById('apt3').checked,
+                    sleep: document.getElementById('apt4').checked,
+                    diet: document.getElementById('apt5').checked,
+                    achievement: document.getElementById('apt6').checked
+                },
+                weaknesses: {
+                    limitingBeliefs: document.getElementById('limitingBeliefs').value,
+                    trustIssues: document.getElementById('trustIssues').value,
+                    skillGaps: document.getElementById('skillGaps').value
+                }
+            };
+            return data;
+        }
 
-                // Save aptitudes
-                const aptitudes = [];
-                document.querySelectorAll('input[type="checkbox"]').forEach((cb, index) => {
-                    aptitudes.push(cb.checked);
-                });
-                this.save('aptitudes', aptitudes);
-
-                // Save weaknesses
-                const weaknesses = {};
-                document.querySelectorAll('textarea').forEach(textarea => {
-                    const label = textarea.previousElementSibling.textContent;
-                    weaknesses[label] = textarea.value;
-                });
-                this.save('weaknesses', weaknesses);
-
-                // Save timestamp
-                this.save('lastSaved', new Date().toISOString());
+        function loadTodaysData() {
+            const dateKey = getCurrentDateKey();
+            const allData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            
+            if (allData[dateKey]) {
+                const data = allData[dateKey];
                 
-                // Show save confirmation
-                showSaveConfirmation();
-            },
-            loadAll: function() {
-                // Load flow states
-                const flowStates = this.load('flowStates');
-                if (flowStates) {
-                    document.querySelectorAll('.flow-question').forEach((q, index) => {
-                        if (flowStates[index]) {
-                            q.classList.add('active');
-                        }
-                    });
+                // Restore flow state
+                if (data.flowState) {
+                    if (data.flowState.environmentCheck) document.getElementById('flow1').classList.add('active');
+                    if (data.flowState.internalCheck) document.getElementById('flow2').classList.add('active');
+                    document.getElementById('focusHours').value = data.flowState.focusHours || '';
                     updateFlowScore();
                 }
-
-                // Load life framework inputs
-                const frameworks = this.load('frameworks');
-                if (frameworks) {
-                    Object.keys(frameworks).forEach(domain => {
-                        const input = document.querySelector(`input[onchange*="${domain}"]`);
-                        if (input && frameworks[domain]) {
-                            input.value = frameworks[domain];
-                            updateProgress(domain, frameworks[domain]);
-                        }
-                    });
-                }
-
-                // Load activities
-                const activities = this.load('activities');
-                if (activities && (activities.high?.length > 0 || activities.low?.length > 0)) {
-                    // Clear ALL default activities first
-                    document.getElementById('highImpact').innerHTML = '';
-                    document.getElementById('lowImpact').innerHTML = '';
+                
+                // Restore life framework
+                if (data.lifeFramework) {
+                    document.getElementById('purpose-input').value = data.lifeFramework.purpose || '';
+                    document.getElementById('meaning-input').value = data.lifeFramework.meaning || '';
+                    document.getElementById('economics-input').value = data.lifeFramework.economics || '';
+                    document.getElementById('safety-input').value = data.lifeFramework.safety || '';
+                    document.getElementById('connections-input').value = data.lifeFramework.connections || '';
                     
-                    // Add saved activities
-                    activities.high?.forEach(text => {
-                        const chip = createActivityChip(text, true);
-                        document.getElementById('highImpact').appendChild(chip);
-                    });
-                    activities.low?.forEach(text => {
-                        const chip = createActivityChip(text, false);
-                        document.getElementById('lowImpact').appendChild(chip);
-                    });
-                } else {
-                    // First load - save the default activities
-                    setTimeout(() => {
-                        DashboardStorage.saveAll();
-                    }, 100);
-                }
-
-                // Load selected tools
-                const tools = this.load('tools');
-                if (tools) {
-                    document.querySelectorAll('.tool-btn').forEach(btn => {
-                        if (tools.includes(btn.textContent)) {
-                            btn.classList.add('selected');
+                    // Update progress bars
+                    ['purpose', 'meaning', 'economics', 'safety', 'connections'].forEach(domain => {
+                        if (data.lifeFramework[domain]) {
+                            updateProgress(domain, data.lifeFramework[domain]);
                         }
                     });
                 }
-
-                // Load aptitudes
-                const aptitudes = this.load('aptitudes');
-                if (aptitudes) {
-                    document.querySelectorAll('input[type="checkbox"]').forEach((cb, index) => {
-                        cb.checked = aptitudes[index] || false;
-                    });
+                
+                // Restore aptitudes
+                if (data.aptitudes) {
+                    document.getElementById('apt1').checked = data.aptitudes.budget;
+                    document.getElementById('apt2').checked = data.aptitudes.framework;
+                    document.getElementById('apt3').checked = data.aptitudes.ai;
+                    document.getElementById('apt4').checked = data.aptitudes.sleep;
+                    document.getElementById('apt5').checked = data.aptitudes.diet;
+                    document.getElementById('apt6').checked = data.aptitudes.achievement;
                     updateAptitude();
                 }
-
-                // Load weaknesses
-                const weaknesses = this.load('weaknesses');
-                if (weaknesses) {
-                    document.querySelectorAll('textarea').forEach(textarea => {
-                        const label = textarea.previousElementSibling.textContent;
-                        if (weaknesses[label]) {
-                            textarea.value = weaknesses[label];
-                        }
-                    });
-                }
-
-                // Show last saved time
-                const lastSaved = this.load('lastSaved');
-                if (lastSaved) {
-                    console.log('Data loaded from:', new Date(lastSaved).toLocaleString());
+                
+                // Restore weaknesses
+                if (data.weaknesses) {
+                    document.getElementById('limitingBeliefs').value = data.weaknesses.limitingBeliefs || '';
+                    document.getElementById('trustIssues').value = data.weaknesses.trustIssues || '';
+                    document.getElementById('skillGaps').value = data.weaknesses.skillGaps || '';
                 }
             }
-        };
-
-        // Auto-save function
-        function autoSave() {
-            DashboardStorage.saveAll();
         }
 
-        // Show save confirmation
-        function showSaveConfirmation() {
-            const existing = document.querySelector('.save-notification');
-            if (existing) existing.remove();
+        function showSaveIndicator() {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 3000);
+        }
+
+        function saveCurrentDay() {
+            saveToLocalStorage();
+        }
+
+        function toggleHistory() {
+            const viewer = document.getElementById('historyViewer');
+            viewer.classList.toggle('show');
             
-            const notification = document.createElement('div');
-            notification.className = 'save-notification';
-            notification.textContent = '✓ Progress Saved';
-            notification.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                background: linear-gradient(135deg, #10b981, #059669);
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                animation: slideIn 0.3s ease;
-                z-index: 1000;
-            `;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 3000);
+            if (viewer.classList.contains('show')) {
+                displayHistory();
+            }
         }
 
-        // Create activity chip helper
-        function createActivityChip(text, isHighImpact) {
-            const chip = document.createElement('div');
-            chip.className = 'activity-chip' + (isHighImpact ? ' high-impact' : '');
-            chip.textContent = text;
-            chip.onclick = function() { toggleImpact(this); };
-            return chip;
+        function displayHistory() {
+            const allData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            const historyContent = document.getElementById('historyContent');
+            
+            if (Object.keys(allData).length === 0) {
+                historyContent.innerHTML = '<p>No history available yet. Start tracking your progress!</p>';
+                return;
+            }
+            
+            const sortedDates = Object.keys(allData).sort().reverse();
+            
+            historyContent.innerHTML = sortedDates.map(date => {
+                const data = allData[date];
+                return `
+                    <div class="history-entry">
+                        <div class="history-date">📅 ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                        <div class="history-data">
+                            <strong>Flow State:</strong> ${data.flowState?.score || '0%'} | Focus: ${data.flowState?.focusHours || '0'}h<br>
+                            <strong>High Impact Activities:</strong> ${data.activities?.highImpact?.join(', ') || 'None'}<br>
+                            <strong>Active Tools:</strong> ${data.tools?.join(', ') || 'None'}<br>
+                            <strong>Purpose:</strong> ${data.lifeFramework?.purpose || 'Not set'}<br>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        // Flow State Management
+        function exportData() {
+            const allData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            const dataStr = JSON.stringify(allData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `breakthrough-dashboard-${getCurrentDateKey()}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            showSaveIndicator();
+        }
+
+        function importData() {
+            document.getElementById('importFile').click();
+        }
+
+        function handleImport(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+                        
+                        // Merge imported data with existing data
+                        const mergedData = { ...existingData, ...importedData };
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedData));
+                        
+                        loadTodaysData();
+                        showSaveIndicator();
+                        alert('Data imported successfully!');
+                    } catch (error) {
+                        alert('Error importing data. Please check the file format.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear ALL data? This cannot be undone!')) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        }
+
+        // Auto-save functionality
+        let autoSaveTimer;
+        function setupAutoSave() {
+            // Clear any existing timer
+            clearTimeout(autoSaveTimer);
+            
+            // Set up auto-save every 30 seconds when user is active
+            autoSaveTimer = setTimeout(() => {
+                saveToLocalStorage();
+                setupAutoSave(); // Reset the timer
+            }, 30000);
+        }
+
+        // Add event listeners for auto-save
+        document.addEventListener('input', setupAutoSave);
+        document.addEventListener('change', setupAutoSave);
+        document.addEventListener('click', setupAutoSave);
+
+        // Original Functions (Updated)
+        
         function toggleFlow(element) {
             element.classList.toggle('active');
             updateFlowScore();
-            autoSave();
+            setupAutoSave();
         }
 
         function updateFlowScore() {
@@ -688,14 +846,18 @@
             const score = activeFlows * 50;
             document.getElementById('flowScore').textContent = score + '%';
             
-            // Update momentum indicator
             const momentum = document.getElementById('momentum');
             if (score === 0) momentum.textContent = '→';
             else if (score === 50) momentum.textContent = '↗';
             else momentum.textContent = '⬆';
+            
+            // Update focus time
+            const focusHours = document.getElementById('focusHours').value;
+            if (focusHours) {
+                document.getElementById('focusTime').textContent = focusHours + 'h';
+            }
         }
 
-        // Progress Updates
         function updateProgress(domain, value) {
             if (value.trim() !== '') {
                 const progressBar = document.getElementById(domain + '-progress');
@@ -704,10 +866,8 @@
                     progressBar.style.width = '100%';
                 }, 500);
             }
-            autoSave();
         }
 
-        // Pareto Activity Management
         function toggleImpact(element) {
             const highImpact = document.getElementById('highImpact');
             const lowImpact = document.getElementById('lowImpact');
@@ -719,32 +879,32 @@
                 element.classList.add('high-impact');
                 highImpact.appendChild(element);
             }
-            autoSave();
+            setupAutoSave();
         }
 
         function addActivity(event) {
             if (event.key === 'Enter' && event.target.value.trim() !== '') {
-                const newChip = createActivityChip(event.target.value, false);
+                const newChip = document.createElement('div');
+                newChip.className = 'activity-chip';
+                newChip.textContent = event.target.value;
+                newChip.onclick = function() { toggleImpact(this); };
                 document.getElementById('lowImpact').appendChild(newChip);
                 event.target.value = '';
-                autoSave();
+                setupAutoSave();
             }
         }
 
-        // Tool Selection
         function toggleTool(element) {
             element.classList.toggle('selected');
-            autoSave();
+            setupAutoSave();
         }
 
-        // Aptitude Tracking
         function updateAptitude() {
             const checked = document.querySelectorAll('input[type="checkbox"]:checked').length;
             document.getElementById('aptitudeScore').textContent = checked + '/6';
-            autoSave();
+            setupAutoSave();
         }
 
-        // Generate Breakthrough Insight
         function generateInsight() {
             const insights = [
                 "Focus on the ONE thing that makes everything else easier or unnecessary. Your deep work sessions are your highest leverage activity.",
@@ -765,63 +925,22 @@
             }, 8000);
         }
 
-        // Analyze Weaknesses
         function analyzeWeaknesses() {
             generateInsight();
-            autoSave();
         }
 
-        // Auto-save on textarea change
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('textarea').forEach(textarea => {
-                textarea.addEventListener('blur', autoSave);
-            });
-        });
-
-        // Initialize
+        // Initialize on page load
         window.onload = function() {
-            // Load saved data
-            DashboardStorage.loadAll();
+            updateDateDisplay();
+            loadTodaysData();
             
-            // Add save triggers to all text inputs and textareas
-            document.querySelectorAll('input[type="text"], textarea').forEach(element => {
-                element.addEventListener('change', autoSave);
-                element.addEventListener('blur', autoSave);
+            // Update focus time when input changes
+            document.getElementById('focusHours').addEventListener('input', function() {
+                document.getElementById('focusTime').textContent = (this.value || '0') + 'h';
             });
             
-            // Add save trigger to checkboxes
-            document.querySelectorAll('input[type="checkbox"]').forEach(element => {
-                element.addEventListener('change', function() {
-                    updateAptitude();
-                });
-            });
-            
-            // If no saved data, show demo progress and save initial state
-            if (!DashboardStorage.load('lastSaved')) {
-                setTimeout(() => {
-                    document.getElementById('purpose-progress').style.width = '40%';
-                    document.getElementById('flowScore').textContent = '50%';
-                    document.getElementById('focusTime').textContent = '2.5h';
-                    // Save initial state with default activities
-                    DashboardStorage.saveAll();
-                }, 1000);
-            }
-            
-            // Add animation for save notification
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes slideIn {
-                    from { transform: translateX(100px); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-            `;
-            document.head.appendChild(style);
-            
-            // Auto-save every 30 seconds as backup
-            setInterval(() => {
-                DashboardStorage.saveAll();
-                console.log('Auto-save completed');
-            }, 30000);
+            // Initial setup for auto-save
+            setupAutoSave();
         }
     </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Breakthrough Dashboard</title>
+    <title>Personal Operating System Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -81,171 +81,161 @@
             gap: 10px;
         }
 
-        .flow-checker {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        .framework-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
         }
 
-        .flow-question {
-            padding: 15px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .flow-question:hover {
-            background: linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 100%);
-        }
-
-        .flow-question.active {
-            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
-            color: white;
-        }
-
-        .life-domain {
-            margin-bottom: 20px;
+        .framework-quadrant {
             padding: 15px;
             background: #f8f9fa;
             border-radius: 10px;
-            border-left: 4px solid #667eea;
-        }
-
-        .life-domain h3 {
-            margin-bottom: 10px;
-            color: #4a5568;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #a78bfa);
-            border-radius: 4px;
-            transition: width 0.5s ease;
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { opacity: 0.8; }
-            50% { opacity: 1; }
-            100% { opacity: 0.8; }
-        }
-
-        .pareto-analyzer {
-            display: grid;
-            grid-template-columns: 1fr 3fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .pareto-label {
-            background: #7c3aed;
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .pareto-activities {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .activity-chip {
-            padding: 8px 15px;
-            background: #f0f4f8;
-            border-radius: 20px;
-            font-size: 0.9em;
+            border: 2px solid #e2e8f0;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: 2px solid transparent;
         }
 
-        .activity-chip:hover {
+        .framework-quadrant:hover {
             background: #e0e7ff;
             border-color: #667eea;
-            transform: scale(1.05);
         }
 
-        .activity-chip.high-impact {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            color: white;
-            font-weight: bold;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .tool-selector {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .tool-btn {
-            padding: 12px;
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .tool-btn:hover {
-            background: #667eea;
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .tool-btn.selected {
-            background: #7c3aed;
+        .framework-quadrant.selected {
+            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
             color: white;
             border-color: #7c3aed;
         }
 
-        .breakthrough-moment {
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
+        .framework-quadrant h4 {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .framework-quadrant p {
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        .ooda-loop {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .ooda-step {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
             text-align: center;
-            opacity: 0;
-            transform: scale(0.9);
-            transition: all 0.5s ease;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
         }
 
-        .breakthrough-moment.show {
-            opacity: 1;
-            transform: scale(1);
-            animation: glow 2s ease-in-out infinite;
+        .ooda-step.active {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-color: #059669;
         }
 
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
-            50% { box-shadow: 0 0 40px rgba(251, 191, 36, 0.8); }
+        .ooda-step h4 {
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .leverage-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .leverage-score {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .leverage-score.high {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .leverage-score.medium {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+        }
+
+        .leverage-score.low {
+            background: #e2e8f0;
+            color: #718096;
+        }
+
+        .signal-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            position: relative;
+        }
+
+        .signal-item.noise {
+            opacity: 0.5;
+            border-left-color: #e2e8f0;
+        }
+
+        .signal-type {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 0.75em;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: #667eea;
+            color: white;
+        }
+
+        .signal-type.noise {
+            background: #94a3b8;
+        }
+
+        .decision-entry {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .decision-outcome {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .outcome-box {
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .outcome-box.expected {
+            background: #e0e7ff;
+        }
+
+        .outcome-box.actual {
+            background: #d4f4dd;
         }
 
         .input-area {
@@ -281,14 +271,10 @@
             box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        .small-btn {
+            padding: 6px 12px;
+            font-size: 0.85em;
+            margin-top: 5px;
         }
 
         .metrics-grid {
@@ -317,7 +303,6 @@
             margin-top: 5px;
         }
 
-        /* New styles for data management */
         .data-controls {
             background: white;
             border-radius: 15px;
@@ -403,28 +388,66 @@
             margin-bottom: 10px;
         }
 
-        .history-data {
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .number-input {
+            width: 60px;
+            padding: 5px;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .book-chip {
+            display: inline-block;
+            padding: 8px 15px;
+            background: #f0f4f8;
+            border-radius: 20px;
             font-size: 0.9em;
-            line-height: 1.6;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .book-chip:hover {
+            background: #e0e7ff;
+            border-color: #667eea;
+        }
+
+        .book-chip.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 Breakthrough Dashboard</h1>
-            <p>Concentrate effort on the 20% that creates 80% of your results</p>
+            <h1>🧠 Personal Operating System</h1>
+            <p>Your decision-awareness collaborator powered by proven frameworks</p>
             <div class="date-display" id="currentDate"></div>
         </div>
 
         <!-- Data Controls -->
         <div class="data-controls">
-            <h3 style="margin-bottom: 15px;">📊 Data Management</h3>
+            <h3 style="margin-bottom: 15px;">📊 System Controls</h3>
             <div class="control-buttons">
                 <button class="control-btn" onclick="saveCurrentDay()">💾 Save Today's Entry</button>
                 <button class="control-btn" onclick="toggleHistory()">📜 View History</button>
                 <button class="control-btn" onclick="exportData()">📤 Export All Data</button>
                 <button class="control-btn" onclick="importData()">📥 Import Data</button>
+                <button class="control-btn" onclick="testSave()">🧪 Test Save Function</button>
                 <button class="control-btn danger" onclick="clearAllData()">🗑️ Clear All Data</button>
             </div>
             <input type="file" id="importFile" style="display: none;" accept=".json" onchange="handleImport(event)">
@@ -432,164 +455,188 @@
 
         <!-- History Viewer -->
         <div class="history-viewer" id="historyViewer">
-            <h3 style="margin-bottom: 15px;">📅 Your Journey</h3>
+            <h3 style="margin-bottom: 15px;">📅 Decision History</h3>
             <div id="historyContent"></div>
         </div>
 
         <div class="main-grid">
-            <!-- Flow State Checker -->
+            <!-- OODA Loop Decision Tracker -->
             <div class="card">
-                <h2>⚡ Flow State Check</h2>
-                <div class="flow-checker">
-                    <div class="flow-question" id="flow1" onclick="toggleFlow(this)">
-                        <strong>Environment Check:</strong> Does it feel like more is happening than involves me?
+                <h2>🎯 Daily Decision Loop (OODA)</h2>
+                <div class="ooda-loop">
+                    <div class="ooda-step" id="ooda-observe" onclick="activateOODA('observe')">
+                        <h4>OBSERVE</h4>
+                        <small>Patterns?</small>
                     </div>
-                    <div class="flow-question" id="flow2" onclick="toggleFlow(this)">
-                        <strong>Internal Check:</strong> Am I in Flow right now?
+                    <div class="ooda-step" id="ooda-orient" onclick="activateOODA('orient')">
+                        <h4>ORIENT</h4>
+                        <small>Framework?</small>
+                    </div>
+                    <div class="ooda-step" id="ooda-decide" onclick="activateOODA('decide')">
+                        <h4>DECIDE</h4>
+                        <small>80/20 move?</small>
+                    </div>
+                    <div class="ooda-step" id="ooda-act" onclick="activateOODA('act')">
+                        <h4>ACT</h4>
+                        <small>Execute!</small>
                     </div>
                 </div>
+                <textarea class="input-area" id="ooda-notes" rows="3" placeholder="What's happening in this loop?"></textarea>
                 <div class="metrics-grid">
                     <div class="metric">
-                        <div class="metric-value" id="flowScore">0%</div>
-                        <div class="metric-label">Flow State</div>
+                        <div class="metric-value" id="loopSpeed">--</div>
+                        <div class="metric-label">Loop Speed</div>
                     </div>
                     <div class="metric">
-                        <div class="metric-value" id="focusTime">0h</div>
-                        <div class="metric-label">Deep Work</div>
+                        <div class="metric-value" id="loopsToday">0</div>
+                        <div class="metric-label">Loops Today</div>
                     </div>
                     <div class="metric">
-                        <div class="metric-value" id="momentum">→</div>
-                        <div class="metric-label">Momentum</div>
+                        <div class="metric-value" id="clarity">--</div>
+                        <div class="metric-label">Clarity</div>
                     </div>
                 </div>
-                <input type="number" class="input-area" id="focusHours" placeholder="Hours of deep work today" step="0.5" min="0" max="24">
             </div>
 
-            <!-- Life Framework Evaluator -->
+            <!-- Framework Selector Matrix -->
             <div class="card">
-                <h2>🎯 Life Framework Analysis</h2>
-                <div class="life-domain">
-                    <h3>1. Purpose</h3>
-                    <input type="text" class="input-area" id="purpose-input" placeholder="What's your core purpose?" onchange="updateProgress('purpose', this.value)">
-                    <div class="progress-bar"><div class="progress-fill" id="purpose-progress" style="width: 0%"></div></div>
-                </div>
-                <div class="life-domain">
-                    <h3>2. Meaning & Emotional</h3>
-                    <input type="text" class="input-area" id="meaning-input" placeholder="What brings emotional fulfillment?" onchange="updateProgress('meaning', this.value)">
-                    <div class="progress-bar"><div class="progress-fill" id="meaning-progress" style="width: 0%"></div></div>
-                </div>
-                <div class="life-domain">
-                    <h3>3. Economics</h3>
-                    <input type="text" class="input-area" id="economics-input" placeholder="Financial goals & security level?" onchange="updateProgress('economics', this.value)">
-                    <div class="progress-bar"><div class="progress-fill" id="economics-progress" style="width: 0%"></div></div>
-                </div>
-                <div class="life-domain">
-                    <h3>4. Mental/Physical Safety</h3>
-                    <input type="text" class="input-area" id="safety-input" placeholder="Health & wellbeing status?" onchange="updateProgress('safety', this.value)">
-                    <div class="progress-bar"><div class="progress-fill" id="safety-progress" style="width: 0%"></div></div>
-                </div>
-                <div class="life-domain">
-                    <h3>5. Personal Connections</h3>
-                    <input type="text" class="input-area" id="connections-input" placeholder="Relationship quality?" onchange="updateProgress('connections', this.value)">
-                    <div class="progress-bar"><div class="progress-fill" id="connections-progress" style="width: 0%"></div></div>
-                </div>
-            </div>
-
-            <!-- Pareto Activity Identifier -->
-            <div class="card">
-                <h2>📊 80/20 Activity Analyzer</h2>
-                <p style="margin-bottom: 15px; color: #718096;">Click activities to mark as high-impact (20% that drive 80% results)</p>
-                <div class="pareto-analyzer">
-                    <div class="pareto-label">20%</div>
-                    <div class="pareto-activities" id="highImpact"></div>
-                </div>
-                <div class="pareto-analyzer">
-                    <div class="pareto-label" style="background: #94a3b8;">80%</div>
-                    <div class="pareto-activities" id="lowImpact">
-                        <div class="activity-chip" onclick="toggleImpact(this)">Email Management</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Deep Work Sessions</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Strategic Planning</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Meetings</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Learning New Skills</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Exercise</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Social Media</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Networking</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Content Creation</div>
-                        <div class="activity-chip" onclick="toggleImpact(this)">Admin Tasks</div>
+                <h2>🛠️ Framework Selector</h2>
+                <p style="margin-bottom: 10px; color: #718096; font-size: 0.9em;">Choose the right tool for the situation:</p>
+                <div class="framework-grid">
+                    <div class="framework-quadrant" id="framework-urgent" onclick="selectFramework('urgent', '2-Minute Rule (Atomic Habits)')">
+                        <h4>⚡ Urgent/Tactical</h4>
+                        <strong>2-Minute Rule</strong>
+                        <p>From: Atomic Habits</p>
+                    </div>
+                    <div class="framework-quadrant" id="framework-strategic" onclick="selectFramework('strategic', 'Zero to One Thinking')">
+                        <h4>🎯 Strategic/Innovation</h4>
+                        <strong>Zero to One</strong>
+                        <p>Create, don't compete</p>
+                    </div>
+                    <div class="framework-quadrant" id="framework-behavioral" onclick="selectFramework('behavioral', 'Tiny Habits Protocol')">
+                        <h4>🔄 Behavioral/Habitual</h4>
+                        <strong>Tiny Habits</strong>
+                        <p>BJ Fogg method</p>
+                    </div>
+                    <div class="framework-quadrant" id="framework-systems" onclick="selectFramework('systems', '80/20 Analysis')">
+                        <h4>📊 Systems/Leverage</h4>
+                        <strong>80/20 Principle</strong>
+                        <p>Maximum leverage</p>
                     </div>
                 </div>
-                <input type="text" class="input-area" id="newActivity" placeholder="Add your own activity..." onkeypress="addActivity(event)">
-            </div>
-
-            <!-- Tool Integration -->
-            <div class="card">
-                <h2>🛠️ Power Tools Integration</h2>
-                <p style="margin-bottom: 15px; color: #718096;">Select tools you're actively using:</p>
-                <div class="tool-selector">
-                    <div class="tool-btn" onclick="toggleTool(this)">80/20 Rule</div>
-                    <div class="tool-btn" onclick="toggleTool(this)">Atomic Habits</div>
-                    <div class="tool-btn" onclick="toggleTool(this)">7 Habits</div>
-                    <div class="tool-btn" onclick="toggleTool(this)">Behavioral Economics</div>
-                    <div class="tool-btn" onclick="toggleTool(this)">AI Assistant</div>
-                    <div class="tool-btn" onclick="toggleTool(this)">Time Blocking</div>
+                <div style="margin-top: 15px;">
+                    <label style="color: #718096; font-size: 0.9em;">Selected Framework:</label>
+                    <input type="text" class="input-area" id="selected-framework" readonly style="background: #f8f9fa;">
                 </div>
-                <button class="action-btn" onclick="generateInsight()">Generate Breakthrough Insight</button>
             </div>
 
-            <!-- Aptitude Tracker -->
+            <!-- Leverage Tracker -->
             <div class="card">
-                <h2>💪 Aptitude Development</h2>
-                <div style="display: grid; gap: 10px;">
-                    <label style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="apt1" onchange="updateAptitude()"> Personal Budget Mastery
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="apt2" onchange="updateAptitude()"> Framework Creation
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="apt3" onchange="updateAptitude()"> AI Collaboration
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="apt4" onchange="updateAptitude()"> Sleep Optimization
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="apt5" onchange="updateAptitude()"> Diet Management
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="apt6" onchange="updateAptitude()"> Visible Achievement
-                    </label>
+                <h2>📈 Leverage Tracker</h2>
+                <p style="margin-bottom: 10px; color: #718096; font-size: 0.9em;">Track effort vs impact to find your 20%</p>
+                <div id="leverageList">
+                    <div class="leverage-item">
+                        <input type="text" placeholder="Activity" class="input-area" id="leverage-activity-1" style="margin: 0;">
+                        <input type="number" placeholder="Effort" min="1" max="10" class="number-input" id="leverage-effort-1">
+                        <input type="number" placeholder="Impact" min="1" max="10" class="number-input" id="leverage-impact-1">
+                        <div class="leverage-score" id="leverage-score-1">--</div>
+                    </div>
+                </div>
+                <button class="action-btn small-btn" onclick="addLeverageItem()">+ Add Activity</button>
+                <button class="action-btn small-btn" onclick="calculateLeverage()">Calculate All</button>
+            </div>
+
+            <!-- Signal vs Noise Filter -->
+            <div class="card">
+                <h2>📡 Signal Amplifier</h2>
+                <p style="margin-bottom: 10px; color: #718096; font-size: 0.9em;">Capture signals, filter noise</p>
+                <input type="text" class="input-area" id="signal-input" placeholder="Capture an insight or observation...">
+                <div style="margin-top: 10px;">
+                    <button class="action-btn small-btn" onclick="addSignal()">📍 Mark as Signal</button>
+                    <button class="action-btn small-btn" onclick="addNoise()">🔇 Mark as Noise</button>
+                </div>
+                <div id="signalList" style="margin-top: 15px;">
+                    <!-- Signals will appear here -->
+                </div>
+            </div>
+
+            <!-- Book/Framework Library -->
+            <div class="card">
+                <h2>📚 Active Frameworks</h2>
+                <p style="margin-bottom: 10px; color: #718096; font-size: 0.9em;">Your mastered tools:</p>
+                <div id="bookLibrary">
+                    <div class="book-chip" onclick="toggleBook(this)">Atomic Habits</div>
+                    <div class="book-chip" onclick="toggleBook(this)">Tiny Habits</div>
+                    <div class="book-chip" onclick="toggleBook(this)">Flow State</div>
+                    <div class="book-chip" onclick="toggleBook(this)">80/20 Principle</div>
+                    <div class="book-chip" onclick="toggleBook(this)">7 Habits</div>
+                    <div class="book-chip" onclick="toggleBook(this)">Zero to One</div>
+                    <div class="book-chip" onclick="toggleBook(this)">Tipping Point</div>
+                    <div class="book-chip" onclick="toggleBook(this)">OODA Loop</div>
+                    <div class="book-chip" onclick="toggleBook(this)">Systems Thinking</div>
+                    <div class="book-chip" onclick="toggleBook(this)">Mental Models</div>
                 </div>
                 <div class="metric" style="margin-top: 15px;">
-                    <div class="metric-value" id="aptitudeScore">0/6</div>
-                    <div class="metric-label">Active Aptitudes</div>
+                    <div class="metric-value" id="activeFrameworks">0</div>
+                    <div class="metric-label">Frameworks in Use</div>
                 </div>
             </div>
 
-            <!-- Weakness Accountability -->
+            <!-- Decision Log -->
             <div class="card">
-                <h2>🔍 Weakness Navigator</h2>
-                <div style="display: grid; gap: 15px;">
-                    <div>
-                        <label style="color: #718096; font-size: 0.9em;">Limiting Beliefs:</label>
-                        <textarea class="input-area" id="limitingBeliefs" rows="2" placeholder="What beliefs hold you back?"></textarea>
-                    </div>
-                    <div>
-                        <label style="color: #718096; font-size: 0.9em;">Trust Issues:</label>
-                        <textarea class="input-area" id="trustIssues" rows="2" placeholder="Where do you struggle with trust?"></textarea>
-                    </div>
-                    <div>
-                        <label style="color: #718096; font-size: 0.9em;">Skill Gaps:</label>
-                        <textarea class="input-area" id="skillGaps" rows="2" placeholder="What skills need development?"></textarea>
-                    </div>
+                <h2>📝 Decision Log</h2>
+                <div style="margin-bottom: 15px;">
+                    <input type="text" class="input-area" id="decision-description" placeholder="What decision did you make?">
+                    <input type="text" class="input-area" id="decision-framework" placeholder="Framework used">
+                    <input type="text" class="input-area" id="decision-expected" placeholder="Expected outcome">
+                    <button class="action-btn" onclick="logDecision()">Log Decision</button>
                 </div>
-                <button class="action-btn" onclick="analyzeWeaknesses()">Transform Weaknesses</button>
+                <div id="decisionList">
+                    <!-- Decisions will appear here -->
+                </div>
             </div>
-        </div>
 
-        <!-- Breakthrough Moment Display -->
-        <div class="breakthrough-moment" id="breakthroughMoment">
-            <h2>💫 Breakthrough Insight Generated!</h2>
-            <p id="insightText" style="margin-top: 15px; font-size: 1.1em;"></p>
+            <!-- Systems Health Check -->
+            <div class="card">
+                <h2>🔄 Systems Health</h2>
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #718096;">Purpose Alignment (1-10)</label>
+                    <input type="number" class="input-area" id="health-purpose" min="1" max="10" placeholder="10">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #718096;">Energy Level (1-10)</label>
+                    <input type="number" class="input-area" id="health-energy" min="1" max="10" placeholder="10">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #718096;">Focus Quality (1-10)</label>
+                    <input type="number" class="input-area" id="health-focus" min="1" max="10" placeholder="10">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #718096;">Relationship Quality (1-10)</label>
+                    <input type="number" class="input-area" id="health-relationships" min="1" max="10" placeholder="10">
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="systemScore">--</div>
+                    <div class="metric-label">System Health Score</div>
+                </div>
+            </div>
+
+            <!-- Build in Public Logger -->
+            <div class="card">
+                <h2>🚀 Build Progress</h2>
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #718096;">Today's Product Insight</label>
+                    <textarea class="input-area" id="build-insight" rows="2" placeholder="What did you learn about your product?"></textarea>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #718096;">User Signal</label>
+                    <textarea class="input-area" id="build-user-signal" rows="2" placeholder="What are users telling you?"></textarea>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #718096;">Next Iteration</label>
+                    <textarea class="input-area" id="build-next" rows="2" placeholder="What's the next move?"></textarea>
+                </div>
+            </div>
         </div>
 
         <!-- Save Indicator -->
@@ -607,115 +654,202 @@
         }
 
         // Local Storage Management
-        const STORAGE_KEY = 'breakthroughDashboard';
+        const STORAGE_KEY = 'personalOperatingSystem';
+        let leverageItemCount = 1;
+        let oodaLoopCount = 0;
+        let currentOODAStep = '';
         
         function getCurrentDateKey() {
             return new Date().toISOString().split('T')[0];
         }
 
-        function saveToLocalStorage() {
-            const data = collectCurrentData();
-            const dateKey = getCurrentDateKey();
-            
-            // Get existing data
-            let allData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-            
-            // Save today's data
-            allData[dateKey] = data;
-            
-            // Save to localStorage
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
-            
-            // Show save indicator
-            showSaveIndicator();
+        function collectCurrentData() {
+            // Collect OODA data
+            const oodaData = {
+                currentStep: currentOODAStep,
+                notes: document.getElementById('ooda-notes').value,
+                loopsCompleted: oodaLoopCount
+            };
+
+            // Collect Framework selection
+            const frameworkData = {
+                selected: document.getElementById('selected-framework').value,
+                urgent: document.getElementById('framework-urgent').classList.contains('selected'),
+                strategic: document.getElementById('framework-strategic').classList.contains('selected'),
+                behavioral: document.getElementById('framework-behavioral').classList.contains('selected'),
+                systems: document.getElementById('framework-systems').classList.contains('selected')
+            };
+
+            // Collect Leverage items
+            const leverageData = [];
+            const leverageItems = document.querySelectorAll('.leverage-item');
+            leverageItems.forEach((item, index) => {
+                const activity = item.querySelector(`#leverage-activity-${index + 1}`)?.value;
+                const effort = item.querySelector(`#leverage-effort-${index + 1}`)?.value;
+                const impact = item.querySelector(`#leverage-impact-${index + 1}`)?.value;
+                if (activity || effort || impact) {
+                    leverageData.push({ activity, effort, impact });
+                }
+            });
+
+            // Collect Signals
+            const signalData = [];
+            document.querySelectorAll('.signal-item').forEach(item => {
+                signalData.push({
+                    text: item.textContent.trim(),
+                    isNoise: item.classList.contains('noise')
+                });
+            });
+
+            // Collect Active Books
+            const activeBooks = [];
+            document.querySelectorAll('.book-chip.active').forEach(chip => {
+                activeBooks.push(chip.textContent);
+            });
+
+            // Collect Decision Log
+            const decisionData = [];
+            document.querySelectorAll('.decision-entry').forEach(entry => {
+                const text = entry.innerHTML;
+                decisionData.push(text);
+            });
+
+            // Collect System Health
+            const healthData = {
+                purpose: document.getElementById('health-purpose').value,
+                energy: document.getElementById('health-energy').value,
+                focus: document.getElementById('health-focus').value,
+                relationships: document.getElementById('health-relationships').value
+            };
+
+            // Collect Build Progress
+            const buildData = {
+                insight: document.getElementById('build-insight').value,
+                userSignal: document.getElementById('build-user-signal').value,
+                nextIteration: document.getElementById('build-next').value
+            };
+
+            return {
+                timestamp: new Date().toISOString(),
+                ooda: oodaData,
+                framework: frameworkData,
+                leverage: leverageData,
+                signals: signalData,
+                activeBooks: activeBooks,
+                decisions: decisionData,
+                health: healthData,
+                build: buildData
+            };
         }
 
-        function collectCurrentData() {
-            const data = {
-                timestamp: new Date().toISOString(),
-                flowState: {
-                    environmentCheck: document.getElementById('flow1').classList.contains('active'),
-                    internalCheck: document.getElementById('flow2').classList.contains('active'),
-                    score: document.getElementById('flowScore').textContent,
-                    focusHours: document.getElementById('focusHours').value || '0'
-                },
-                lifeFramework: {
-                    purpose: document.getElementById('purpose-input').value,
-                    meaning: document.getElementById('meaning-input').value,
-                    economics: document.getElementById('economics-input').value,
-                    safety: document.getElementById('safety-input').value,
-                    connections: document.getElementById('connections-input').value
-                },
-                activities: {
-                    highImpact: Array.from(document.getElementById('highImpact').children).map(el => el.textContent),
-                    lowImpact: Array.from(document.getElementById('lowImpact').children).map(el => el.textContent)
-                },
-                tools: Array.from(document.querySelectorAll('.tool-btn.selected')).map(el => el.textContent),
-                aptitudes: {
-                    budget: document.getElementById('apt1').checked,
-                    framework: document.getElementById('apt2').checked,
-                    ai: document.getElementById('apt3').checked,
-                    sleep: document.getElementById('apt4').checked,
-                    diet: document.getElementById('apt5').checked,
-                    achievement: document.getElementById('apt6').checked
-                },
-                weaknesses: {
-                    limitingBeliefs: document.getElementById('limitingBeliefs').value,
-                    trustIssues: document.getElementById('trustIssues').value,
-                    skillGaps: document.getElementById('skillGaps').value
-                }
-            };
-            return data;
+        function saveToLocalStorage() {
+            try {
+                const data = collectCurrentData();
+                const dateKey = getCurrentDateKey();
+                
+                // Get existing data
+                let allData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+                
+                // Save today's data
+                allData[dateKey] = data;
+                
+                // Save to localStorage
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
+                
+                // Show save indicator
+                showSaveIndicator();
+                
+                console.log('Data saved successfully:', data);
+                return true;
+            } catch (error) {
+                console.error('Error saving data:', error);
+                alert('Error saving data. Check console for details.');
+                return false;
+            }
         }
 
         function loadTodaysData() {
-            const dateKey = getCurrentDateKey();
-            const allData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-            
-            if (allData[dateKey]) {
-                const data = allData[dateKey];
+            try {
+                const dateKey = getCurrentDateKey();
+                const allData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
                 
-                // Restore flow state
-                if (data.flowState) {
-                    if (data.flowState.environmentCheck) document.getElementById('flow1').classList.add('active');
-                    if (data.flowState.internalCheck) document.getElementById('flow2').classList.add('active');
-                    document.getElementById('focusHours').value = data.flowState.focusHours || '';
-                    updateFlowScore();
-                }
-                
-                // Restore life framework
-                if (data.lifeFramework) {
-                    document.getElementById('purpose-input').value = data.lifeFramework.purpose || '';
-                    document.getElementById('meaning-input').value = data.lifeFramework.meaning || '';
-                    document.getElementById('economics-input').value = data.lifeFramework.economics || '';
-                    document.getElementById('safety-input').value = data.lifeFramework.safety || '';
-                    document.getElementById('connections-input').value = data.lifeFramework.connections || '';
+                if (allData[dateKey]) {
+                    const data = allData[dateKey];
+                    console.log('Loading data:', data);
                     
-                    // Update progress bars
-                    ['purpose', 'meaning', 'economics', 'safety', 'connections'].forEach(domain => {
-                        if (data.lifeFramework[domain]) {
-                            updateProgress(domain, data.lifeFramework[domain]);
+                    // Restore OODA
+                    if (data.ooda) {
+                        document.getElementById('ooda-notes').value = data.ooda.notes || '';
+                        oodaLoopCount = data.ooda.loopsCompleted || 0;
+                        document.getElementById('loopsToday').textContent = oodaLoopCount;
+                        if (data.ooda.currentStep) {
+                            currentOODAStep = data.ooda.currentStep;
                         }
-                    });
+                    }
+                    
+                    // Restore Framework
+                    if (data.framework) {
+                        document.getElementById('selected-framework').value = data.framework.selected || '';
+                    }
+                    
+                    // Restore Leverage items
+                    if (data.leverage && data.leverage.length > 0) {
+                        // Clear existing items first
+                        document.getElementById('leverageList').innerHTML = '';
+                        leverageItemCount = 0;
+                        
+                        data.leverage.forEach(item => {
+                            addLeverageItem();
+                            const index = leverageItemCount;
+                            if (item.activity) document.getElementById(`leverage-activity-${index}`).value = item.activity;
+                            if (item.effort) document.getElementById(`leverage-effort-${index}`).value = item.effort;
+                            if (item.impact) document.getElementById(`leverage-impact-${index}`).value = item.impact;
+                        });
+                        calculateLeverage();
+                    }
+                    
+                    // Restore Signals
+                    if (data.signals && data.signals.length > 0) {
+                        document.getElementById('signalList').innerHTML = '';
+                        data.signals.forEach(signal => {
+                            const div = document.createElement('div');
+                            div.className = signal.isNoise ? 'signal-item noise' : 'signal-item';
+                            div.innerHTML = `
+                                ${signal.text}
+                                <span class="signal-type ${signal.isNoise ? 'noise' : ''}">${signal.isNoise ? 'NOISE' : 'SIGNAL'}</span>
+                            `;
+                            document.getElementById('signalList').appendChild(div);
+                        });
+                    }
+                    
+                    // Restore Active Books
+                    if (data.activeBooks && data.activeBooks.length > 0) {
+                        document.querySelectorAll('.book-chip').forEach(chip => {
+                            if (data.activeBooks.includes(chip.textContent)) {
+                                chip.classList.add('active');
+                            }
+                        });
+                        updateActiveFrameworks();
+                    }
+                    
+                    // Restore System Health
+                    if (data.health) {
+                        if (data.health.purpose) document.getElementById('health-purpose').value = data.health.purpose;
+                        if (data.health.energy) document.getElementById('health-energy').value = data.health.energy;
+                        if (data.health.focus) document.getElementById('health-focus').value = data.health.focus;
+                        if (data.health.relationships) document.getElementById('health-relationships').value = data.health.relationships;
+                        updateSystemScore();
+                    }
+                    
+                    // Restore Build Progress
+                    if (data.build) {
+                        if (data.build.insight) document.getElementById('build-insight').value = data.build.insight;
+                        if (data.build.userSignal) document.getElementById('build-user-signal').value = data.build.userSignal;
+                        if (data.build.nextIteration) document.getElementById('build-next').value = data.build.nextIteration;
+                    }
                 }
-                
-                // Restore aptitudes
-                if (data.aptitudes) {
-                    document.getElementById('apt1').checked = data.aptitudes.budget;
-                    document.getElementById('apt2').checked = data.aptitudes.framework;
-                    document.getElementById('apt3').checked = data.aptitudes.ai;
-                    document.getElementById('apt4').checked = data.aptitudes.sleep;
-                    document.getElementById('apt5').checked = data.aptitudes.diet;
-                    document.getElementById('apt6').checked = data.aptitudes.achievement;
-                    updateAptitude();
-                }
-                
-                // Restore weaknesses
-                if (data.weaknesses) {
-                    document.getElementById('limitingBeliefs').value = data.weaknesses.limitingBeliefs || '';
-                    document.getElementById('trustIssues').value = data.weaknesses.trustIssues || '';
-                    document.getElementById('skillGaps').value = data.weaknesses.skillGaps || '';
-                }
+            } catch (error) {
+                console.error('Error loading data:', error);
             }
         }
 
@@ -728,9 +862,217 @@
         }
 
         function saveCurrentDay() {
+            const success = saveToLocalStorage();
+            if (success) {
+                console.log('Manual save completed successfully');
+            }
+        }
+
+        function testSave() {
+            console.log('Testing save functionality...');
+            
+            // Add test data
+            document.getElementById('ooda-notes').value = 'Test OODA note';
+            document.getElementById('selected-framework').value = 'Test Framework';
+            document.getElementById('health-purpose').value = '8';
+            document.getElementById('build-insight').value = 'Test insight';
+            
+            // Save
+            const success = saveToLocalStorage();
+            
+            if (success) {
+                // Verify save by reading back
+                const allData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+                const todayData = allData[getCurrentDateKey()];
+                
+                if (todayData && 
+                    todayData.ooda.notes === 'Test OODA note' &&
+                    todayData.framework.selected === 'Test Framework' &&
+                    todayData.health.purpose === '8' &&
+                    todayData.build.insight === 'Test insight') {
+                    alert('✅ Save test PASSED! All data saved and verified correctly.');
+                    console.log('Test data verified:', todayData);
+                } else {
+                    alert('⚠️ Save test PARTIAL: Data saved but some fields missing.');
+                    console.log('Test data:', todayData);
+                }
+            } else {
+                alert('❌ Save test FAILED: Could not save data.');
+            }
+        }
+
+        // OODA Loop Functions
+        function activateOODA(step) {
+            // Remove active from all steps
+            document.querySelectorAll('.ooda-step').forEach(s => s.classList.remove('active'));
+            
+            // Activate selected step
+            document.getElementById(`ooda-${step}`).classList.add('active');
+            currentOODAStep = step;
+            
+            // Update metrics
+            if (step === 'act') {
+                oodaLoopCount++;
+                document.getElementById('loopsToday').textContent = oodaLoopCount;
+                document.getElementById('loopSpeed').textContent = 'Fast';
+                document.getElementById('clarity').textContent = 'High';
+            }
+            
             saveToLocalStorage();
         }
 
+        // Framework Functions
+        function selectFramework(type, name) {
+            // Remove selected from all
+            document.querySelectorAll('.framework-quadrant').forEach(q => q.classList.remove('selected'));
+            
+            // Add selected to clicked
+            document.getElementById(`framework-${type}`).classList.add('selected');
+            document.getElementById('selected-framework').value = name;
+            
+            saveToLocalStorage();
+        }
+
+        // Leverage Functions
+        function addLeverageItem() {
+            leverageItemCount++;
+            const div = document.createElement('div');
+            div.className = 'leverage-item';
+            div.innerHTML = `
+                <input type="text" placeholder="Activity" class="input-area" id="leverage-activity-${leverageItemCount}" style="margin: 0;">
+                <input type="number" placeholder="Effort" min="1" max="10" class="number-input" id="leverage-effort-${leverageItemCount}">
+                <input type="number" placeholder="Impact" min="1" max="10" class="number-input" id="leverage-impact-${leverageItemCount}">
+                <div class="leverage-score" id="leverage-score-${leverageItemCount}">--</div>
+            `;
+            document.getElementById('leverageList').appendChild(div);
+        }
+
+        function calculateLeverage() {
+            for (let i = 1; i <= leverageItemCount; i++) {
+                const effort = parseFloat(document.getElementById(`leverage-effort-${i}`)?.value || 0);
+                const impact = parseFloat(document.getElementById(`leverage-impact-${i}`)?.value || 0);
+                const scoreElement = document.getElementById(`leverage-score-${i}`);
+                
+                if (scoreElement && effort > 0) {
+                    const ratio = (impact / effort).toFixed(1);
+                    scoreElement.textContent = ratio + 'x';
+                    
+                    // Color code
+                    scoreElement.className = 'leverage-score';
+                    if (ratio >= 2) scoreElement.classList.add('high');
+                    else if (ratio >= 1) scoreElement.classList.add('medium');
+                    else scoreElement.classList.add('low');
+                }
+            }
+            saveToLocalStorage();
+        }
+
+        // Signal Functions
+        function addSignal() {
+            const input = document.getElementById('signal-input');
+            if (input.value.trim()) {
+                const div = document.createElement('div');
+                div.className = 'signal-item';
+                div.innerHTML = `
+                    ${input.value}
+                    <span class="signal-type">SIGNAL</span>
+                `;
+                document.getElementById('signalList').appendChild(div);
+                input.value = '';
+                saveToLocalStorage();
+            }
+        }
+
+        function addNoise() {
+            const input = document.getElementById('signal-input');
+            if (input.value.trim()) {
+                const div = document.createElement('div');
+                div.className = 'signal-item noise';
+                div.innerHTML = `
+                    ${input.value}
+                    <span class="signal-type noise">NOISE</span>
+                `;
+                document.getElementById('signalList').appendChild(div);
+                input.value = '';
+                saveToLocalStorage();
+            }
+        }
+
+        // Book Functions
+        function toggleBook(element) {
+            element.classList.toggle('active');
+            updateActiveFrameworks();
+            saveToLocalStorage();
+        }
+
+        function updateActiveFrameworks() {
+            const count = document.querySelectorAll('.book-chip.active').length;
+            document.getElementById('activeFrameworks').textContent = count;
+        }
+
+        // Decision Log Functions
+        function logDecision() {
+            const description = document.getElementById('decision-description').value;
+            const framework = document.getElementById('decision-framework').value;
+            const expected = document.getElementById('decision-expected').value;
+            
+            if (description) {
+                const div = document.createElement('div');
+                div.className = 'decision-entry';
+                div.innerHTML = `
+                    <strong>${description}</strong><br>
+                    <small>Framework: ${framework || 'None'}</small>
+                    <div class="decision-outcome">
+                        <div class="outcome-box expected">Expected: ${expected || 'TBD'}</div>
+                        <div class="outcome-box actual">Actual: TBD</div>
+                    </div>
+                `;
+                document.getElementById('decisionList').appendChild(div);
+                
+                // Clear inputs
+                document.getElementById('decision-description').value = '';
+                document.getElementById('decision-framework').value = '';
+                document.getElementById('decision-expected').value = '';
+                
+                saveToLocalStorage();
+            }
+        }
+
+        // System Health Functions
+        function updateSystemScore() {
+            const purpose = parseFloat(document.getElementById('health-purpose').value || 0);
+            const energy = parseFloat(document.getElementById('health-energy').value || 0);
+            const focus = parseFloat(document.getElementById('health-focus').value || 0);
+            const relationships = parseFloat(document.getElementById('health-relationships').value || 0);
+            
+            if (purpose || energy || focus || relationships) {
+                const average = ((purpose + energy + focus + relationships) / 4).toFixed(1);
+                document.getElementById('systemScore').textContent = average;
+            }
+        }
+
+        // Auto-save setup
+        let autoSaveTimer;
+        function setupAutoSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                saveToLocalStorage();
+                setupAutoSave();
+            }, 30000); // Save every 30 seconds
+        }
+
+        // Add event listeners for auto-save
+        document.addEventListener('input', setupAutoSave);
+        document.addEventListener('change', setupAutoSave);
+        document.addEventListener('click', setupAutoSave);
+
+        // Add event listeners for system health
+        document.getElementById('health-purpose').addEventListener('input', updateSystemScore);
+        document.getElementById('health-energy').addEventListener('input', updateSystemScore);
+        document.getElementById('health-focus').addEventListener('input', updateSystemScore);
+        document.getElementById('health-relationships').addEventListener('input', updateSystemScore);
+
+        // History Functions
         function toggleHistory() {
             const viewer = document.getElementById('historyViewer');
             viewer.classList.toggle('show');
@@ -745,7 +1087,7 @@
             const historyContent = document.getElementById('historyContent');
             
             if (Object.keys(allData).length === 0) {
-                historyContent.innerHTML = '<p>No history available yet. Start tracking your progress!</p>';
+                historyContent.innerHTML = '<p>No history available yet. Start tracking!</p>';
                 return;
             }
             
@@ -753,15 +1095,21 @@
             
             historyContent.innerHTML = sortedDates.map(date => {
                 const data = allData[date];
+                const systemScore = data.health ? 
+                    ((parseFloat(data.health.purpose || 0) + 
+                      parseFloat(data.health.energy || 0) + 
+                      parseFloat(data.health.focus || 0) + 
+                      parseFloat(data.health.relationships || 0)) / 4).toFixed(1) : '--';
+                
                 return `
                     <div class="history-entry">
                         <div class="history-date">📅 ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
-                        <div class="history-data">
-                            <strong>Flow State:</strong> ${data.flowState?.score || '0%'} | Focus: ${data.flowState?.focusHours || '0'}h<br>
-                            <strong>High Impact Activities:</strong> ${data.activities?.highImpact?.join(', ') || 'None'}<br>
-                            <strong>Active Tools:</strong> ${data.tools?.join(', ') || 'None'}<br>
-                            <strong>Purpose:</strong> ${data.lifeFramework?.purpose || 'Not set'}<br>
-                        </div>
+                        <strong>OODA Loops:</strong> ${data.ooda?.loopsCompleted || 0}<br>
+                        <strong>Framework Used:</strong> ${data.framework?.selected || 'None'}<br>
+                        <strong>System Health:</strong> ${systemScore}/10<br>
+                        <strong>Active Books:</strong> ${data.activeBooks?.length || 0}<br>
+                        <strong>Decisions Made:</strong> ${data.decisions?.length || 0}<br>
+                        <strong>Build Insight:</strong> ${data.build?.insight ? '✓' : '✗'}
                     </div>
                 `;
             }).join('');
@@ -774,7 +1122,7 @@
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `breakthrough-dashboard-${getCurrentDateKey()}.json`;
+            link.download = `personal-os-${getCurrentDateKey()}.json`;
             link.click();
             URL.revokeObjectURL(url);
             showSaveIndicator();
@@ -793,7 +1141,6 @@
                         const importedData = JSON.parse(e.target.result);
                         const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
                         
-                        // Merge imported data with existing data
                         const mergedData = { ...existingData, ...importedData };
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedData));
                         
@@ -815,132 +1162,18 @@
             }
         }
 
-        // Auto-save functionality
-        let autoSaveTimer;
-        function setupAutoSave() {
-            // Clear any existing timer
-            clearTimeout(autoSaveTimer);
-            
-            // Set up auto-save every 30 seconds when user is active
-            autoSaveTimer = setTimeout(() => {
-                saveToLocalStorage();
-                setupAutoSave(); // Reset the timer
-            }, 30000);
-        }
-
-        // Add event listeners for auto-save
-        document.addEventListener('input', setupAutoSave);
-        document.addEventListener('change', setupAutoSave);
-        document.addEventListener('click', setupAutoSave);
-
-        // Original Functions (Updated)
-        
-        function toggleFlow(element) {
-            element.classList.toggle('active');
-            updateFlowScore();
-            setupAutoSave();
-        }
-
-        function updateFlowScore() {
-            const activeFlows = document.querySelectorAll('.flow-question.active').length;
-            const score = activeFlows * 50;
-            document.getElementById('flowScore').textContent = score + '%';
-            
-            const momentum = document.getElementById('momentum');
-            if (score === 0) momentum.textContent = '→';
-            else if (score === 50) momentum.textContent = '↗';
-            else momentum.textContent = '⬆';
-            
-            // Update focus time
-            const focusHours = document.getElementById('focusHours').value;
-            if (focusHours) {
-                document.getElementById('focusTime').textContent = focusHours + 'h';
-            }
-        }
-
-        function updateProgress(domain, value) {
-            if (value.trim() !== '') {
-                const progressBar = document.getElementById(domain + '-progress');
-                progressBar.style.width = '70%';
-                setTimeout(() => {
-                    progressBar.style.width = '100%';
-                }, 500);
-            }
-        }
-
-        function toggleImpact(element) {
-            const highImpact = document.getElementById('highImpact');
-            const lowImpact = document.getElementById('lowImpact');
-            
-            if (element.classList.contains('high-impact')) {
-                element.classList.remove('high-impact');
-                lowImpact.appendChild(element);
-            } else {
-                element.classList.add('high-impact');
-                highImpact.appendChild(element);
-            }
-            setupAutoSave();
-        }
-
-        function addActivity(event) {
-            if (event.key === 'Enter' && event.target.value.trim() !== '') {
-                const newChip = document.createElement('div');
-                newChip.className = 'activity-chip';
-                newChip.textContent = event.target.value;
-                newChip.onclick = function() { toggleImpact(this); };
-                document.getElementById('lowImpact').appendChild(newChip);
-                event.target.value = '';
-                setupAutoSave();
-            }
-        }
-
-        function toggleTool(element) {
-            element.classList.toggle('selected');
-            setupAutoSave();
-        }
-
-        function updateAptitude() {
-            const checked = document.querySelectorAll('input[type="checkbox"]:checked').length;
-            document.getElementById('aptitudeScore').textContent = checked + '/6';
-            setupAutoSave();
-        }
-
-        function generateInsight() {
-            const insights = [
-                "Focus on the ONE thing that makes everything else easier or unnecessary. Your deep work sessions are your highest leverage activity.",
-                "You're spreading effort across too many low-impact activities. Cut 80% and double down on what's working.",
-                "Your purpose alignment is strong but execution is scattered. Time-block your high-impact activities this week.",
-                "The gap between your potential and performance is just 2-3 key habits. Start with morning deep work.",
-                "You've identified the right activities but lack consistency. Track just ONE metric daily for breakthrough results."
-            ];
-            
-            const randomInsight = insights[Math.floor(Math.random() * insights.length)];
-            document.getElementById('insightText').textContent = randomInsight;
-            
-            const breakthrough = document.getElementById('breakthroughMoment');
-            breakthrough.classList.add('show');
-            
-            setTimeout(() => {
-                breakthrough.classList.remove('show');
-            }, 8000);
-        }
-
-        function analyzeWeaknesses() {
-            generateInsight();
-        }
-
         // Initialize on page load
         window.onload = function() {
             updateDateDisplay();
             loadTodaysData();
-            
-            // Update focus time when input changes
-            document.getElementById('focusHours').addEventListener('input', function() {
-                document.getElementById('focusTime').textContent = (this.value || '0') + 'h';
-            });
-            
-            // Initial setup for auto-save
             setupAutoSave();
+            
+            // Add default first leverage item if none exist
+            if (document.querySelectorAll('.leverage-item').length === 0) {
+                addLeverageItem();
+            }
+            
+            console.log('Dashboard initialized. Auto-save enabled.');
         }
     </script>
 </body>

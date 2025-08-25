@@ -81,71 +81,6 @@
             gap: 10px;
         }
 
-        .framework-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .framework-quadrant {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border: 2px solid #e2e8f0;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .framework-quadrant:hover {
-            background: #e0e7ff;
-            border-color: #667eea;
-        }
-
-        .framework-quadrant.selected {
-            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
-            color: white;
-            border-color: #7c3aed;
-        }
-
-        .framework-quadrant h4 {
-            font-size: 0.9em;
-            margin-bottom: 5px;
-            opacity: 0.8;
-        }
-
-        .framework-quadrant p {
-            font-size: 0.85em;
-            margin-top: 5px;
-        }
-
-        .ooda-loop {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .ooda-step {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            text-align: center;
-            border: 2px solid #e2e8f0;
-            transition: all 0.3s ease;
-        }
-
-        .ooda-step.active {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            border-color: #059669;
-        }
-
-        .ooda-step h4 {
-            font-size: 0.9em;
-            margin-bottom: 8px;
-        }
-
         .leverage-item {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1fr;
@@ -275,13 +210,6 @@
             padding: 6px 12px;
             font-size: 0.85em;
             margin-top: 5px;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 15px;
         }
 
         .metric {
@@ -429,6 +357,21 @@
             color: white;
             border-color: #667eea;
         }
+
+        .remove-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .remove-btn:hover {
+            background: #dc2626;
+        }
     </style>
 </head>
 <body>
@@ -460,76 +403,6 @@
         </div>
 
         <div class="main-grid">
-            <!-- OODA Loop Decision Tracker -->
-            <div class="card">
-                <h2>🎯 Daily Decision Loop (OODA)</h2>
-                <div class="ooda-loop">
-                    <div class="ooda-step" id="ooda-observe" onclick="activateOODA('observe')">
-                        <h4>OBSERVE</h4>
-                        <small>Patterns?</small>
-                    </div>
-                    <div class="ooda-step" id="ooda-orient" onclick="activateOODA('orient')">
-                        <h4>ORIENT</h4>
-                        <small>Framework?</small>
-                    </div>
-                    <div class="ooda-step" id="ooda-decide" onclick="activateOODA('decide')">
-                        <h4>DECIDE</h4>
-                        <small>80/20 move?</small>
-                    </div>
-                    <div class="ooda-step" id="ooda-act" onclick="activateOODA('act')">
-                        <h4>ACT</h4>
-                        <small>Execute!</small>
-                    </div>
-                </div>
-                <textarea class="input-area" id="ooda-notes" rows="3" placeholder="What's happening in this loop?"></textarea>
-                <div class="metrics-grid">
-                    <div class="metric">
-                        <div class="metric-value" id="loopSpeed">--</div>
-                        <div class="metric-label">Loop Speed</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" id="loopsToday">0</div>
-                        <div class="metric-label">Loops Today</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" id="clarity">--</div>
-                        <div class="metric-label">Clarity</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Framework Selector Matrix -->
-            <div class="card">
-                <h2>🛠️ Framework Selector</h2>
-                <p style="margin-bottom: 10px; color: #718096; font-size: 0.9em;">Choose the right tool for the situation:</p>
-                <div class="framework-grid">
-                    <div class="framework-quadrant" id="framework-urgent" onclick="selectFramework('urgent', '2-Minute Rule (Atomic Habits)')">
-                        <h4>⚡ Urgent/Tactical</h4>
-                        <strong>2-Minute Rule</strong>
-                        <p>From: Atomic Habits</p>
-                    </div>
-                    <div class="framework-quadrant" id="framework-strategic" onclick="selectFramework('strategic', 'Zero to One Thinking')">
-                        <h4>🎯 Strategic/Innovation</h4>
-                        <strong>Zero to One</strong>
-                        <p>Create, don't compete</p>
-                    </div>
-                    <div class="framework-quadrant" id="framework-behavioral" onclick="selectFramework('behavioral', 'Tiny Habits Protocol')">
-                        <h4>🔄 Behavioral/Habitual</h4>
-                        <strong>Tiny Habits</strong>
-                        <p>BJ Fogg method</p>
-                    </div>
-                    <div class="framework-quadrant" id="framework-systems" onclick="selectFramework('systems', '80/20 Analysis')">
-                        <h4>📊 Systems/Leverage</h4>
-                        <strong>80/20 Principle</strong>
-                        <p>Maximum leverage</p>
-                    </div>
-                </div>
-                <div style="margin-top: 15px;">
-                    <label style="color: #718096; font-size: 0.9em;">Selected Framework:</label>
-                    <input type="text" class="input-area" id="selected-framework" readonly style="background: #f8f9fa;">
-                </div>
-            </div>
-
             <!-- Leverage Tracker -->
             <div class="card">
                 <h2>📈 Leverage Tracker</h2>
@@ -544,6 +417,10 @@
                 </div>
                 <button class="action-btn small-btn" onclick="addLeverageItem()">+ Add Activity</button>
                 <button class="action-btn small-btn" onclick="calculateLeverage()">Calculate All</button>
+                <div class="metric" style="margin-top: 15px;">
+                    <div class="metric-value" id="topLeverage">--</div>
+                    <div class="metric-label">Best Leverage Ratio</div>
+                </div>
             </div>
 
             <!-- Signal vs Noise Filter -->
@@ -557,6 +434,10 @@
                 </div>
                 <div id="signalList" style="margin-top: 15px;">
                     <!-- Signals will appear here -->
+                </div>
+                <div class="metric" style="margin-top: 15px;">
+                    <div class="metric-value" id="signalRatio">--</div>
+                    <div class="metric-label">Signal/Noise Ratio</div>
                 </div>
             </div>
 
@@ -572,9 +453,6 @@
                     <div class="book-chip" onclick="toggleBook(this)">7 Habits</div>
                     <div class="book-chip" onclick="toggleBook(this)">Zero to One</div>
                     <div class="book-chip" onclick="toggleBook(this)">Tipping Point</div>
-                    <div class="book-chip" onclick="toggleBook(this)">OODA Loop</div>
-                    <div class="book-chip" onclick="toggleBook(this)">Systems Thinking</div>
-                    <div class="book-chip" onclick="toggleBook(this)">Mental Models</div>
                 </div>
                 <div class="metric" style="margin-top: 15px;">
                     <div class="metric-value" id="activeFrameworks">0</div>
@@ -587,54 +465,16 @@
                 <h2>📝 Decision Log</h2>
                 <div style="margin-bottom: 15px;">
                     <input type="text" class="input-area" id="decision-description" placeholder="What decision did you make?">
-                    <input type="text" class="input-area" id="decision-framework" placeholder="Framework used">
+                    <input type="text" class="input-area" id="decision-framework" placeholder="Framework used (optional)">
                     <input type="text" class="input-area" id="decision-expected" placeholder="Expected outcome">
                     <button class="action-btn" onclick="logDecision()">Log Decision</button>
                 </div>
                 <div id="decisionList">
                     <!-- Decisions will appear here -->
                 </div>
-            </div>
-
-            <!-- Systems Health Check -->
-            <div class="card">
-                <h2>🔄 Systems Health</h2>
-                <div style="margin-bottom: 15px;">
-                    <label style="color: #718096;">Purpose Alignment (1-10)</label>
-                    <input type="number" class="input-area" id="health-purpose" min="1" max="10" placeholder="10">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="color: #718096;">Energy Level (1-10)</label>
-                    <input type="number" class="input-area" id="health-energy" min="1" max="10" placeholder="10">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="color: #718096;">Focus Quality (1-10)</label>
-                    <input type="number" class="input-area" id="health-focus" min="1" max="10" placeholder="10">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="color: #718096;">Relationship Quality (1-10)</label>
-                    <input type="number" class="input-area" id="health-relationships" min="1" max="10" placeholder="10">
-                </div>
-                <div class="metric">
-                    <div class="metric-value" id="systemScore">--</div>
-                    <div class="metric-label">System Health Score</div>
-                </div>
-            </div>
-
-            <!-- Build in Public Logger -->
-            <div class="card">
-                <h2>🚀 Build Progress</h2>
-                <div style="margin-bottom: 15px;">
-                    <label style="color: #718096;">Today's Product Insight</label>
-                    <textarea class="input-area" id="build-insight" rows="2" placeholder="What did you learn about your product?"></textarea>
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="color: #718096;">User Signal</label>
-                    <textarea class="input-area" id="build-user-signal" rows="2" placeholder="What are users telling you?"></textarea>
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="color: #718096;">Next Iteration</label>
-                    <textarea class="input-area" id="build-next" rows="2" placeholder="What's the next move?"></textarea>
+                <div class="metric" style="margin-top: 15px;">
+                    <div class="metric-value" id="decisionCount">0</div>
+                    <div class="metric-label">Decisions Today</div>
                 </div>
             </div>
         </div>
@@ -656,37 +496,20 @@
         // Local Storage Management
         const STORAGE_KEY = 'personalOperatingSystem';
         let leverageItemCount = 1;
-        let oodaLoopCount = 0;
-        let currentOODAStep = '';
+        let decisionsToday = 0;
         
         function getCurrentDateKey() {
             return new Date().toISOString().split('T')[0];
         }
 
         function collectCurrentData() {
-            // Collect OODA data
-            const oodaData = {
-                currentStep: currentOODAStep,
-                notes: document.getElementById('ooda-notes').value,
-                loopsCompleted: oodaLoopCount
-            };
-
-            // Collect Framework selection
-            const frameworkData = {
-                selected: document.getElementById('selected-framework').value,
-                urgent: document.getElementById('framework-urgent').classList.contains('selected'),
-                strategic: document.getElementById('framework-strategic').classList.contains('selected'),
-                behavioral: document.getElementById('framework-behavioral').classList.contains('selected'),
-                systems: document.getElementById('framework-systems').classList.contains('selected')
-            };
-
             // Collect Leverage items
             const leverageData = [];
             const leverageItems = document.querySelectorAll('.leverage-item');
             leverageItems.forEach((item, index) => {
-                const activity = item.querySelector(`#leverage-activity-${index + 1}`)?.value;
-                const effort = item.querySelector(`#leverage-effort-${index + 1}`)?.value;
-                const impact = item.querySelector(`#leverage-impact-${index + 1}`)?.value;
+                const activity = item.querySelector(`input[placeholder="Activity"]`)?.value;
+                const effort = item.querySelector(`input[placeholder="Effort"]`)?.value;
+                const impact = item.querySelector(`input[placeholder="Impact"]`)?.value;
                 if (activity || effort || impact) {
                     leverageData.push({ activity, effort, impact });
                 }
@@ -695,8 +518,9 @@
             // Collect Signals
             const signalData = [];
             document.querySelectorAll('.signal-item').forEach(item => {
+                const textContent = item.childNodes[0].textContent.trim();
                 signalData.push({
-                    text: item.textContent.trim(),
+                    text: textContent,
                     isNoise: item.classList.contains('noise')
                 });
             });
@@ -714,31 +538,13 @@
                 decisionData.push(text);
             });
 
-            // Collect System Health
-            const healthData = {
-                purpose: document.getElementById('health-purpose').value,
-                energy: document.getElementById('health-energy').value,
-                focus: document.getElementById('health-focus').value,
-                relationships: document.getElementById('health-relationships').value
-            };
-
-            // Collect Build Progress
-            const buildData = {
-                insight: document.getElementById('build-insight').value,
-                userSignal: document.getElementById('build-user-signal').value,
-                nextIteration: document.getElementById('build-next').value
-            };
-
             return {
                 timestamp: new Date().toISOString(),
-                ooda: oodaData,
-                framework: frameworkData,
                 leverage: leverageData,
                 signals: signalData,
                 activeBooks: activeBooks,
                 decisions: decisionData,
-                health: healthData,
-                build: buildData
+                decisionCount: decisionsToday
             };
         }
 
@@ -777,21 +583,6 @@
                     const data = allData[dateKey];
                     console.log('Loading data:', data);
                     
-                    // Restore OODA
-                    if (data.ooda) {
-                        document.getElementById('ooda-notes').value = data.ooda.notes || '';
-                        oodaLoopCount = data.ooda.loopsCompleted || 0;
-                        document.getElementById('loopsToday').textContent = oodaLoopCount;
-                        if (data.ooda.currentStep) {
-                            currentOODAStep = data.ooda.currentStep;
-                        }
-                    }
-                    
-                    // Restore Framework
-                    if (data.framework) {
-                        document.getElementById('selected-framework').value = data.framework.selected || '';
-                    }
-                    
                     // Restore Leverage items
                     if (data.leverage && data.leverage.length > 0) {
                         // Clear existing items first
@@ -801,9 +592,16 @@
                         data.leverage.forEach(item => {
                             addLeverageItem();
                             const index = leverageItemCount;
-                            if (item.activity) document.getElementById(`leverage-activity-${index}`).value = item.activity;
-                            if (item.effort) document.getElementById(`leverage-effort-${index}`).value = item.effort;
-                            if (item.impact) document.getElementById(`leverage-impact-${index}`).value = item.impact;
+                            const leverageItem = document.querySelector(`.leverage-item:nth-child(${index})`);
+                            if (leverageItem) {
+                                const activityInput = leverageItem.querySelector('input[placeholder="Activity"]');
+                                const effortInput = leverageItem.querySelector('input[placeholder="Effort"]');
+                                const impactInput = leverageItem.querySelector('input[placeholder="Impact"]');
+                                
+                                if (activityInput && item.activity) activityInput.value = item.activity;
+                                if (effortInput && item.effort) effortInput.value = item.effort;
+                                if (impactInput && item.impact) impactInput.value = item.impact;
+                            }
                         });
                         calculateLeverage();
                     }
@@ -817,9 +615,11 @@
                             div.innerHTML = `
                                 ${signal.text}
                                 <span class="signal-type ${signal.isNoise ? 'noise' : ''}">${signal.isNoise ? 'NOISE' : 'SIGNAL'}</span>
+                                <button class="remove-btn" onclick="removeSignal(this)">×</button>
                             `;
                             document.getElementById('signalList').appendChild(div);
                         });
+                        updateSignalRatio();
                     }
                     
                     // Restore Active Books
@@ -832,20 +632,21 @@
                         updateActiveFrameworks();
                     }
                     
-                    // Restore System Health
-                    if (data.health) {
-                        if (data.health.purpose) document.getElementById('health-purpose').value = data.health.purpose;
-                        if (data.health.energy) document.getElementById('health-energy').value = data.health.energy;
-                        if (data.health.focus) document.getElementById('health-focus').value = data.health.focus;
-                        if (data.health.relationships) document.getElementById('health-relationships').value = data.health.relationships;
-                        updateSystemScore();
+                    // Restore Decision count
+                    if (data.decisionCount) {
+                        decisionsToday = data.decisionCount;
+                        document.getElementById('decisionCount').textContent = decisionsToday;
                     }
                     
-                    // Restore Build Progress
-                    if (data.build) {
-                        if (data.build.insight) document.getElementById('build-insight').value = data.build.insight;
-                        if (data.build.userSignal) document.getElementById('build-user-signal').value = data.build.userSignal;
-                        if (data.build.nextIteration) document.getElementById('build-next').value = data.build.nextIteration;
+                    // Restore Decision entries
+                    if (data.decisions && data.decisions.length > 0) {
+                        document.getElementById('decisionList').innerHTML = '';
+                        data.decisions.forEach(decisionHTML => {
+                            const div = document.createElement('div');
+                            div.className = 'decision-entry';
+                            div.innerHTML = decisionHTML;
+                            document.getElementById('decisionList').appendChild(div);
+                        });
                     }
                 }
             } catch (error) {
@@ -872,10 +673,8 @@
             console.log('Testing save functionality...');
             
             // Add test data
-            document.getElementById('ooda-notes').value = 'Test OODA note';
-            document.getElementById('selected-framework').value = 'Test Framework';
-            document.getElementById('health-purpose').value = '8';
-            document.getElementById('build-insight').value = 'Test insight';
+            document.getElementById('signal-input').value = 'Test signal';
+            addSignal();
             
             // Save
             const success = saveToLocalStorage();
@@ -885,11 +684,7 @@
                 const allData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
                 const todayData = allData[getCurrentDateKey()];
                 
-                if (todayData && 
-                    todayData.ooda.notes === 'Test OODA note' &&
-                    todayData.framework.selected === 'Test Framework' &&
-                    todayData.health.purpose === '8' &&
-                    todayData.build.insight === 'Test insight') {
+                if (todayData && todayData.signals && todayData.signals.length > 0) {
                     alert('✅ Save test PASSED! All data saved and verified correctly.');
                     console.log('Test data verified:', todayData);
                 } else {
@@ -899,38 +694,6 @@
             } else {
                 alert('❌ Save test FAILED: Could not save data.');
             }
-        }
-
-        // OODA Loop Functions
-        function activateOODA(step) {
-            // Remove active from all steps
-            document.querySelectorAll('.ooda-step').forEach(s => s.classList.remove('active'));
-            
-            // Activate selected step
-            document.getElementById(`ooda-${step}`).classList.add('active');
-            currentOODAStep = step;
-            
-            // Update metrics
-            if (step === 'act') {
-                oodaLoopCount++;
-                document.getElementById('loopsToday').textContent = oodaLoopCount;
-                document.getElementById('loopSpeed').textContent = 'Fast';
-                document.getElementById('clarity').textContent = 'High';
-            }
-            
-            saveToLocalStorage();
-        }
-
-        // Framework Functions
-        function selectFramework(type, name) {
-            // Remove selected from all
-            document.querySelectorAll('.framework-quadrant').forEach(q => q.classList.remove('selected'));
-            
-            // Add selected to clicked
-            document.getElementById(`framework-${type}`).classList.add('selected');
-            document.getElementById('selected-framework').value = name;
-            
-            saveToLocalStorage();
         }
 
         // Leverage Functions
@@ -948,22 +711,37 @@
         }
 
         function calculateLeverage() {
+            let topRatio = 0;
+            
             for (let i = 1; i <= leverageItemCount; i++) {
-                const effort = parseFloat(document.getElementById(`leverage-effort-${i}`)?.value || 0);
-                const impact = parseFloat(document.getElementById(`leverage-impact-${i}`)?.value || 0);
+                const effortElement = document.getElementById(`leverage-effort-${i}`);
+                const impactElement = document.getElementById(`leverage-impact-${i}`);
                 const scoreElement = document.getElementById(`leverage-score-${i}`);
                 
-                if (scoreElement && effort > 0) {
-                    const ratio = (impact / effort).toFixed(1);
-                    scoreElement.textContent = ratio + 'x';
+                if (effortElement && impactElement && scoreElement) {
+                    const effort = parseFloat(effortElement.value || 0);
+                    const impact = parseFloat(impactElement.value || 0);
                     
-                    // Color code
-                    scoreElement.className = 'leverage-score';
-                    if (ratio >= 2) scoreElement.classList.add('high');
-                    else if (ratio >= 1) scoreElement.classList.add('medium');
-                    else scoreElement.classList.add('low');
+                    if (effort > 0) {
+                        const ratio = (impact / effort).toFixed(1);
+                        scoreElement.textContent = ratio + 'x';
+                        
+                        // Track top ratio
+                        if (parseFloat(ratio) > topRatio) {
+                            topRatio = parseFloat(ratio);
+                        }
+                        
+                        // Color code
+                        scoreElement.className = 'leverage-score';
+                        if (ratio >= 2) scoreElement.classList.add('high');
+                        else if (ratio >= 1) scoreElement.classList.add('medium');
+                        else scoreElement.classList.add('low');
+                    }
                 }
             }
+            
+            // Update top leverage metric
+            document.getElementById('topLeverage').textContent = topRatio > 0 ? topRatio.toFixed(1) + 'x' : '--';
             saveToLocalStorage();
         }
 
@@ -976,9 +754,11 @@
                 div.innerHTML = `
                     ${input.value}
                     <span class="signal-type">SIGNAL</span>
+                    <button class="remove-btn" onclick="removeSignal(this)">×</button>
                 `;
                 document.getElementById('signalList').appendChild(div);
                 input.value = '';
+                updateSignalRatio();
                 saveToLocalStorage();
             }
         }
@@ -991,10 +771,31 @@
                 div.innerHTML = `
                     ${input.value}
                     <span class="signal-type noise">NOISE</span>
+                    <button class="remove-btn" onclick="removeSignal(this)">×</button>
                 `;
                 document.getElementById('signalList').appendChild(div);
                 input.value = '';
+                updateSignalRatio();
                 saveToLocalStorage();
+            }
+        }
+
+        function removeSignal(button) {
+            button.parentElement.remove();
+            updateSignalRatio();
+            saveToLocalStorage();
+        }
+
+        function updateSignalRatio() {
+            const signals = document.querySelectorAll('.signal-item:not(.noise)').length;
+            const noise = document.querySelectorAll('.signal-item.noise').length;
+            const total = signals + noise;
+            
+            if (total > 0) {
+                const ratio = ((signals / total) * 100).toFixed(0);
+                document.getElementById('signalRatio').textContent = ratio + '%';
+            } else {
+                document.getElementById('signalRatio').textContent = '--';
             }
         }
 
@@ -1021,7 +822,7 @@
                 div.className = 'decision-entry';
                 div.innerHTML = `
                     <strong>${description}</strong><br>
-                    <small>Framework: ${framework || 'None'}</small>
+                    ${framework ? `<small>Framework: ${framework}</small><br>` : ''}
                     <div class="decision-outcome">
                         <div class="outcome-box expected">Expected: ${expected || 'TBD'}</div>
                         <div class="outcome-box actual">Actual: TBD</div>
@@ -1029,25 +830,16 @@
                 `;
                 document.getElementById('decisionList').appendChild(div);
                 
+                // Update decision count
+                decisionsToday++;
+                document.getElementById('decisionCount').textContent = decisionsToday;
+                
                 // Clear inputs
                 document.getElementById('decision-description').value = '';
                 document.getElementById('decision-framework').value = '';
                 document.getElementById('decision-expected').value = '';
                 
                 saveToLocalStorage();
-            }
-        }
-
-        // System Health Functions
-        function updateSystemScore() {
-            const purpose = parseFloat(document.getElementById('health-purpose').value || 0);
-            const energy = parseFloat(document.getElementById('health-energy').value || 0);
-            const focus = parseFloat(document.getElementById('health-focus').value || 0);
-            const relationships = parseFloat(document.getElementById('health-relationships').value || 0);
-            
-            if (purpose || energy || focus || relationships) {
-                const average = ((purpose + energy + focus + relationships) / 4).toFixed(1);
-                document.getElementById('systemScore').textContent = average;
             }
         }
 
@@ -1065,12 +857,6 @@
         document.addEventListener('input', setupAutoSave);
         document.addEventListener('change', setupAutoSave);
         document.addEventListener('click', setupAutoSave);
-
-        // Add event listeners for system health
-        document.getElementById('health-purpose').addEventListener('input', updateSystemScore);
-        document.getElementById('health-energy').addEventListener('input', updateSystemScore);
-        document.getElementById('health-focus').addEventListener('input', updateSystemScore);
-        document.getElementById('health-relationships').addEventListener('input', updateSystemScore);
 
         // History Functions
         function toggleHistory() {
@@ -1095,21 +881,25 @@
             
             historyContent.innerHTML = sortedDates.map(date => {
                 const data = allData[date];
-                const systemScore = data.health ? 
-                    ((parseFloat(data.health.purpose || 0) + 
-                      parseFloat(data.health.energy || 0) + 
-                      parseFloat(data.health.focus || 0) + 
-                      parseFloat(data.health.relationships || 0)) / 4).toFixed(1) : '--';
+                
+                // Calculate best leverage for that day
+                let bestLeverage = 0;
+                if (data.leverage) {
+                    data.leverage.forEach(item => {
+                        if (item.effort && item.impact) {
+                            const ratio = parseFloat(item.impact) / parseFloat(item.effort);
+                            if (ratio > bestLeverage) bestLeverage = ratio;
+                        }
+                    });
+                }
                 
                 return `
                     <div class="history-entry">
                         <div class="history-date">📅 ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
-                        <strong>OODA Loops:</strong> ${data.ooda?.loopsCompleted || 0}<br>
-                        <strong>Framework Used:</strong> ${data.framework?.selected || 'None'}<br>
-                        <strong>System Health:</strong> ${systemScore}/10<br>
-                        <strong>Active Books:</strong> ${data.activeBooks?.length || 0}<br>
-                        <strong>Decisions Made:</strong> ${data.decisions?.length || 0}<br>
-                        <strong>Build Insight:</strong> ${data.build?.insight ? '✓' : '✗'}
+                        <strong>Best Leverage:</strong> ${bestLeverage > 0 ? bestLeverage.toFixed(1) + 'x' : 'None'}<br>
+                        <strong>Signals Captured:</strong> ${data.signals?.filter(s => !s.isNoise).length || 0}<br>
+                        <strong>Active Frameworks:</strong> ${data.activeBooks?.length || 0}<br>
+                        <strong>Decisions Made:</strong> ${data.decisionCount || 0}
                     </div>
                 `;
             }).join('');
@@ -1172,6 +962,10 @@
             if (document.querySelectorAll('.leverage-item').length === 0) {
                 addLeverageItem();
             }
+            
+            // Initialize metrics
+            updateSignalRatio();
+            updateActiveFrameworks();
             
             console.log('Dashboard initialized. Auto-save enabled.');
         }

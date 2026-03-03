@@ -225,8 +225,8 @@ function WorkflowView() {
               >
                 <span
                   style={{
-                    fontFamily: "'Bodoni Moda', Georgia, serif",
-                    fontSize: 20,
+fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: 20,
                     fontWeight: 400,
                     color: "#000000",
                   }}
@@ -649,8 +649,8 @@ export default function InboxWorkflow() {
         <div style={{ marginBottom: 32 }}>
           <h1
             style={{
-              fontFamily: "'Bodoni Moda', Georgia, serif",
-              fontSize: 32,
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: 32,
               fontWeight: 400,
               color: "#000000",
               margin: "0 0 8px 0",

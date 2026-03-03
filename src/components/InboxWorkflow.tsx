@@ -15,7 +15,6 @@ interface WorkflowStep {
   what: string;
   where?: string;
   choices?: WorkflowChoice[];
-  color: string;
 }
 
 interface InboxItem {
@@ -32,6 +31,10 @@ interface Destination {
   icon: string;
 }
 
+const CRIMSON = "#DC143C";
+const CRIMSON_SOFT = "rgba(220, 20, 60, 0.08)";
+const CRIMSON_BORDER = "rgba(220, 20, 60, 0.2)";
+
 const WORKFLOW_STEPS: WorkflowStep[] = [
   {
     num: 1,
@@ -39,7 +42,6 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
     who: "You",
     what: "An idea, decision, or rule pops into your head. You say \"log this\" to whichever agent is nearby.",
     where: "Telegram → Rhino  |  Mac Studio → Po",
-    color: "#F59E0B",
   },
   {
     num: 2,
@@ -47,7 +49,6 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
     who: "Agent",
     what: "The agent writes it to INBOX.md with a timestamp and the next number. No categories, no folders, no decisions. Just captured.",
     where: "~/.openclaw/workspace/INBOX.md",
-    color: "#3B82F6",
   },
   {
     num: 3,
@@ -55,7 +56,6 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
     who: "Heartbeat",
     what: "Every 30 minutes, the Mac Studio agent checks: are there items older than 24 hours? If yes, it nudges you with a count. If no, silence.",
     where: "Runs automatically in background",
-    color: "#8B5CF6",
   },
   {
     num: 4,
@@ -63,7 +63,6 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
     who: "You",
     what: "When you're ready (not when the agent tells you to), you open the inbox and go through each item. One by one.",
     where: "On your schedule, not the system's",
-    color: "#10B981",
   },
   {
     num: 5,
@@ -80,7 +79,6 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
       { label: "Delete it", desc: "It's handled, outdated, or not useful anymore" },
       { label: "Leave it", desc: "Not sure yet → the heartbeat will remind you tomorrow" },
     ],
-    color: "#EF4444",
   },
 ];
 
@@ -131,17 +129,24 @@ const DESTINATIONS: Destination[] = [
   { name: "🗑️ Delete", desc: "Done or not needed", icon: "" },
 ];
 
+const label = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 13,
+  fontWeight: 700,
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.08rem",
+};
+
 function WorkflowView() {
   return (
-    <div style={{ padding: "0 4px" }}>
+    <div>
       <p
         style={{
-          fontFamily: "'IBM Plex Sans', sans-serif",
-          fontSize: 14,
-          color: "#94A3B8",
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 15,
+          color: "#666666",
           lineHeight: 1.6,
           marginBottom: 32,
-          maxWidth: 520,
         }}
       >
         Think of it like a conveyor belt. Things go in one end, move through at your pace, and come
@@ -150,6 +155,7 @@ function WorkflowView() {
       </p>
 
       <div style={{ position: "relative" }}>
+        {/* Connecting line */}
         <div
           style={{
             position: "absolute",
@@ -157,9 +163,9 @@ function WorkflowView() {
             top: 24,
             bottom: 24,
             width: 2,
-            background:
-              "linear-gradient(to bottom, #F59E0B, #3B82F6, #8B5CF6, #10B981, #EF4444)",
+            background: CRIMSON,
             borderRadius: 1,
+            opacity: 0.25,
             zIndex: 0,
           }}
         />
@@ -175,34 +181,38 @@ function WorkflowView() {
               zIndex: 1,
             }}
           >
+            {/* Number circle */}
             <div
               style={{
                 width: 48,
                 minWidth: 48,
                 height: 48,
                 borderRadius: "50%",
-                background: "#1E293B",
-                border: `2px solid ${step.color}`,
+                background: "#FFFFFF",
+                border: `2px solid ${CRIMSON}`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily: "'Inter', sans-serif",
                 fontSize: 18,
                 fontWeight: 700,
-                color: step.color,
+                color: CRIMSON,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
               {step.num}
             </div>
 
+            {/* Content card */}
             <div
               style={{
                 flex: 1,
-                background: "#1E293B",
+                background: "#FFFFFF",
                 borderRadius: 12,
                 padding: "16px 20px",
                 marginBottom: 12,
-                border: "1px solid #334155",
+                border: "1px solid rgba(0,0,0,0.1)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
               <div
@@ -210,30 +220,26 @@ function WorkflowView() {
                   display: "flex",
                   alignItems: "center",
                   gap: 10,
-                  marginBottom: 8,
+                  marginBottom: 10,
                 }}
               >
                 <span
                   style={{
-                    fontFamily: "'IBM Plex Sans', sans-serif",
-                    fontSize: 17,
-                    fontWeight: 700,
-                    color: step.color,
-                    letterSpacing: "-0.01em",
+                    fontFamily: "'Bodoni Moda', Georgia, serif",
+                    fontSize: 20,
+                    fontWeight: 400,
+                    color: "#000000",
                   }}
                 >
                   {step.label}
                 </span>
                 <span
                   style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: 11,
-                    color: "#64748B",
-                    background: "#0F172A",
-                    padding: "2px 8px",
+                    ...label,
+                    color: "#666666",
+                    background: "rgba(0,0,0,0.05)",
+                    padding: "3px 8px",
                     borderRadius: 4,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
                   }}
                 >
                   {step.who}
@@ -242,10 +248,10 @@ function WorkflowView() {
 
               <p
                 style={{
-                  fontFamily: "'IBM Plex Sans', sans-serif",
-                  fontSize: 14,
-                  color: "#CBD5E1",
-                  lineHeight: 1.55,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 17,
+                  color: "#1A1A1A",
+                  lineHeight: 1.6,
                   margin: 0,
                 }}
               >
@@ -263,29 +269,30 @@ function WorkflowView() {
                         display: "flex",
                         gap: 10,
                         alignItems: "flex-start",
-                        background: "#0F172A",
+                        background: "#FAFAFA",
                         borderRadius: 8,
-                        padding: "8px 12px",
+                        padding: "10px 12px",
+                        border: "1px solid rgba(0,0,0,0.05)",
                       }}
                     >
                       <span
                         style={{
-                          fontFamily: "'IBM Plex Sans', sans-serif",
-                          fontSize: 13,
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: 15,
                           fontWeight: 600,
-                          color: step.color,
-                          minWidth: 64,
-                          whiteSpace: "nowrap",
+                          color: CRIMSON,
+                          minWidth: 72,
+                          whiteSpace: "nowrap" as const,
                         }}
                       >
                         {c.label}
                       </span>
                       <span
                         style={{
-                          fontFamily: "'IBM Plex Sans', sans-serif",
-                          fontSize: 13,
-                          color: "#94A3B8",
-                          lineHeight: 1.4,
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: 15,
+                          color: "#666666",
+                          lineHeight: 1.5,
                         }}
                       >
                         {c.desc}
@@ -293,9 +300,13 @@ function WorkflowView() {
                           <span
                             style={{
                               display: "block",
-                              fontSize: 11,
-                              color: "#64748B",
-                              marginTop: 2,
+                              ...label,
+                              fontSize: 12,
+                              color: "#999999",
+                              marginTop: 4,
+                              fontWeight: 500,
+                              textTransform: "none" as const,
+                              letterSpacing: 0,
                             }}
                           >
                             → {c.dest}
@@ -310,10 +321,9 @@ function WorkflowView() {
               {step.where && !step.choices && (
                 <div
                   style={{
-                    marginTop: 8,
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: 11,
-                    color: "#64748B",
+                    marginTop: 10,
+                    ...label,
+                    color: "#999999",
                   }}
                 >
                   {step.where}
@@ -324,23 +334,20 @@ function WorkflowView() {
         ))}
       </div>
 
+      {/* Permanent Homes */}
       <div
         style={{
           marginTop: 32,
           padding: "20px",
-          background: "#1E293B",
+          background: "#F5F0E8",
           borderRadius: 12,
-          border: "1px solid #334155",
+          borderBottom: `2px solid ${CRIMSON}`,
         }}
       >
         <h3
           style={{
-            fontFamily: "'IBM Plex Sans', sans-serif",
-            fontSize: 14,
-            fontWeight: 700,
-            color: "#64748B",
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
+            ...label,
+            color: "#666666",
             margin: "0 0 16px 0",
           }}
         >
@@ -357,29 +364,30 @@ function WorkflowView() {
             <div
               key={i}
               style={{
-                background: "#0F172A",
+                background: "#FFFFFF",
                 borderRadius: 8,
-                padding: "10px 12px",
+                padding: "12px",
                 textAlign: "center",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
-              <div style={{ fontSize: 20, marginBottom: 4 }}>{d.icon}</div>
+              <div style={{ fontSize: 20, marginBottom: 6 }}>{d.icon}</div>
               <div
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  ...label,
+                  color: "#000000",
                   fontSize: 11,
-                  color: "#E2E8F0",
-                  fontWeight: 600,
                 }}
               >
                 {d.name}
               </div>
               <div
                 style={{
-                  fontFamily: "'IBM Plex Sans', sans-serif",
-                  fontSize: 10,
-                  color: "#64748B",
-                  marginTop: 2,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 13,
+                  color: "#666666",
+                  marginTop: 3,
+                  lineHeight: 1.4,
                 }}
               >
                 {d.desc}
@@ -397,111 +405,80 @@ function InboxView() {
 
   const staleCount = items.filter((i) => i.stale).length;
 
-  // Placeholder for future Supabase delete — currently removes from local state
   const removeItem = (id: number) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
   return (
-    <div style={{ padding: "0 4px" }}>
+    <div>
       <p
         style={{
-          fontFamily: "'IBM Plex Sans', sans-serif",
-          fontSize: 14,
-          color: "#94A3B8",
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 15,
+          color: "#666666",
           lineHeight: 1.6,
           marginBottom: 24,
-          maxWidth: 520,
         }}
       >
-        This is what your inbox check-in could look like. Clean numbered list, newest at bottom,
-        stale items flagged. No categories to manage — just scan, decide, move on.
+        Clean numbered list, newest at bottom, stale items flagged. No categories to manage — just
+        scan, decide, move on.
       </p>
 
+      {/* Summary bar */}
       <div
         style={{
           display: "flex",
-          gap: 16,
+          gap: 0,
           marginBottom: 20,
-          padding: "14px 20px",
-          background: "#1E293B",
-          borderRadius: 10,
-          border: "1px solid #334155",
+          background: "#FAFAFA",
+          borderRadius: 12,
+          border: "1px solid rgba(0,0,0,0.1)",
+          overflow: "hidden",
         }}
       >
-        <div style={{ textAlign: "center", flex: 1 }}>
+        {[
+          { value: items.length, sublabel: "Total", color: "#000000" },
+          {
+            value: staleCount,
+            sublabel: "Older than 24h",
+            color: staleCount > 0 ? CRIMSON : "#1A1A1A",
+          },
+          { value: items.length - staleCount, sublabel: "Fresh today", color: "#1A1A1A" },
+        ].map((stat, i) => (
           <div
+            key={i}
             style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 28,
-              fontWeight: 700,
-              color: "#F1F5F9",
+              flex: 1,
+              textAlign: "center",
+              padding: "16px 8px",
+              borderRight: i < 2 ? "1px solid rgba(0,0,0,0.1)" : "none",
             }}
           >
-            {items.length}
+            <div
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 28,
+                fontWeight: 700,
+                color: stat.color,
+                lineHeight: 1,
+              }}
+            >
+              {stat.value}
+            </div>
+            <div
+              style={{
+                ...label,
+                color: "#999999",
+                marginTop: 6,
+              }}
+            >
+              {stat.sublabel}
+            </div>
           </div>
-          <div
-            style={{
-              fontFamily: "'IBM Plex Sans', sans-serif",
-              fontSize: 11,
-              color: "#64748B",
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-            }}
-          >
-            Total items
-          </div>
-        </div>
-        <div style={{ width: 1, background: "#334155" }} />
-        <div style={{ textAlign: "center", flex: 1 }}>
-          <div
-            style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 28,
-              fontWeight: 700,
-              color: staleCount > 0 ? "#F59E0B" : "#10B981",
-            }}
-          >
-            {staleCount}
-          </div>
-          <div
-            style={{
-              fontFamily: "'IBM Plex Sans', sans-serif",
-              fontSize: 11,
-              color: "#64748B",
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-            }}
-          >
-            Older than 24h
-          </div>
-        </div>
-        <div style={{ width: 1, background: "#334155" }} />
-        <div style={{ textAlign: "center", flex: 1 }}>
-          <div
-            style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 28,
-              fontWeight: 700,
-              color: "#3B82F6",
-            }}
-          >
-            {items.length - staleCount}
-          </div>
-          <div
-            style={{
-              fontFamily: "'IBM Plex Sans', sans-serif",
-              fontSize: 11,
-              color: "#64748B",
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-            }}
-          >
-            Fresh today
-          </div>
-        </div>
+        ))}
       </div>
 
+      {/* Items */}
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {items.map((item) => (
           <div
@@ -509,34 +486,38 @@ function InboxView() {
             style={{
               display: "flex",
               gap: 14,
-              padding: "14px 16px",
-              background: "#1E293B",
+              padding: "16px",
+              background: "#FFFFFF",
               borderRadius: 10,
-              border: `1px solid ${item.stale ? "#F59E0B33" : "#334155"}`,
+              border: item.stale
+                ? `1px solid ${CRIMSON_BORDER}`
+                : "1px solid rgba(0,0,0,0.05)",
               alignItems: "flex-start",
-              position: "relative",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
             }}
           >
+            {/* Number */}
             <div
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 14,
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 15,
                 fontWeight: 700,
-                color: item.stale ? "#F59E0B" : "#475569",
-                minWidth: 28,
+                color: item.stale ? CRIMSON : "rgba(0,0,0,0.2)",
+                minWidth: 32,
                 textAlign: "right",
-                paddingTop: 1,
+                paddingTop: 2,
               }}
             >
               #{item.id}
             </div>
 
+            {/* Content */}
             <div style={{ flex: 1 }}>
               <p
                 style={{
-                  fontFamily: "'IBM Plex Sans', sans-serif",
-                  fontSize: 14,
-                  color: "#E2E8F0",
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 17,
+                  color: "#1A1A1A",
                   lineHeight: 1.5,
                   margin: 0,
                 }}
@@ -546,16 +527,17 @@ function InboxView() {
               <div
                 style={{
                   display: "flex",
-                  gap: 12,
-                  marginTop: 8,
+                  gap: 10,
+                  marginTop: 10,
                   alignItems: "center",
+                  flexWrap: "wrap" as const,
                 }}
               >
                 <span
                   style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: 11,
-                    color: "#64748B",
+                    ...label,
+                    color: "#999999",
+                    fontWeight: 500,
                   }}
                 >
                   {item.date}
@@ -563,41 +545,32 @@ function InboxView() {
                 {item.stale ? (
                   <span
                     style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: 10,
-                      color: "#F59E0B",
-                      background: "#F59E0B18",
-                      padding: "2px 8px",
+                      ...label,
+                      color: CRIMSON,
+                      background: CRIMSON_SOFT,
+                      padding: "3px 10px",
                       borderRadius: 4,
-                      fontWeight: 600,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
                     }}
                   >
                     Stale — {item.age}
                   </span>
                 ) : (
-                  <span
-                    style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: 10,
-                      color: "#475569",
-                    }}
-                  >
+                  <span style={{ ...label, color: "#999999", fontWeight: 500 }}>
                     {item.age} ago
                   </span>
                 )}
               </div>
             </div>
 
+            {/* Dismiss */}
             <button
               onClick={() => removeItem(item.id)}
               style={{
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                color: "#475569",
-                fontSize: 16,
+                color: "rgba(0,0,0,0.25)",
+                fontSize: 20,
                 padding: "0 4px",
                 lineHeight: 1,
                 flexShrink: 0,
@@ -610,39 +583,40 @@ function InboxView() {
         ))}
       </div>
 
+      {/* Heartbeat callout */}
       <div
         style={{
           marginTop: 24,
-          padding: "14px 20px",
-          background: "#0F172A",
+          padding: "16px 20px",
+          background: "#F5F0E8",
           borderRadius: 10,
-          border: "1px dashed #334155",
+          border: "1px solid rgba(0,0,0,0.1)",
           display: "flex",
           gap: 12,
           alignItems: "flex-start",
         }}
       >
-        <span style={{ fontSize: 18 }}>🦏</span>
+        <span style={{ fontSize: 20, lineHeight: 1.4 }}>🦏</span>
         <div>
           <div
             style={{
-              fontFamily: "'IBM Plex Sans', sans-serif",
-              fontSize: 13,
-              color: "#94A3B8",
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 15,
+              color: "#666666",
               lineHeight: 1.5,
             }}
           >
-            <strong style={{ color: "#CBD5E1" }}>Heartbeat nudge example:</strong>
+            <strong style={{ color: "#1A1A1A" }}>Heartbeat nudge example:</strong>
             <br />
             &ldquo;You have {staleCount} item{staleCount !== 1 ? "s" : ""} in your inbox older
             than 24 hours. Want to review?&rdquo;
           </div>
           <div
             style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 10,
-              color: "#475569",
-              marginTop: 6,
+              ...label,
+              color: "#999999",
+              marginTop: 8,
+              fontWeight: 500,
             }}
           >
             Only sends the count. Never lists items. You review when ready.
@@ -656,72 +630,76 @@ function InboxView() {
 export default function InboxWorkflow() {
   const [tab, setTab] = useState<"workflow" | "inbox">("workflow");
 
+  const tabs = [
+    { id: "workflow" as const, label: "How It Works" },
+    { id: "inbox" as const, label: "Inbox View" },
+  ];
+
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#0F172A",
-        padding: "32px 20px",
-        fontFamily: "'IBM Plex Sans', sans-serif",
+        background: "#FFFFFF",
+        padding: "40px 20px 64px",
+        fontFamily: "'Inter', sans-serif",
       }}
     >
       <div style={{ maxWidth: 600, margin: "0 auto" }}>
-        <div style={{ marginBottom: 28 }}>
+        {/* Header */}
+        <div style={{ marginBottom: 32 }}>
           <h1
             style={{
-              fontFamily: "'IBM Plex Sans', sans-serif",
-              fontSize: 24,
-              fontWeight: 700,
-              color: "#F1F5F9",
-              margin: "0 0 6px 0",
-              letterSpacing: "-0.02em",
+              fontFamily: "'Bodoni Moda', Georgia, serif",
+              fontSize: 32,
+              fontWeight: 400,
+              color: "#000000",
+              margin: "0 0 8px 0",
+              lineHeight: 1.2,
             }}
           >
-            📥 The INBOX System
+            The INBOX System
           </h1>
           <p
             style={{
-              fontFamily: "'IBM Plex Sans', sans-serif",
-              fontSize: 13,
-              color: "#64748B",
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 15,
+              color: "#666666",
               margin: 0,
+              lineHeight: 1.5,
             }}
           >
             One file. Zero decisions at capture time. Everything finds its home later.
           </p>
         </div>
 
+        {/* Tabs */}
         <div
           style={{
             display: "flex",
-            gap: 4,
-            marginBottom: 28,
-            background: "#1E293B",
-            borderRadius: 10,
-            padding: 4,
+            gap: 0,
+            marginBottom: 32,
+            borderBottom: "1px solid rgba(0,0,0,0.1)",
           }}
         >
-          {(
-            [
-              { id: "workflow", label: "How It Works" },
-              { id: "inbox", label: "Inbox Check-In View" },
-            ] as const
-          ).map((t) => (
+          {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
               style={{
                 flex: 1,
-                padding: "10px 16px",
-                borderRadius: 8,
+                padding: "12px 16px",
                 border: "none",
+                borderBottom: tab === t.id ? `2px solid ${CRIMSON}` : "2px solid transparent",
                 cursor: "pointer",
-                fontFamily: "'IBM Plex Sans', sans-serif",
-                fontSize: 14,
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 15,
                 fontWeight: 600,
-                background: tab === t.id ? "#0F172A" : "transparent",
-                color: tab === t.id ? "#F1F5F9" : "#64748B",
-                transition: "all 0.15s ease",
+                background: "transparent",
+                color: tab === t.id ? CRIMSON : "#999999",
+                textTransform: "uppercase",
+                letterSpacing: "0.06rem",
+                transition: "color 0.15s ease, border-color 0.15s ease",
+                marginBottom: -1,
               }}
             >
               {t.label}
@@ -729,6 +707,7 @@ export default function InboxWorkflow() {
           ))}
         </div>
 
+        {/* Content */}
         {tab === "workflow" ? <WorkflowView /> : <InboxView />}
       </div>
     </div>

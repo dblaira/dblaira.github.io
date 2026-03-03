@@ -2,8 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+:root {
+  /* Brand accent */
+  --color-red: #DC143C;
+  --color-red-soft: rgba(220, 20, 60, 0.12);
+  --color-red-dark: #B01030;
+
+  /* Backgrounds */
+  --bg-body: #FFFFFF;
+  --bg-shell: #FAFAFA;
+  --bg-panel: #FFFFFF;
+  --bg-panel-alt: #F5F5F5;
+  --bg-card: #FFFFFF;
+  --bg-card-alt: #FAFAFA;
+  --bg-cream: #F5F0E8;
+
+  /* Text */
+  --text-hero: #FFFFFF;
+  --text-hero-muted: #999999;
+  --text-primary: #000000;
+  --text-secondary: #1A1A1A;
+  --text-muted: #666666;
+  --text-ghost: #999999;
+
+  /* Borders */
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-light: rgba(0, 0, 0, 0.05);
+
+  /* Shadows */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+  /* Radius */
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 4px;
+}
+
+body {
+  background: var(--bg-body);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

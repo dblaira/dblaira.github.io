@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { getSupabase } from "@/lib/supabase";
+import type { InboxItemRow, InboxItemDisplay } from "@/lib/types";
 
 interface WorkflowChoice {
   label: string;
@@ -15,14 +17,6 @@ interface WorkflowStep {
   what: string;
   where?: string;
   choices?: WorkflowChoice[];
-}
-
-interface InboxItem {
-  id: number;
-  date: string;
-  text: string;
-  age: string;
-  stale: boolean;
 }
 
 interface Destination {
@@ -82,44 +76,6 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
   },
 ];
 
-const SAMPLE_INBOX: InboxItem[] = [
-  {
-    id: 1,
-    date: "Mar 2, 10:39 PM",
-    text: "How does AI change the equation of building or adopting an ontology? The right ontology could unearth context I'd never see with it.",
-    age: "1 day",
-    stale: true,
-  },
-  {
-    id: 2,
-    date: "Mar 3, 9:15 AM",
-    text: "Font size on mobile should never be smaller than 16px — add to design conventions when that doc exists.",
-    age: "3 hrs",
-    stale: false,
-  },
-  {
-    id: 3,
-    date: "Mar 3, 10:02 AM",
-    text: "Idea: what if heartbeat checked calendar and prepped context for meetings automatically?",
-    age: "2 hrs",
-    stale: false,
-  },
-  {
-    id: 4,
-    date: "Mar 3, 11:30 AM",
-    text: "Cursor works better when I give it the whole file, not snippets. Log as a convention.",
-    age: "1 hr",
-    stale: false,
-  },
-  {
-    id: 5,
-    date: "Mar 3, 11:45 AM",
-    text: "Check if AppleCare can still be added to Mac Studio — within 60 day window.",
-    age: "45 min",
-    stale: false,
-  },
-];
-
 const DESTINATIONS: Destination[] = [
   { name: "SOUL.md", desc: "Agent personality & rules", icon: "🧠" },
   { name: "CONVENTIONS.md", desc: "Design & code rules", icon: "📐" },
@@ -129,13 +85,50 @@ const DESTINATIONS: Destination[] = [
   { name: "🗑️ Delete", desc: "Done or not needed", icon: "" },
 ];
 
-const label = {
+const labelStyle = {
   fontFamily: "'Inter', sans-serif",
   fontSize: 13,
   fontWeight: 700,
   textTransform: "uppercase" as const,
   letterSpacing: "0.08rem",
 };
+
+function formatRelativeAge(createdAt: string): string {
+  const now = Date.now();
+  const created = new Date(createdAt).getTime();
+  const diffMs = now - created;
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHrs = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMin < 1) return "just now";
+  if (diffMin < 60) return `${diffMin} min`;
+  if (diffHrs < 24) return `${diffHrs} hr${diffHrs !== 1 ? "s" : ""}`;
+  return `${diffDays} day${diffDays !== 1 ? "s" : ""}`;
+}
+
+function formatDate(createdAt: string): string {
+  const d = new Date(createdAt);
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+function toDisplay(row: InboxItemRow): InboxItemDisplay {
+  const diffMs = Date.now() - new Date(row.created_at).getTime();
+  return {
+    id: row.id,
+    text: row.text,
+    created_at: row.created_at,
+    date: formatDate(row.created_at),
+    age: formatRelativeAge(row.created_at),
+    stale: diffMs > 86400000,
+  };
+}
 
 function WorkflowView() {
   return (
@@ -155,7 +148,6 @@ function WorkflowView() {
       </p>
 
       <div style={{ position: "relative" }}>
-        {/* Connecting line */}
         <div
           style={{
             position: "absolute",
@@ -181,7 +173,6 @@ function WorkflowView() {
               zIndex: 1,
             }}
           >
-            {/* Number circle */}
             <div
               style={{
                 width: 48,
@@ -203,7 +194,6 @@ function WorkflowView() {
               {step.num}
             </div>
 
-            {/* Content card */}
             <div
               style={{
                 flex: 1,
@@ -225,8 +215,8 @@ function WorkflowView() {
               >
                 <span
                   style={{
-fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: 20,
+                    fontFamily: "'Playfair Display', Georgia, serif",
+                    fontSize: 20,
                     fontWeight: 400,
                     color: "#000000",
                   }}
@@ -235,7 +225,7 @@ fontFamily: "'Playfair Display', Georgia, serif",
                 </span>
                 <span
                   style={{
-                    ...label,
+                    ...labelStyle,
                     color: "#666666",
                     background: "rgba(0,0,0,0.05)",
                     padding: "3px 8px",
@@ -300,7 +290,7 @@ fontFamily: "'Playfair Display', Georgia, serif",
                           <span
                             style={{
                               display: "block",
-                              ...label,
+                              ...labelStyle,
                               fontSize: 12,
                               color: "#999999",
                               marginTop: 4,
@@ -322,7 +312,7 @@ fontFamily: "'Playfair Display', Georgia, serif",
                 <div
                   style={{
                     marginTop: 10,
-                    ...label,
+                    ...labelStyle,
                     color: "#999999",
                   }}
                 >
@@ -334,7 +324,6 @@ fontFamily: "'Playfair Display', Georgia, serif",
         ))}
       </div>
 
-      {/* Permanent Homes */}
       <div
         style={{
           marginTop: 32,
@@ -346,7 +335,7 @@ fontFamily: "'Playfair Display', Georgia, serif",
       >
         <h3
           style={{
-            ...label,
+            ...labelStyle,
             color: "#666666",
             margin: "0 0 16px 0",
           }}
@@ -374,7 +363,7 @@ fontFamily: "'Playfair Display', Georgia, serif",
               <div style={{ fontSize: 20, marginBottom: 6 }}>{d.icon}</div>
               <div
                 style={{
-                  ...label,
+                  ...labelStyle,
                   color: "#000000",
                   fontSize: 11,
                 }}
@@ -401,28 +390,128 @@ fontFamily: "'Playfair Display', Georgia, serif",
 }
 
 function InboxView() {
-  const [items, setItems] = useState<InboxItem[]>(SAMPLE_INBOX);
+  const [items, setItems] = useState<InboxItemDisplay[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newText, setNewText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const staleCount = items.filter((i) => i.stale).length;
+  const fetchItems = useCallback(async () => {
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from("inbox_items")
+        .select("*")
+        .is("resolved_at", null)
+        .order("created_at", { ascending: true });
 
-  const removeItem = (id: number) => {
+      if (!error && data) {
+        setItems((data as InboxItemRow[]).map(toDisplay));
+      }
+    } catch {
+      // Supabase not configured yet — show empty state
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
+
+  const addItem = async () => {
+    const text = newText.trim();
+    if (!text || submitting) return;
+
+    setSubmitting(true);
+    const supabase = getSupabase();
+    const { error } = await supabase.from("inbox_items").insert({ text });
+
+    if (!error) {
+      setNewText("");
+      await fetchItems();
+    }
+    setSubmitting(false);
+  };
+
+  const resolveItem = async (id: number, destination: string) => {
+    const supabase = getSupabase();
+    await supabase
+      .from("inbox_items")
+      .update({ resolved_at: new Date().toISOString(), destination })
+      .eq("id", id);
+
     setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const staleCount = items.filter((i) => i.stale).length;
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", padding: "48px 0", color: "#999999", fontSize: 15 }}>
+        Loading...
+      </div>
+    );
+  }
+
   return (
     <div>
-      <p
+      {/* Capture input */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          addItem();
+        }}
         style={{
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 15,
-          color: "#666666",
-          lineHeight: 1.6,
+          display: "flex",
+          gap: 8,
           marginBottom: 24,
         }}
       >
-        Clean numbered list, newest at bottom, stale items flagged. No categories to manage — just
-        scan, decide, move on.
-      </p>
+        <input
+          type="text"
+          value={newText}
+          onChange={(e) => setNewText(e.target.value)}
+          placeholder="Capture something..."
+          style={{
+            flex: 1,
+            padding: "12px 16px",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 17,
+            border: "1px solid rgba(0,0,0,0.1)",
+            borderRadius: 8,
+            background: "#FAFAFA",
+            color: "#1A1A1A",
+            outline: "none",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = CRIMSON;
+            e.currentTarget.style.outline = `2px solid ${CRIMSON}`;
+            e.currentTarget.style.outlineOffset = "2px";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)";
+            e.currentTarget.style.outline = "none";
+          }}
+        />
+        <button
+          type="submit"
+          disabled={!newText.trim() || submitting}
+          style={{
+            padding: "12px 20px",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 15,
+            fontWeight: 600,
+            background: newText.trim() ? CRIMSON : "#E5E5E5",
+            color: newText.trim() ? "#FFFFFF" : "#999999",
+            border: "none",
+            borderRadius: 8,
+            cursor: newText.trim() ? "pointer" : "default",
+            transition: "background 0.15s ease",
+            whiteSpace: "nowrap" as const,
+          }}
+        >
+          {submitting ? "..." : "Add"}
+        </button>
+      </form>
 
       {/* Summary bar */}
       <div
@@ -467,7 +556,7 @@ function InboxView() {
             </div>
             <div
               style={{
-                ...label,
+                ...labelStyle,
                 color: "#999999",
                 marginTop: 6,
               }}
@@ -479,109 +568,119 @@ function InboxView() {
       </div>
 
       {/* Items */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {items.map((item) => (
-          <div
-            key={item.id}
-            style={{
-              display: "flex",
-              gap: 14,
-              padding: "16px",
-              background: "#FFFFFF",
-              borderRadius: 10,
-              border: item.stale
-                ? `1px solid ${CRIMSON_BORDER}`
-                : "1px solid rgba(0,0,0,0.05)",
-              alignItems: "flex-start",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-            }}
-          >
-            {/* Number */}
+      {items.length === 0 ? (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "48px 20px",
+            color: "#999999",
+            fontSize: 15,
+          }}
+        >
+          Inbox is empty. Capture something above.
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {items.map((item) => (
             <div
+              key={item.id}
               style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 15,
-                fontWeight: 700,
-                color: item.stale ? CRIMSON : "rgba(0,0,0,0.2)",
-                minWidth: 32,
-                textAlign: "right",
-                paddingTop: 2,
+                display: "flex",
+                gap: 14,
+                padding: "16px",
+                background: "#FFFFFF",
+                borderRadius: 10,
+                border: item.stale
+                  ? `1px solid ${CRIMSON_BORDER}`
+                  : "1px solid rgba(0,0,0,0.05)",
+                alignItems: "flex-start",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
               }}
             >
-              #{item.id}
-            </div>
-
-            {/* Content */}
-            <div style={{ flex: 1 }}>
-              <p
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 17,
-                  color: "#1A1A1A",
-                  lineHeight: 1.5,
-                  margin: 0,
-                }}
-              >
-                {item.text}
-              </p>
               <div
                 style={{
-                  display: "flex",
-                  gap: 10,
-                  marginTop: 10,
-                  alignItems: "center",
-                  flexWrap: "wrap" as const,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: item.stale ? CRIMSON : "rgba(0,0,0,0.2)",
+                  minWidth: 32,
+                  textAlign: "right",
+                  paddingTop: 2,
                 }}
               >
-                <span
+                #{item.id}
+              </div>
+
+              <div style={{ flex: 1 }}>
+                <p
                   style={{
-                    ...label,
-                    color: "#999999",
-                    fontWeight: 500,
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: 17,
+                    color: "#1A1A1A",
+                    lineHeight: 1.5,
+                    margin: 0,
                   }}
                 >
-                  {item.date}
-                </span>
-                {item.stale ? (
+                  {item.text}
+                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 10,
+                    marginTop: 10,
+                    alignItems: "center",
+                    flexWrap: "wrap" as const,
+                  }}
+                >
                   <span
                     style={{
-                      ...label,
-                      color: CRIMSON,
-                      background: CRIMSON_SOFT,
-                      padding: "3px 10px",
-                      borderRadius: 4,
+                      ...labelStyle,
+                      color: "#999999",
+                      fontWeight: 500,
                     }}
                   >
-                    Stale — {item.age}
+                    {item.date}
                   </span>
-                ) : (
-                  <span style={{ ...label, color: "#999999", fontWeight: 500 }}>
-                    {item.age} ago
-                  </span>
-                )}
+                  {item.stale ? (
+                    <span
+                      style={{
+                        ...labelStyle,
+                        color: CRIMSON,
+                        background: CRIMSON_SOFT,
+                        padding: "3px 10px",
+                        borderRadius: 4,
+                      }}
+                    >
+                      Stale — {item.age}
+                    </span>
+                  ) : (
+                    <span style={{ ...labelStyle, color: "#999999", fontWeight: 500 }}>
+                      {item.age} ago
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Dismiss */}
-            <button
-              onClick={() => removeItem(item.id)}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "rgba(0,0,0,0.25)",
-                fontSize: 20,
-                padding: "0 4px",
-                lineHeight: 1,
-                flexShrink: 0,
-              }}
-              aria-label="Remove item"
-            >
-              ×
-            </button>
-          </div>
-        ))}
-      </div>
+              <button
+                onClick={() => resolveItem(item.id, "deleted")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "rgba(0,0,0,0.25)",
+                  fontSize: 20,
+                  padding: "0 4px",
+                  lineHeight: 1,
+                  flexShrink: 0,
+                }}
+                aria-label="Remove item"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Heartbeat callout */}
       <div
@@ -613,7 +712,7 @@ function InboxView() {
           </div>
           <div
             style={{
-              ...label,
+              ...labelStyle,
               color: "#999999",
               marginTop: 8,
               fontWeight: 500,
@@ -645,12 +744,11 @@ export default function InboxWorkflow() {
       }}
     >
       <div style={{ maxWidth: 600, margin: "0 auto" }}>
-        {/* Header */}
         <div style={{ marginBottom: 32 }}>
           <h1
             style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: 32,
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: 32,
               fontWeight: 400,
               color: "#000000",
               margin: "0 0 8px 0",
@@ -672,7 +770,6 @@ export default function InboxWorkflow() {
           </p>
         </div>
 
-        {/* Tabs */}
         <div
           style={{
             display: "flex",
@@ -707,7 +804,6 @@ export default function InboxWorkflow() {
           ))}
         </div>
 
-        {/* Content */}
         {tab === "workflow" ? <WorkflowView /> : <InboxView />}
       </div>
     </div>

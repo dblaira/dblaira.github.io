@@ -1,5 +1,5 @@
-import InboxWorkflow from "@/components/InboxWorkflow";
+import SandboxHome from "@/components/SandboxHome";
 
 export default function Home() {
-  return <InboxWorkflow />;
+  return <SandboxHome />;
 }

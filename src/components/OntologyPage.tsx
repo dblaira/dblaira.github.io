@@ -40,7 +40,7 @@ export default function OntologyPage() {
         setLagged(laggedPairs);
         setStats(row.category_stats);
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
+        const msg = e instanceof Error ? e.message : (typeof e === "object" && e !== null && "message" in e) ? String((e as { message: string }).message) : String(e);
         if (msg.includes("rows returned")) {
           setError("No correlation data yet. Run a correlation analysis in Understood.app first.");
         } else {

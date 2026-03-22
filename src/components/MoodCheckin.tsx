@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useCallback } from "react";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { EmotionWheel, type EmotionSelection } from "@/components/EmotionWheel";
 import { EmotionHistory } from "@/components/EmotionHistory";
 import { EmotionCustomize } from "@/components/EmotionCustomize";
 import { getSupabase } from "@/lib/supabase";
-import { useAuth } from "@/lib/useAuth";
 import { useEmotionConfig } from "@/lib/useEmotionConfig";
 
 const CRIMSON = "#DC143C";
@@ -24,13 +22,6 @@ const TRIGGER_TAGS = [
 ];
 
 export default function MoodCheckin() {
-  const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
-
-  useEffect(() => {
-    if (!authLoading && !user) router.replace("/login");
-  }, [user, authLoading, router]);
-
   const emotionConfig = useEmotionConfig();
   const { getEmotionLabel, getTriggerLabel } = emotionConfig;
 

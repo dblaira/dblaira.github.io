@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
-import { useAuth } from "@/lib/useAuth";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
 import type { BeliefEntry, ConnectionType } from "@/lib/types";
 
@@ -17,12 +15,6 @@ const CONNECTION_TYPES: { value: ConnectionType; label: string; color: string }[
 ];
 
 export default function BeliefLibrary() {
-  const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
-
-  useEffect(() => {
-    if (!authLoading && !user) router.replace("/login");
-  }, [user, authLoading, router]);
   const [beliefs, setBeliefs] = useState<BeliefEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);

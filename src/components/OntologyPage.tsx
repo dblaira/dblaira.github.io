@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
-import { useAuth } from "@/lib/useAuth";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { OntologyNetwork } from "@/components/OntologyNetwork";
 import type { CorrelationPair, CategoryStats } from "@/lib/types";
@@ -16,8 +14,6 @@ interface AnalysisRow {
 }
 
 export default function OntologyPage() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
   const [correlations, setCorrelations] = useState<CorrelationPair[]>([]);
   const [lagged, setLagged] = useState<CorrelationPair[]>([]);
   const [stats, setStats] = useState<CategoryStats[]>([]);
@@ -25,12 +21,6 @@ export default function OntologyPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      router.replace("/login");
-      return;
-    }
-
     async function load() {
       try {
         const supabase = getSupabase();
@@ -61,7 +51,7 @@ export default function OntologyPage() {
       }
     }
     load();
-  }, [user, authLoading, router]);
+  }, []);
 
   return (
     <div style={{ minHeight: "100vh", background: "#0A0A0A" }}>

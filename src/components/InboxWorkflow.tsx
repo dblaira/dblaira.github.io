@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
-import { createSupabaseBrowser } from "@/lib/supabase-browser";
+import { getSupabase } from "@/lib/supabase";
 import type { InboxItemRow, InboxItemDisplay } from "@/lib/types";
 
 interface WorkflowChoice {
@@ -398,7 +398,7 @@ function InboxView() {
 
   const fetchItems = useCallback(async () => {
     try {
-      const supabase = createSupabaseBrowser();
+      const supabase = getSupabase();
       const { data, error } = await supabase
         .from("inbox_items")
         .select("*")
@@ -423,7 +423,7 @@ function InboxView() {
     if (!text || submitting) return;
 
     setSubmitting(true);
-    const supabase = createSupabaseBrowser();
+    const supabase = getSupabase();
     const { error } = await supabase.from("inbox_items").insert({ text });
 
     if (!error) {
@@ -434,7 +434,7 @@ function InboxView() {
   };
 
   const resolveItem = async (id: string, destination: string) => {
-    const supabase = createSupabaseBrowser();
+    const supabase = getSupabase();
     await supabase
       .from("inbox_items")
       .update({ resolved_at: new Date().toISOString(), destination })

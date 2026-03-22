@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { createSupabaseBrowser } from "@/lib/supabase-browser";
+import { getSupabase } from "@/lib/supabase";
 import type { BeliefEntry } from "@/lib/types";
 
 const CRIMSON = "#DC143C";
@@ -24,7 +24,7 @@ export function BeliefCarousel() {
   useEffect(() => {
     async function load() {
       try {
-        const supabase = createSupabaseBrowser();
+        const supabase = getSupabase();
         const { data } = await supabase
           .from("entries")
           .select("id, headline, content, entry_type, connection_type, pinned_at, created_at")

@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.98.0",
     "@types/d3-force": "^3.0.10",
     "d3-force": "^3.0.0",

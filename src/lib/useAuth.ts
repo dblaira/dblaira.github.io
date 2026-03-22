@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getSupabase } from "./supabase";
+import { createSupabaseBrowser } from "./supabase-browser";
 import type { User } from "@supabase/supabase-js";
 
 export function useAuth() {
@@ -9,7 +9,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = getSupabase();
+    const supabase = createSupabaseBrowser();
 
     supabase.auth.getUser().then(({ data: { user: u } }) => {
       setUser(u);
@@ -26,7 +26,7 @@ export function useAuth() {
   }, []);
 
   const signOut = async () => {
-    const supabase = getSupabase();
+    const supabase = createSupabaseBrowser();
     await supabase.auth.signOut();
     window.location.href = "/login";
   };

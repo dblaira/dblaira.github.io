@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabase } from "@/lib/supabase";
+import { createSupabaseBrowser } from "@/lib/supabase-browser";
 import { useAuth } from "@/lib/useAuth";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { OntologyNetwork } from "@/components/OntologyNetwork";
@@ -33,7 +33,7 @@ export default function OntologyPage() {
 
     async function load() {
       try {
-        const supabase = getSupabase();
+        const supabase = createSupabaseBrowser();
         const { data, error: fetchErr } = await supabase
           .from("correlation_analyses")
           .select("correlations, category_stats")

@@ -6,7 +6,7 @@ import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { EmotionWheel, type EmotionSelection } from "@/components/EmotionWheel";
 import { EmotionHistory } from "@/components/EmotionHistory";
 import { EmotionCustomize } from "@/components/EmotionCustomize";
-import { getSupabase } from "@/lib/supabase";
+import { createSupabaseBrowser } from "@/lib/supabase-browser";
 import { useAuth } from "@/lib/useAuth";
 import { useEmotionConfig } from "@/lib/useEmotionConfig";
 
@@ -46,7 +46,7 @@ export default function MoodCheckin() {
     if (!emotion) return;
     setSaving(true);
     try {
-      const supabase = getSupabase();
+      const supabase = createSupabaseBrowser();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
 

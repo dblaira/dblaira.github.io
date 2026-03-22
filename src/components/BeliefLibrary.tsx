@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabase } from "@/lib/supabase";
+import { createSupabaseBrowser } from "@/lib/supabase-browser";
 import { useAuth } from "@/lib/useAuth";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
 import type { BeliefEntry, ConnectionType } from "@/lib/types";
@@ -32,7 +32,7 @@ export default function BeliefLibrary() {
 
   const load = useCallback(async () => {
     try {
-      const supabase = getSupabase();
+      const supabase = createSupabaseBrowser();
       const { data } = await supabase
         .from("entries")
         .select("id, headline, content, entry_type, connection_type, pinned_at, created_at")
@@ -54,7 +54,7 @@ export default function BeliefLibrary() {
     if (!headline.trim()) return;
     setSaving(true);
     try {
-      const supabase = getSupabase();
+      const supabase = createSupabaseBrowser();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -76,7 +76,7 @@ export default function BeliefLibrary() {
   };
 
   const togglePin = async (belief: BeliefEntry) => {
-    const supabase = getSupabase();
+    const supabase = createSupabaseBrowser();
     await supabase
       .from("entries")
       .update({ pinned_at: belief.pinned_at ? null : new Date().toISOString() })

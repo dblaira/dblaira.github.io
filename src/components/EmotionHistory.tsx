@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { getSupabase } from "@/lib/supabase";
+import { createSupabaseBrowser } from "@/lib/supabase-browser";
 
 const CRIMSON = "#DC143C";
 
@@ -69,7 +69,7 @@ export function EmotionHistory() {
   useEffect(() => {
     async function load() {
       try {
-        const supabase = getSupabase();
+        const supabase = createSupabaseBrowser();
         const { data } = await supabase
           .from("emotion_logs")
           .select("id, emotion, energy, valence, trigger_tag, created_at")

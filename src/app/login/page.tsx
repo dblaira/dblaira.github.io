@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabase } from "@/lib/supabase";
+import { createSupabaseBrowser } from "@/lib/supabase-browser";
 
 const CRIMSON = "#DC143C";
 
@@ -12,15 +12,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(true);
-
-  useEffect(() => {
-    const supabase = getSupabase();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) router.replace("/");
-      else setCheckingSession(false);
-    });
-  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,13 +23,14 @@ export default function LoginPage() {
 
     setBusy(true);
     try {
-      const supabase = getSupabase();
+      const supabase = createSupabaseBrowser();
       const { error: authErr } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (authErr) throw authErr;
-      window.location.href = "/";
+      router.push("/");
+      router.refresh();
     } catch (err: unknown) {
       const msg =
         err instanceof Error ? err.message : "Sign-in failed. Try again.";
@@ -50,8 +42,6 @@ export default function LoginPage() {
       setBusy(false);
     }
   };
-
-  if (checkingSession) return null;
 
   return (
     <div
@@ -66,7 +56,6 @@ export default function LoginPage() {
       }}
     >
       <div style={{ width: "100%", maxWidth: 360 }}>
-        {/* Icon */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <img
             src="/savy-icon-header.png"
@@ -225,18 +214,6 @@ export default function LoginPage() {
             {busy ? "Signing in..." : "Sign In"}
           </button>
         </form>
-
-        <p
-          style={{
-            textAlign: "center",
-            marginTop: 32,
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 12,
-            color: "rgba(255,255,255,0.3)",
-          }}
-        >
-          Same account as Understood.app
-        </p>
       </div>
     </div>
   );

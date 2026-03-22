@@ -433,7 +433,7 @@ function InboxView() {
     setSubmitting(false);
   };
 
-  const resolveItem = async (id: number, destination: string) => {
+  const resolveItem = async (id: string, destination: string) => {
     const supabase = getSupabase();
     await supabase
       .from("inbox_items")

@@ -10,11 +10,10 @@ export interface InboxItemRow {
 export interface InboxItemDisplay {
   id: string;
   text: string;
-  createdAt: Date;
-  processed: boolean;
-  processedAt: Date | null;
-  destination: string | null;
-  isStale: boolean;
+  created_at: string;
+  date: string;
+  age: string;
+  stale: boolean;
 }
 
 // --- Ontology & Correlation types (ported from Understood.app) ---

@@ -1,5 +1,7 @@
 "use client";
 
+import { SavySiteHeader } from "@/components/SavySiteHeader";
+
 const CRIMSON = "#DC143C";
 const CREAM = "#F5F0E8";
 
@@ -183,34 +185,7 @@ export default function SleepDashboard() {
 
   return (
     <div style={{ background: CREAM, minHeight: "100vh" }}>
-      {/* Nav */}
-      <div style={{ background: "#0A0A0A", paddingTop: "env(safe-area-inset-top, 0px)" }}>
-        <div
-          style={{
-            padding: "16px 24px",
-            display: "flex",
-            alignItems: "center",
-            maxWidth: 720,
-            margin: "0 auto",
-            gap: 12,
-          }}
-        >
-          <a href="/" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none", fontSize: 14 }}>
-            ← Back
-          </a>
-          <span
-            style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: 16,
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              color: "#FFFFFF",
-            }}
-          >
-            TODIEFOR.
-          </span>
-        </div>
-      </div>
+      <SavySiteHeader />
 
       {/* Header */}
       <div style={{ padding: "40px 24px 24px", maxWidth: 720, margin: "0 auto" }}>

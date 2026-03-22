@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { getSupabase } from "@/lib/supabase";
 import type { InboxItemRow, InboxItemDisplay } from "@/lib/types";
 
@@ -735,14 +736,16 @@ export default function InboxWorkflow() {
   ];
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#FFFFFF",
-        padding: "40px 20px 64px",
-        fontFamily: "'Inter', sans-serif",
-      }}
-    >
+    <div style={{ minHeight: "100vh", background: "#0A0A0A" }}>
+      <SavySiteHeader />
+      <div
+        style={{
+          minHeight: "calc(100vh - env(safe-area-inset-top, 0px))",
+          background: "#FFFFFF",
+          padding: "40px 20px 64px",
+          fontFamily: "'Inter', sans-serif",
+        }}
+      >
       <div style={{ maxWidth: 600, margin: "0 auto" }}>
         <div style={{ marginBottom: 32 }}>
           <h1
@@ -805,6 +808,7 @@ export default function InboxWorkflow() {
         </div>
 
         {tab === "workflow" ? <WorkflowView /> : <InboxView />}
+      </div>
       </div>
     </div>
   );

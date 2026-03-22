@@ -1,6 +1,8 @@
 # First session — how to work on this site
 
-Plain-language guide for editing **`dblaira.github.io`** in Cursor (or any editor) and seeing changes locally and online.
+Plain-language guide for editing **SAVY** (this Next.js app) in Cursor (or any editor) and seeing changes locally and online.
+
+**GitHub:** The remote repository can be renamed (e.g. to `savy`); your **local folder name** can stay anything you like. If this was **`username.github.io`**, renaming that repo on GitHub **stops** the automatic user site at `https://username.github.io/` unless you use a replacement setup (custom domain, project Pages URL, or a new `username.github.io` repo). Plan URLs before renaming.
 
 ## 1) What kind of site this is
 
@@ -10,7 +12,7 @@ Plain-language guide for editing **`dblaira.github.io`** in Cursor (or any edito
 | **TypeScript** | Source files use `.ts` / `.tsx` (typed JavaScript). |
 | **Tailwind CSS** | Styling via utility classes; config in `tailwind.config.ts` and `postcss.config.js`. |
 | **Supabase** | Cloud database/API for features like **Inbox** (`src/lib/supabase.ts`, inbox-related components). |
-| **Vercel** | Hosting: when you push to GitHub, Vercel usually builds and deploys automatically. Live URL is often `dblaira-github-io.vercel.app` (check the repo **About** on GitHub). |
+| **Vercel** | Hosting: when you push to GitHub, Vercel usually builds and deploys automatically. Live URL is whatever is linked on the repo **About** (often `*-vercel.app`). |
 
 This is **not** a Jekyll/Ruby “classic GitHub Pages” site. You do **not** need Ruby for normal work here.
 
@@ -35,8 +37,8 @@ This is **not** a Jekyll/Ruby “classic GitHub Pages” site. You do **not** ne
 
 1. In Cursor: **File → Open Folder…**
 2. Choose the folder that contains **`package.json`** at the top level.  
-   - If you use GitHub Desktop, pick the folder Desktop cloned (often something like `dblaira.github.io` on your Mac).  
-   - This machine also has a clone at **`/Users/adamblair/Developer/dblaira.github.io`** — you can open that folder if you want.
+   - If you use GitHub Desktop, pick the folder where this repo was cloned (name may differ from the GitHub repo name).  
+   - Example path on this Mac: **`/Users/adamblair/Developer/dblaira.github.io`** (folder name can be renamed locally to match `savy` if you prefer).
 
 Start a **new chat** in that window when you want help scoped to this repo.
 
@@ -81,7 +83,7 @@ For a **first edit**, change visible **text** or layout in **`src/app/page.tsx`*
 ## 6) How changes get to the live site (GitHub Desktop)
 
 1. Save files in Cursor.
-2. Open **GitHub Desktop**; select the **`dblaira.github.io`** repository.
+2. Open **GitHub Desktop**; select this **SAVY** repository.
 3. Review changed files; write a short **Summary** (commit message), e.g. `Tweak home page heading`.
 4. Click **Commit to main**.
 5. Click **Push origin** (uploads to GitHub).
@@ -103,11 +105,11 @@ For a **first edit**, change visible **text** or layout in **`src/app/page.tsx`*
 
 ```
 CONTEXT
-- Repo: dblaira.github.io — Next.js 15 + TypeScript + Tailwind, Vercel deploy, Supabase for inbox features.
+- Repo: SAVY — Next.js 15 + TypeScript + Tailwind, Vercel deploy, Supabase for inbox features.
 - I use GitHub Desktop for git and Cursor for editing. Beginner: plain language, one-line definitions for terms.
 - Open folder is this repo only.
 
-My GitHub username is dblaira; repo is dblaira/dblaira.github.io; GitHub About links to dblaira-github-io.vercel.app.
+My GitHub username is dblaira; repo name on GitHub may be `savy` (or updated name); GitHub About links to my Vercel deployment.
 
 YOUR JOB
 1) Confirm stack from package.json and src/ and list the folders I edit most.

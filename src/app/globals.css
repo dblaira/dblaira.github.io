@@ -70,3 +70,12 @@ html, body {
   letter-spacing: 0.12em;
   color: var(--text-muted);
 }
+
+@keyframes savyMenuFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

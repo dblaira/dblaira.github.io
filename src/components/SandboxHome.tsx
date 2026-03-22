@@ -1,5 +1,8 @@
 "use client";
 
+import { SavySiteHeader } from "@/components/SavySiteHeader";
+import { BeliefCarousel } from "@/components/BeliefCarousel";
+
 const CRIMSON = "#DC143C";
 
 interface ExperimentCard {
@@ -19,10 +22,25 @@ const EXPERIMENTS: ExperimentCard[] = [
     href: "/sleep",
   },
   {
-    label: "CORRELATIONS",
-    title: "Life Network Graph",
+    label: "ONTOLOGY",
+    title: "Adam's Ontology",
     desc: "How 13 life categories connect. Pearson correlations across 92 weeks of data.",
-    status: "planned",
+    status: "live",
+    href: "/ontology",
+  },
+  {
+    label: "MOOD",
+    title: "Emotion Check-in",
+    desc: "Tap the wheel. Tag the trigger. Track how you feel over time.",
+    status: "live",
+    href: "/mood",
+  },
+  {
+    label: "BELIEFS",
+    title: "Belief Library",
+    desc: "Your personal connections — identity anchors, pattern interrupts, validated principles.",
+    status: "live",
+    href: "/beliefs",
   },
   {
     label: "SYSTEM",
@@ -33,10 +51,7 @@ const EXPERIMENTS: ExperimentCard[] = [
   },
 ];
 
-const QUOTE = {
-  text: "Anything that gives me a feeling of momentum is worthwhile. Anything that gives me the feeling of stagnation is worth avoiding.",
-  page: "1 / 3",
-};
+// QUOTE removed — replaced by live BeliefCarousel component
 
 function StatusDot({ status }: { status: ExperimentCard["status"] }) {
   const color =
@@ -63,37 +78,7 @@ function StatusDot({ status }: { status: ExperimentCard["status"] }) {
 export default function SandboxHome() {
   return (
     <div style={{ minHeight: "100vh", background: "#0A0A0A" }}>
-      {/* Nav bar — black, extends into safe area */}
-      <div
-        style={{
-          background: "#0A0A0A",
-          paddingTop: "env(safe-area-inset-top, 0px)",
-        }}
-      >
-        <div
-          style={{
-            padding: "16px 24px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            maxWidth: 720,
-            margin: "0 auto",
-          }}
-        >
-          <span
-            style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: 16,
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              color: "#FFFFFF",
-            }}
-          >
-            TODIEFOR.
-          </span>
-          <span style={{ fontSize: 20, color: "rgba(255,255,255,0.5)" }}>☰</span>
-        </div>
-      </div>
+      <SavySiteHeader />
 
       {/* Content area — cream background starts here */}
       <div style={{ background: "#F5F0E8" }}>
@@ -117,7 +102,7 @@ export default function SandboxHome() {
             margin: "0 0 8px 0",
           }}
         >
-          Sandbox
+          SAVY
         </h1>
         <p
           style={{
@@ -134,7 +119,7 @@ export default function SandboxHome() {
         </p>
       </div>
 
-      {/* Quote card */}
+      {/* Beliefs carousel */}
       <div
         style={{
           maxWidth: 720,
@@ -149,74 +134,7 @@ export default function SandboxHome() {
             padding: "32px 28px 24px",
           }}
         >
-          <div style={{ display: "flex", gap: 16 }}>
-            {/* Crimson left border */}
-            <div
-              style={{
-                width: 3,
-                background: CRIMSON,
-                borderRadius: 2,
-                flexShrink: 0,
-              }}
-            />
-            <p
-              style={{
-                fontFamily: "Georgia, 'Playfair Display', serif",
-                fontSize: 20,
-                fontStyle: "italic",
-                color: "#1A1A1A",
-                lineHeight: 1.5,
-                margin: 0,
-              }}
-            >
-              &ldquo;{QUOTE.text}&rdquo;
-            </p>
-          </div>
-
-          {/* Pagination dots */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              marginTop: 20,
-            }}
-          >
-            <span
-              style={{
-                width: 20,
-                height: 6,
-                borderRadius: 3,
-                background: CRIMSON,
-              }}
-            />
-            <span
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: 3,
-                background: "rgba(0,0,0,0.12)",
-              }}
-            />
-            <span
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: 3,
-                background: "rgba(0,0,0,0.12)",
-              }}
-            />
-            <span
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 12,
-                color: "rgba(0,0,0,0.3)",
-                marginLeft: 8,
-              }}
-            >
-              {QUOTE.page}
-            </span>
-          </div>
+          <BeliefCarousel />
         </div>
       </div>
 

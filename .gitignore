@@ -14,6 +14,9 @@ node_modules/
 # production
 /build
 
+# local reference clone (not part of this app)
+.reference-news-journal/
+
 # misc
 .DS_Store
 *.pem

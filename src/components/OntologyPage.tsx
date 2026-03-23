@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getSupabase } from "@/lib/supabase";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { OntologyNetwork } from "@/components/OntologyNetwork";
 import type { CorrelationPair, CategoryStats } from "@/lib/types";
@@ -23,17 +22,23 @@ export default function OntologyPage() {
   useEffect(() => {
     async function load() {
       try {
-        const supabase = getSupabase();
-        const { data, error: fetchErr } = await supabase
-          .from("correlation_analyses")
-          .select("correlations, category_stats")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
-
-        if (fetchErr) throw fetchErr;
-
-        const row = data as AnalysisRow;
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+        const res = await fetch(
+          `${url}/rest/v1/correlation_analyses?select=correlations,category_stats&order=created_at.desc&limit=1`,
+          {
+            headers: {
+              apikey: key,
+              Authorization: `Bearer ${key}`,
+              Accept: "application/vnd.pgrst.object+json",
+            },
+          }
+        );
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.message || `HTTP ${res.status}`);
+        }
+        const row = (await res.json()) as AnalysisRow;
         const instant = row.correlations.filter((c) => c.lag === 0);
         const laggedPairs = row.correlations.filter((c) => c.lag !== 0);
         setCorrelations(instant);

@@ -18,6 +18,7 @@ const SLEEP_DATA: SleepEntry[] = [
   { date: "2026-03-20", score: 7, label: "Mar 20" },
   { date: "2026-03-21", score: 6, label: "Mar 21" },
   { date: "2026-03-22", score: 8, label: "Mar 22" },
+  { date: "2026-03-23", score: 6, label: "Mar 23" },
 ];
 
 function DonutChart({ score }: { score: number }) {

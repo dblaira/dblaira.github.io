@@ -728,11 +728,11 @@ function InboxView() {
 }
 
 export default function InboxWorkflow() {
-  const [tab, setTab] = useState<"workflow" | "inbox">("workflow");
+  const [tab, setTab] = useState<"workflow" | "inbox">("inbox");
 
   const tabs = [
+    { id: "inbox" as const, label: "Inbox" },
     { id: "workflow" as const, label: "How It Works" },
-    { id: "inbox" as const, label: "Inbox View" },
   ];
 
   return (

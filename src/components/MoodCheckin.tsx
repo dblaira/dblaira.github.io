@@ -38,11 +38,7 @@ export default function MoodCheckin() {
     setSaving(true);
     try {
       const supabase = getSupabase();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not signed in");
-
       await supabase.from("emotion_logs").insert({
-        user_id: user.id,
         emotion: emotion.emotion,
         energy: emotion.energy,
         valence: emotion.valence,

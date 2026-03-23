@@ -47,11 +47,7 @@ export default function BeliefLibrary() {
     setSaving(true);
     try {
       const supabase = getSupabase();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       await supabase.from("entries").insert({
-        user_id: user.id,
         headline: headline.trim(),
         content: headline.trim(),
         category: "Spiritual",

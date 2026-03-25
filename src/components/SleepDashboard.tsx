@@ -1,9 +1,23 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
 
 const CRIMSON = "#DC143C";
 const CREAM = "#F5F0E8";
+
+const SLEEP_RATINGS = [
+  { score: 10, label: "Perfect", desc: "Peak sleep. Fully restored, sharp, energized." },
+  { score: 9,  label: "Excellent", desc: "Slept through, woke up feeling strong." },
+  { score: 8,  label: "Very Good", desc: "Deep sleep, well rested, minor nothing." },
+  { score: 7,  label: "Good", desc: "Solid sleep. Woke once maybe, still recovered." },
+  { score: 6,  label: "Decent", desc: "Mostly solid. Minor disruption or early wake." },
+  { score: 5,  label: "Average", desc: "Slept but not deeply. Functional." },
+  { score: 4,  label: "Below Average", desc: "Light sleep, some disruption, a bit flat." },
+  { score: 3,  label: "Poor", desc: "Restless. Under 5 hours or broken throughout." },
+  { score: 2,  label: "Very Poor", desc: "Multiple wake-ups. Unrefreshed." },
+  { score: 1,  label: "Terrible", desc: "Barely slept. Noticeable impairment." },
+];
 
 interface SleepEntry {
   date: string;
@@ -181,8 +195,33 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
 }
 
 export default function SleepDashboard() {
-  const today = SLEEP_DATA[SLEEP_DATA.length - 1];
-  const avg = (SLEEP_DATA.reduce((s, d) => s + d.score, 0) / SLEEP_DATA.length).toFixed(1);
+  const [entries, setEntries] = useState<SleepEntry[]>(SLEEP_DATA);
+  const [newDate, setNewDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [newScore, setNewScore] = useState(7);
+  const [added, setAdded] = useState(false);
+
+  // Persist added entries in localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("sleep-entries");
+    if (saved) {
+      const parsed: SleepEntry[] = JSON.parse(saved);
+      setEntries([...SLEEP_DATA, ...parsed].sort((a, b) => a.date.localeCompare(b.date)));
+    }
+  }, []);
+
+  function addEntry() {
+    const label = new Date(newDate + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const entry: SleepEntry = { date: newDate, score: newScore, label };
+    const saved = JSON.parse(localStorage.getItem("sleep-entries") || "[]");
+    const updated = [...saved, entry];
+    localStorage.setItem("sleep-entries", JSON.stringify(updated));
+    setEntries([...SLEEP_DATA, ...updated].sort((a, b) => a.date.localeCompare(b.date)));
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  }
+
+  const today = entries[entries.length - 1];
+  const avg = (entries.reduce((s, d) => s + d.score, 0) / entries.length).toFixed(1);
 
   return (
     <div style={{ background: CREAM, minHeight: "100vh" }}>
@@ -276,7 +315,7 @@ export default function SleepDashboard() {
                   color: "#1A1A1A",
                 }}
               >
-                {SLEEP_DATA.length}
+                {entries.length}
               </div>
               <div
                 style={{
@@ -319,7 +358,66 @@ export default function SleepDashboard() {
             TREND
           </span>
           <div style={{ marginTop: 16 }}>
-            <AreaChart data={SLEEP_DATA} />
+            <AreaChart data={entries} />
+          </div>
+        </div>
+      </div>
+
+      {/* Add entry */}
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>
+        <div style={{ background: "#FFFFFF", borderRadius: 16, padding: "24px" }}>
+          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(0,0,0,0.35)" }}>
+            LOG A NIGHT
+          </span>
+          <div style={{ display: "flex", gap: 12, marginTop: 16, alignItems: "flex-end", flexWrap: "wrap" as const }}>
+            <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
+              <label style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "rgba(0,0,0,0.4)", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Date</label>
+              <input
+                type="date"
+                value={newDate}
+                onChange={e => setNewDate(e.target.value)}
+                style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 8, padding: "8px 12px", color: "#1A1A1A", background: CREAM, outline: "none" }}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
+              <label style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "rgba(0,0,0,0.4)", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Score</label>
+              <select
+                value={newScore}
+                onChange={e => setNewScore(Number(e.target.value))}
+                style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 8, padding: "8px 12px", color: "#1A1A1A", background: CREAM, outline: "none" }}
+              >
+                {SLEEP_RATINGS.map(r => (
+                  <option key={r.score} value={r.score}>{r.score} — {r.label}</option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={addEntry}
+              style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", background: added ? "#22C55E" : CRIMSON, color: "#FFFFFF", border: "none", borderRadius: 8, padding: "10px 20px", cursor: "pointer", transition: "background 0.3s" }}
+            >
+              {added ? "✓ Added" : "Add"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Rating scale reference */}
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>
+        <div style={{ background: "#FFFFFF", borderRadius: 16, padding: "24px" }}>
+          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(0,0,0,0.35)" }}>
+            RATING SCALE
+          </span>
+          <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, gap: 2 }}>
+            {SLEEP_RATINGS.map(r => {
+              const color = r.score >= 8 ? "#22C55E" : r.score >= 6 ? "#F59E0B" : r.score >= 4 ? "#FB923C" : CRIMSON;
+              return (
+                <div key={r.score} style={{ display: "flex", alignItems: "baseline", gap: 10, padding: "7px 0", borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
+                  <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 18, fontWeight: 400, color, minWidth: 20, textAlign: "right" as const }}>{r.score}</span>
+                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "#1A1A1A", minWidth: 90 }}>{r.label}</span>
+                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "rgba(0,0,0,0.4)", lineHeight: 1.4 }}>{r.desc}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

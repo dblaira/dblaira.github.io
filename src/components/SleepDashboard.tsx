@@ -200,24 +200,34 @@ export default function SleepDashboard() {
   const [newScore, setNewScore] = useState(7);
   const [added, setAdded] = useState(false);
 
-  // Persist added entries in localStorage
+  const [savedEntries, setSavedEntries] = useState<SleepEntry[]>([]);
+
   useEffect(() => {
     const saved = localStorage.getItem("sleep-entries");
     if (saved) {
       const parsed: SleepEntry[] = JSON.parse(saved);
-      setEntries([...SLEEP_DATA, ...parsed].sort((a, b) => a.date.localeCompare(b.date)));
+      setSavedEntries(parsed);
     }
   }, []);
+
+  useEffect(() => {
+    setEntries([...SLEEP_DATA, ...savedEntries].sort((a, b) => a.date.localeCompare(b.date)));
+  }, [savedEntries]);
 
   function addEntry() {
     const label = new Date(newDate + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
     const entry: SleepEntry = { date: newDate, score: newScore, label };
-    const saved = JSON.parse(localStorage.getItem("sleep-entries") || "[]");
-    const updated = [...saved, entry];
+    const updated = [...savedEntries.filter(e => e.date !== newDate), entry];
     localStorage.setItem("sleep-entries", JSON.stringify(updated));
-    setEntries([...SLEEP_DATA, ...updated].sort((a, b) => a.date.localeCompare(b.date)));
+    setSavedEntries(updated);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
+  }
+
+  function deleteEntry(date: string) {
+    const updated = savedEntries.filter(e => e.date !== date);
+    localStorage.setItem("sleep-entries", JSON.stringify(updated));
+    setSavedEntries(updated);
   }
 
   const today = entries[entries.length - 1];
@@ -400,6 +410,48 @@ export default function SleepDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Logged entries — editable */}
+      {savedEntries.length > 0 && (
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>
+          <div style={{ background: "#FFFFFF", borderRadius: 16, padding: "24px" }}>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(0,0,0,0.35)" }}>
+              YOUR ENTRIES
+            </span>
+            <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(0,0,0,0.07)" }}>
+              {[...savedEntries].sort((a, b) => b.date.localeCompare(a.date)).map((e, i) => {
+                const color = e.score >= 8 ? "#16A34A" : e.score >= 6 ? "#D97706" : e.score >= 4 ? "#EA580C" : "#DC143C";
+                const rating = SLEEP_RATINGS.find(r => r.score === e.score);
+                const bg = i % 2 === 0 ? "#FFFFFF" : "#F5F0E8";
+                return (
+                  <div key={e.date} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", background: bg }}>
+                    <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 700, color, minWidth: 30, textAlign: "right" as const, lineHeight: 1 }}>{e.score}</span>
+                    <div style={{ width: 3, height: 32, borderRadius: 2, background: color, flexShrink: 0 }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700, color: "#1A1A1A" }}>{e.label}</div>
+                      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "rgba(0,0,0,0.4)" }}>{rating?.label}</div>
+                    </div>
+                    <button
+                      onClick={() => { setNewDate(e.date); setNewScore(e.score); deleteEntry(e.date); }}
+                      title="Edit"
+                      style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, color: "#D97706", background: "rgba(217,119,6,0.08)", border: "none", borderRadius: 6, padding: "6px 10px", cursor: "pointer", marginRight: 4 }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteEntry(e.date)}
+                      title="Delete"
+                      style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, color: CRIMSON, background: "rgba(220,20,60,0.08)", border: "none", borderRadius: 6, padding: "6px 10px", cursor: "pointer" }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Rating scale reference */}
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>

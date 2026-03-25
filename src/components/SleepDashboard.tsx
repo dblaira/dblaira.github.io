@@ -407,14 +407,18 @@ export default function SleepDashboard() {
           <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(0,0,0,0.35)" }}>
             RATING SCALE
           </span>
-          <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, gap: 2 }}>
-            {SLEEP_RATINGS.map(r => {
-              const color = r.score >= 8 ? "#22C55E" : r.score >= 6 ? "#F59E0B" : r.score >= 4 ? "#FB923C" : CRIMSON;
+          <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(0,0,0,0.07)" }}>
+            {SLEEP_RATINGS.map((r, i) => {
+              const color = r.score >= 8 ? "#16A34A" : r.score >= 6 ? "#D97706" : r.score >= 4 ? "#EA580C" : "#DC143C";
+              const bg = i % 2 === 0 ? "#FFFFFF" : "#F5F0E8";
               return (
-                <div key={r.score} style={{ display: "flex", alignItems: "baseline", gap: 10, padding: "7px 0", borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
-                  <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 18, fontWeight: 400, color, minWidth: 20, textAlign: "right" as const }}>{r.score}</span>
-                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "#1A1A1A", minWidth: 90 }}>{r.label}</span>
-                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "rgba(0,0,0,0.4)", lineHeight: 1.4 }}>{r.desc}</span>
+                <div key={r.score} style={{ display: "flex", alignItems: "center", gap: 16, padding: "14px 16px", background: bg }}>
+                  <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 28, fontWeight: 700, color, minWidth: 32, textAlign: "right" as const, lineHeight: 1 }}>{r.score}</span>
+                  <div style={{ width: 3, height: 36, borderRadius: 2, background: color, flexShrink: 0 }} />
+                  <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
+                    <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, fontWeight: 700, color: "#1A1A1A", letterSpacing: "-0.01em" }}>{r.label}</span>
+                    <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "rgba(0,0,0,0.5)", lineHeight: 1.4 }}>{r.desc}</span>
+                  </div>
                 </div>
               );
             })}

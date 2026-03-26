@@ -102,7 +102,7 @@ export default function DelegatePage() {
             <Field
               number="2"
               label="How I'd think about it"
-              hint="Start with "When I'm… I like to…" — optional but helps"
+              hint={'Start with \u201cWhen I\u2019m\u2026 I like to\u2026\u201d \u2014 optional but helps'}
               value={how}
               onChange={setHow}
               placeholder={PLACEHOLDERS.how}

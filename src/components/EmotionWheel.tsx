@@ -20,14 +20,14 @@ export interface EmotionFamily {
 }
 
 export const FAMILIES: EmotionFamily[] = [
-  { name: "Joy",          color: "#FFD700", energy: "high",  valence: "pleasant",   inner: "Joy",          mid: ["Ecstasy",    "Serenity"],     outer: ["Cheerful",   "Pleased"]     },
-  { name: "Trust",        color: "#00C000", energy: "low",   valence: "pleasant",   inner: "Trust",        mid: ["Admiration", "Acceptance"],   outer: ["Devoted",    "Confident"]   },
-  { name: "Fear",         color: "#00A86B", energy: "high",  valence: "unpleasant", inner: "Fear",         mid: ["Terror",     "Apprehension"], outer: ["Scared",     "Nervous"]     },
-  { name: "Surprise",     color: "#00BFFF", energy: "high",  valence: "unpleasant", inner: "Surprise",     mid: ["Amazement",  "Distraction"],  outer: ["Astonished", "Confused"]    },
-  { name: "Sadness",      color: "#0000FF", energy: "low",   valence: "unpleasant", inner: "Sadness",      mid: ["Grief",      "Pensiveness"],  outer: ["Lonely",     "Hopeless"]    },
-  { name: "Disgust",      color: "#8000FF", energy: "low",   valence: "unpleasant", inner: "Disgust",      mid: ["Loathing",   "Boredom"],      outer: ["Revolted",   "Indifferent"] },
-  { name: "Anger",        color: "#FF0000", energy: "high",  valence: "unpleasant", inner: "Anger",        mid: ["Rage",       "Annoyance"],    outer: ["Furious",    "Irritated"]   },
-  { name: "Anticipation", color: "#FF8000", energy: "high",  valence: "pleasant",   inner: "Anticipation", mid: ["Vigilance",  "Interest"],     outer: ["Eager",      "Curious"]     },
+  { name: "Joy",          color: "#FFD700", energy: "high",  valence: "pleasant",   inner: "Joy",          mid: ["Ecstasy",   "Serenity"],  outer: ["Cheerful", "Pleased"]   },
+  { name: "Trust",        color: "#00C000", energy: "low",   valence: "pleasant",   inner: "Trust",        mid: ["Admiration","Acceptance"], outer: ["Devoted",  "Confident"] },
+  { name: "Fear",         color: "#00A86B", energy: "high",  valence: "unpleasant", inner: "Fear",         mid: ["Terror",    "Uneasy"],     outer: ["Scared",   "Nervous"]   },
+  { name: "Surprise",     color: "#00BFFF", energy: "high",  valence: "unpleasant", inner: "Surprise",     mid: ["Amazement", "Dazed"],      outer: ["Stunned",  "Puzzled"]   },
+  { name: "Sadness",      color: "#0000FF", energy: "low",   valence: "unpleasant", inner: "Sadness",      mid: ["Grief",     "Wistful"],    outer: ["Lonely",   "Lost"]      },
+  { name: "Disgust",      color: "#8000FF", energy: "low",   valence: "unpleasant", inner: "Disgust",      mid: ["Loathing",  "Boredom"],    outer: ["Sick",     "Numb"]      },
+  { name: "Anger",        color: "#FF0000", energy: "high",  valence: "unpleasant", inner: "Anger",        mid: ["Rage",      "Irked"],      outer: ["Furious",  "Testy"]     },
+  { name: "Anticipation", color: "#FF8000", energy: "high",  valence: "pleasant",   inner: "Anticipation", mid: ["Alert",     "Interest"],   outer: ["Eager",    "Curious"]   },
 ];
 
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
@@ -168,9 +168,9 @@ export function EmotionWheel({ selected, onSelect, getLabel }: Props) {
         const dimmed       = !!(selected && !isFamily);
         const opacity      = dimmed ? 0.18 : isSelected ? 1 : isHovered ? 0.97 : seg.baseOpacity;
 
-        const textFill  = dimmed ? "rgba(0,0,0,0.12)" : "rgba(0,0,0,0.82)";
-        const fontSize  = seg.ring === "inner" ? 11 : seg.ring === "mid" ? 8.5 : 7.5;
-        const fontWeight= seg.ring === "inner" ? 700 : 500;
+        const textFill  = dimmed ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.95)";
+        const fontSize  = seg.ring === "inner" ? 13 : seg.ring === "mid" ? 10 : 9;
+        const fontWeight= seg.ring === "inner" ? 700 : 600;
 
         return (
           <g key={`${seg.emotion}-${seg.ring}`}>

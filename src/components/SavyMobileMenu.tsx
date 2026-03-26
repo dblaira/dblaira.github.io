@@ -8,12 +8,12 @@ import type { User } from "@supabase/supabase-js";
 const CRIMSON = "#DC143C";
 
 const NAV_ITEMS: { href: string; label: string; hint?: string }[] = [
-  { href: "/", label: "Home", hint: "Experiments" },
-  { href: "/sleep", label: "Sleep", hint: "Dashboard" },
+  { href: "/delegate", label: "Delegate", hint: "Brief Po" },
   { href: "/mood", label: "Mood", hint: "Emotion Check-in" },
-  { href: "/ontology", label: "Ontology", hint: "Adam's Ontology" },
   { href: "/inbox", label: "Inbox", hint: "Workflow" },
+  { href: "/sleep", label: "Sleep", hint: "Dashboard" },
   { href: "/beliefs", label: "Beliefs", hint: "Belief Library" },
+  { href: "/ontology", label: "Ontology", hint: "Adam's Ontology" },
 ];
 
 export interface SavyMobileMenuProps {
@@ -102,13 +102,26 @@ export function SavyMobileMenu({ isOpen, onClose, user, onSignOut }: SavyMobileM
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {/* Brand anchor */}
-        <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-          <img
-            src="/savy-icon-header.png"
-            alt="SAVY"
-            style={{ width: 40, height: 40, borderRadius: "50%", opacity: 0.9 }}
-          />
+        <div style={{ marginBottom: "1.5rem" }}>
+          <Link
+            href="/"
+            onClick={onClose}
+            style={{
+              display: "inline-block",
+              borderRadius: "50%",
+              transition: "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.25)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+            onTouchStart={(e) => { e.currentTarget.style.transform = "scale(1.25)"; }}
+            onTouchEnd={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+          >
+            <img
+              src="/savy-icon-header.png"
+              alt="Go home"
+              style={{ width: 56, height: 56, borderRadius: "50%", opacity: 0.9, display: "block" }}
+            />
+          </Link>
         </div>
 
         <div

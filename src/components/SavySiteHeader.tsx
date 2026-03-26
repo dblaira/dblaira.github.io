@@ -40,7 +40,7 @@ export function SavySiteHeader() {
             <img
               src="/savy-icon-header.png"
               alt="SAVY"
-              style={{ height: 28, width: 28, borderRadius: "50%" }}
+              style={{ height: 40, width: 40, borderRadius: "50%" }}
             />
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
+import { getSupabase } from "@/lib/supabase";
 
 const CRIMSON = "#DC143C";
 const CREAM = "#F5F0E8";
@@ -20,20 +21,17 @@ const SLEEP_RATINGS = [
 ];
 
 interface SleepEntry {
+  id: string;
   date: string;
   score: number;
-  label: string;
 }
 
-// Sleep data — update as new scores come in
-const SLEEP_DATA: SleepEntry[] = [
-  { date: "2026-03-18", score: 8, label: "Mar 18" },
-  { date: "2026-03-19", score: 5, label: "Mar 19" },
-  { date: "2026-03-20", score: 7, label: "Mar 20" },
-  { date: "2026-03-21", score: 6, label: "Mar 21" },
-  { date: "2026-03-22", score: 8, label: "Mar 22" },
-  { date: "2026-03-23", score: 6, label: "Mar 23" },
-];
+function formatLabel(date: string): string {
+  return new Date(date + "T12:00:00").toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
 
 function DonutChart({ score }: { score: number }) {
   const size = 180;
@@ -47,7 +45,6 @@ function DonutChart({ score }: { score: number }) {
   return (
     <div style={{ position: "relative", width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {/* Background ring */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -56,7 +53,6 @@ function DonutChart({ score }: { score: number }) {
           stroke="rgba(0,0,0,0.06)"
           strokeWidth={strokeWidth}
         />
-        {/* Progress ring */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -70,7 +66,6 @@ function DonutChart({ score }: { score: number }) {
           style={{ transition: "stroke-dasharray 0.8s ease" }}
         />
       </svg>
-      {/* Center text */}
       <div
         style={{
           position: "absolute",
@@ -131,7 +126,6 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
   const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
   const areaPath = `${linePath} L ${points[points.length - 1].x} ${padTop + chartH} L ${points[0].x} ${padTop + chartH} Z`;
 
-  // Gridlines at 2, 4, 6, 8
   const gridLines = [2, 4, 6, 8].map((v) => padTop + chartH - (v / 10) * chartH);
 
   return (
@@ -140,7 +134,6 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
       viewBox={`0 0 ${width} ${height}`}
       style={{ display: "block" }}
     >
-      {/* Grid lines */}
       {gridLines.map((y, i) => (
         <line
           key={i}
@@ -153,13 +146,9 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
         />
       ))}
 
-      {/* Area fill */}
       <path d={areaPath} fill={`${CRIMSON}15`} />
-
-      {/* Line */}
       <path d={linePath} fill="none" stroke={CRIMSON} strokeWidth={2.5} strokeLinejoin="round" />
 
-      {/* Data points + labels */}
       {points.map((p, i) => (
         <g key={i}>
           <circle cx={p.x} cy={p.y} r={4} fill="#FFFFFF" stroke={CRIMSON} strokeWidth={2} />
@@ -186,7 +175,7 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
               fill: "rgba(0,0,0,0.35)",
             }}
           >
-            {p.label}
+            {formatLabel(p.date)}
           </text>
         </g>
       ))}
@@ -195,43 +184,90 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
 }
 
 export default function SleepDashboard() {
-  const [entries, setEntries] = useState<SleepEntry[]>(SLEEP_DATA);
+  const [entries, setEntries] = useState<SleepEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [newDate, setNewDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [newScore, setNewScore] = useState(7);
   const [added, setAdded] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const [savedEntries, setSavedEntries] = useState<SleepEntry[]>([]);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("sleep-entries");
-    if (saved) {
-      const parsed: SleepEntry[] = JSON.parse(saved);
-      setSavedEntries(parsed);
+  const fetchEntries = useCallback(async () => {
+    try {
+      const { data, error: fetchError } = await getSupabase()
+        .from("sleep_entries")
+        .select("*")
+        .order("date");
+      if (fetchError) throw fetchError;
+      setEntries(data ?? []);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load entries");
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    setEntries([...SLEEP_DATA, ...savedEntries].sort((a, b) => a.date.localeCompare(b.date)));
-  }, [savedEntries]);
+    fetchEntries();
+  }, [fetchEntries]);
 
-  function addEntry() {
-    const label = new Date(newDate + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    const entry: SleepEntry = { date: newDate, score: newScore, label };
-    const updated = [...savedEntries.filter(e => e.date !== newDate), entry];
-    localStorage.setItem("sleep-entries", JSON.stringify(updated));
-    setSavedEntries(updated);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+  async function addEntry() {
+    setSaving(true);
+    try {
+      const { error: upsertError } = await getSupabase()
+        .from("sleep_entries")
+        .upsert({ date: newDate, score: newScore }, { onConflict: "date" });
+      if (upsertError) throw upsertError;
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+      await fetchEntries();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save entry");
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function deleteEntry(date: string) {
-    const updated = savedEntries.filter(e => e.date !== date);
-    localStorage.setItem("sleep-entries", JSON.stringify(updated));
-    setSavedEntries(updated);
+  async function deleteEntry(id: string) {
+    try {
+      const { error: deleteError } = await getSupabase()
+        .from("sleep_entries")
+        .delete()
+        .eq("id", id);
+      if (deleteError) throw deleteError;
+      await fetchEntries();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete entry");
+    }
   }
 
-  const today = entries[entries.length - 1];
-  const avg = (entries.reduce((s, d) => s + d.score, 0) / entries.length).toFixed(1);
+  if (loading) {
+    return (
+      <div style={{ background: CREAM, minHeight: "100vh" }}>
+        <SavySiteHeader />
+        <div style={{ padding: "80px 24px", maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
+          <span
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 13,
+              fontWeight: 500,
+              color: "rgba(0,0,0,0.35)",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+            }}
+          >
+            Loading sleep data...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  const latest = entries.length > 0 ? entries[entries.length - 1] : null;
+  const avg = entries.length > 0
+    ? (entries.reduce((s, d) => s + d.score, 0) / entries.length).toFixed(1)
+    : "—";
 
   return (
     <div style={{ background: CREAM, minHeight: "100vh" }}>
@@ -266,112 +302,134 @@ export default function SleepDashboard() {
         </h1>
       </div>
 
-      {/* Today's score — donut */}
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>
-        <div
-          style={{
-            background: "#FFFFFF",
-            borderRadius: 16,
-            padding: "32px 24px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 16,
-          }}
-        >
-          <span
+      {error && (
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 16px" }}>
+          <div
             style={{
+              background: "rgba(220,20,60,0.06)",
+              border: `1px solid ${CRIMSON}30`,
+              borderRadius: 12,
+              padding: "12px 16px",
               fontFamily: "'Inter', sans-serif",
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: "rgba(0,0,0,0.35)",
+              fontSize: 13,
+              color: CRIMSON,
             }}
           >
-            TODAY — {today.label.toUpperCase()}
-          </span>
-          <DonutChart score={today.score} />
-          <div style={{ display: "flex", gap: 24, marginTop: 8 }}>
-            <div style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  fontFamily: "'Playfair Display', Georgia, serif",
-                  fontSize: 24,
-                  color: "#1A1A1A",
-                }}
-              >
-                {avg}
+            {error}
+          </div>
+        </div>
+      )}
+
+      {/* Today's score — donut */}
+      {latest && (
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>
+          <div
+            style={{
+              background: "#FFFFFF",
+              borderRadius: 16,
+              padding: "32px 24px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 16,
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "rgba(0,0,0,0.35)",
+              }}
+            >
+              LATEST — {formatLabel(latest.date).toUpperCase()}
+            </span>
+            <DonutChart score={latest.score} />
+            <div style={{ display: "flex", gap: 24, marginTop: 8 }}>
+              <div style={{ textAlign: "center" }}>
+                <div
+                  style={{
+                    fontFamily: "'Playfair Display', Georgia, serif",
+                    fontSize: 24,
+                    color: "#1A1A1A",
+                  }}
+                >
+                  {avg}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: 10,
+                    fontWeight: 500,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "rgba(0,0,0,0.35)",
+                    marginTop: 2,
+                  }}
+                >
+                  AVG
+                </div>
               </div>
-              <div
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 10,
-                  fontWeight: 500,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  color: "rgba(0,0,0,0.35)",
-                  marginTop: 2,
-                }}
-              >
-                AVG
-              </div>
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  fontFamily: "'Playfair Display', Georgia, serif",
-                  fontSize: 24,
-                  color: "#1A1A1A",
-                }}
-              >
-                {entries.length}
-              </div>
-              <div
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 10,
-                  fontWeight: 500,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  color: "rgba(0,0,0,0.35)",
-                  marginTop: 2,
-                }}
-              >
-                NIGHTS
+              <div style={{ textAlign: "center" }}>
+                <div
+                  style={{
+                    fontFamily: "'Playfair Display', Georgia, serif",
+                    fontSize: 24,
+                    color: "#1A1A1A",
+                  }}
+                >
+                  {entries.length}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: 10,
+                    fontWeight: 500,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "rgba(0,0,0,0.35)",
+                    marginTop: 2,
+                  }}
+                >
+                  NIGHTS
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Area chart — trend */}
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>
-        <div
-          style={{
-            background: "#FFFFFF",
-            borderRadius: 16,
-            padding: "24px 16px",
-          }}
-        >
-          <span
+      {entries.length >= 2 && (
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>
+          <div
             style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: "rgba(0,0,0,0.35)",
-              paddingLeft: 8,
+              background: "#FFFFFF",
+              borderRadius: 16,
+              padding: "24px 16px",
             }}
           >
-            TREND
-          </span>
-          <div style={{ marginTop: 16 }}>
-            <AreaChart data={entries} />
+            <span
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "rgba(0,0,0,0.35)",
+                paddingLeft: 8,
+              }}
+            >
+              TREND
+            </span>
+            <div style={{ marginTop: 16 }}>
+              <AreaChart data={entries} />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Add entry */}
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>
@@ -403,43 +461,44 @@ export default function SleepDashboard() {
             </div>
             <button
               onClick={addEntry}
-              style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", background: added ? "#22C55E" : CRIMSON, color: "#FFFFFF", border: "none", borderRadius: 8, padding: "10px 20px", cursor: "pointer", transition: "background 0.3s" }}
+              disabled={saving}
+              style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", background: added ? "#22C55E" : CRIMSON, color: "#FFFFFF", border: "none", borderRadius: 8, padding: "10px 20px", cursor: saving ? "wait" : "pointer", transition: "background 0.3s", opacity: saving ? 0.7 : 1 }}
             >
-              {added ? "✓ Added" : "Add"}
+              {added ? "✓ Added" : saving ? "Saving..." : "Add"}
             </button>
           </div>
         </div>
       </div>
 
       {/* Logged entries — editable */}
-      {savedEntries.length > 0 && (
+      {entries.length > 0 && (
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>
           <div style={{ background: "#FFFFFF", borderRadius: 16, padding: "24px" }}>
             <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(0,0,0,0.35)" }}>
               YOUR ENTRIES
             </span>
             <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(0,0,0,0.07)" }}>
-              {[...savedEntries].sort((a, b) => b.date.localeCompare(a.date)).map((e, i) => {
+              {[...entries].sort((a, b) => b.date.localeCompare(a.date)).map((e, i) => {
                 const color = e.score >= 8 ? "#16A34A" : e.score >= 6 ? "#D97706" : e.score >= 4 ? "#EA580C" : "#DC143C";
                 const rating = SLEEP_RATINGS.find(r => r.score === e.score);
                 const bg = i % 2 === 0 ? "#FFFFFF" : "#F5F0E8";
                 return (
-                  <div key={e.date} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", background: bg }}>
+                  <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", background: bg }}>
                     <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 700, color, minWidth: 30, textAlign: "right" as const, lineHeight: 1 }}>{e.score}</span>
                     <div style={{ width: 3, height: 32, borderRadius: 2, background: color, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700, color: "#1A1A1A" }}>{e.label}</div>
+                      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700, color: "#1A1A1A" }}>{formatLabel(e.date)}</div>
                       <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "rgba(0,0,0,0.4)" }}>{rating?.label}</div>
                     </div>
                     <button
-                      onClick={() => { setNewDate(e.date); setNewScore(e.score); deleteEntry(e.date); }}
+                      onClick={() => { setNewDate(e.date); setNewScore(e.score); deleteEntry(e.id); }}
                       title="Edit"
                       style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, color: "#D97706", background: "rgba(217,119,6,0.08)", border: "none", borderRadius: 6, padding: "6px 10px", cursor: "pointer", marginRight: 4 }}
                     >
                       Edit
                     </button>
                     <button
-                      onClick={() => deleteEntry(e.date)}
+                      onClick={() => deleteEntry(e.id)}
                       title="Delete"
                       style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, color: CRIMSON, background: "rgba(220,20,60,0.08)", border: "none", borderRadius: 6, padding: "6px 10px", cursor: "pointer" }}
                     >

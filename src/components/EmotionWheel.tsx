@@ -15,18 +15,19 @@ export interface EmotionFamily {
   energy: "high" | "low";
   valence: "pleasant" | "unpleasant";
   inner: string;
+  mid: string[];
   outer: string[];
 }
 
 export const FAMILIES: EmotionFamily[] = [
-  { name: "Joy",          color: "#FFD700", energy: "high",  valence: "pleasant",    inner: "Joy",          outer: ["Ecstasy", "Serenity"] },
-  { name: "Trust",        color: "#00C000", energy: "low",   valence: "pleasant",    inner: "Trust",        outer: ["Admiration", "Acceptance"] },
-  { name: "Fear",         color: "#00A86B", energy: "high",  valence: "unpleasant",  inner: "Fear",         outer: ["Terror", "Apprehension"] },
-  { name: "Surprise",     color: "#00BFFF", energy: "high",  valence: "unpleasant",  inner: "Surprise",     outer: ["Amazement", "Distraction"] },
-  { name: "Sadness",      color: "#0000FF", energy: "low",   valence: "unpleasant",  inner: "Sadness",      outer: ["Grief", "Pensiveness"] },
-  { name: "Disgust",      color: "#8000FF", energy: "low",   valence: "unpleasant",  inner: "Disgust",      outer: ["Loathing", "Boredom"] },
-  { name: "Anger",        color: "#FF0000", energy: "high",  valence: "unpleasant",  inner: "Anger",        outer: ["Rage", "Annoyance"] },
-  { name: "Anticipation", color: "#FF8000", energy: "high",  valence: "pleasant",    inner: "Anticipation", outer: ["Vigilance", "Interest"] },
+  { name: "Joy",          color: "#FFD700", energy: "high",  valence: "pleasant",   inner: "Joy",          mid: ["Ecstasy",    "Serenity"],     outer: ["Cheerful",   "Pleased"]     },
+  { name: "Trust",        color: "#00C000", energy: "low",   valence: "pleasant",   inner: "Trust",        mid: ["Admiration", "Acceptance"],   outer: ["Devoted",    "Confident"]   },
+  { name: "Fear",         color: "#00A86B", energy: "high",  valence: "unpleasant", inner: "Fear",         mid: ["Terror",     "Apprehension"], outer: ["Scared",     "Nervous"]     },
+  { name: "Surprise",     color: "#00BFFF", energy: "high",  valence: "unpleasant", inner: "Surprise",     mid: ["Amazement",  "Distraction"],  outer: ["Astonished", "Confused"]    },
+  { name: "Sadness",      color: "#0000FF", energy: "low",   valence: "unpleasant", inner: "Sadness",      mid: ["Grief",      "Pensiveness"],  outer: ["Lonely",     "Hopeless"]    },
+  { name: "Disgust",      color: "#8000FF", energy: "low",   valence: "unpleasant", inner: "Disgust",      mid: ["Loathing",   "Boredom"],      outer: ["Revolted",   "Indifferent"] },
+  { name: "Anger",        color: "#FF0000", energy: "high",  valence: "unpleasant", inner: "Anger",        mid: ["Rage",       "Annoyance"],    outer: ["Furious",    "Irritated"]   },
+  { name: "Anticipation", color: "#FF8000", energy: "high",  valence: "pleasant",   inner: "Anticipation", mid: ["Vigilance",  "Interest"],     outer: ["Eager",      "Curious"]     },
 ];
 
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
@@ -49,6 +50,25 @@ function arcPath(cx: number, cy: number, rInner: number, rOuter: number, startAn
   ].join(" ");
 }
 
+// Radial text: right side reads inward→outward, left side flipped to stay legible
+function radialTextRotation(midAngleDeg: number): number {
+  const a = ((midAngleDeg % 360) + 360) % 360;
+  return a > 180 ? midAngleDeg + 90 : midAngleDeg - 90;
+}
+
+interface SegmentData {
+  path: string;
+  labelText: string;
+  labelPos: { x: number; y: number };
+  labelRotate: number;
+  color: string;
+  baseOpacity: number;
+  emotion: string;
+  family: EmotionFamily;
+  ring: "inner" | "mid" | "outer";
+  rotated: boolean;
+}
+
 interface Props {
   selected: EmotionSelection | null;
   onSelect: (sel: EmotionSelection) => void;
@@ -59,67 +79,81 @@ export function EmotionWheel({ selected, onSelect, getLabel }: Props) {
   const label = getLabel ?? ((s: string) => s);
   const [hovered, setHovered] = useState<string | null>(null);
 
-  const size = 340;
-  const cx = size / 2;
-  const cy = size / 2;
-  const innerR = 50;
-  const midR = 110;
-  const outerR = 155;
-  const sliceAngle = 360 / FAMILIES.length;
+  const size    = 440;
+  const cx      = size / 2;
+  const cy      = size / 2;
+  const centerR = 50;   // white center circle
+  const ring1In = 50;   // inner ring start
+  const ring1Out= 120;  // inner ring end / mid ring start
+  const ring2Out= 175;  // mid ring end / outer ring start
+  const ring3Out= 215;  // outer ring end
 
-  const segments = useMemo(() => {
-    const result: {
-      path: string;
-      label: string;
-      labelPos: { x: number; y: number };
-      color: string;
-      emotion: string;
-      family: EmotionFamily;
-      ring: "inner" | "outer";
-      outerIndex?: number;
-    }[] = [];
+  const sliceAngle    = 360 / FAMILIES.length;  // 45°
+  const subSliceAngle = sliceAngle / 2;          // 22.5°
+
+  const segments = useMemo((): SegmentData[] => {
+    const result: SegmentData[] = [];
 
     FAMILIES.forEach((fam, i) => {
       const startAngle = i * sliceAngle;
-      const endAngle = startAngle + sliceAngle;
-      const midAngle = startAngle + sliceAngle / 2;
+      const endAngle   = startAngle + sliceAngle;
+      const midAngle   = startAngle + sliceAngle / 2;
 
-      // Inner ring (core emotion)
-      const innerPath = arcPath(cx, cy, innerR, midR, startAngle, endAngle);
-      const innerLabel = polarToCartesian(cx, cy, (innerR + midR) / 2, midAngle);
+      // Inner ring — full 45° slice, core emotion
       result.push({
-        path: innerPath,
-        label: fam.inner,
-        labelPos: innerLabel,
-        color: fam.color,
-        emotion: fam.inner,
-        family: fam,
-        ring: "inner",
+        path:        arcPath(cx, cy, ring1In, ring1Out, startAngle, endAngle),
+        labelText:   fam.inner,
+        labelPos:    polarToCartesian(cx, cy, (ring1In + ring1Out) / 2, midAngle),
+        labelRotate: 0,
+        color:       fam.color,
+        baseOpacity: 1,
+        emotion:     fam.inner,
+        family:      fam,
+        ring:        "inner",
+        rotated:     false,
       });
 
-      // Outer ring (2 variants per family)
-      const outerSlice = sliceAngle / fam.outer.length;
-      fam.outer.forEach((variant, j) => {
-        const oStart = startAngle + j * outerSlice;
-        const oEnd = oStart + outerSlice;
-        const oMid = oStart + outerSlice / 2;
-        const outerPath = arcPath(cx, cy, midR, outerR, oStart, oEnd);
-        const outerLabel = polarToCartesian(cx, cy, (midR + outerR) / 2, oMid);
+      // Mid ring — 2 sub-slices of 22.5° each
+      fam.mid.forEach((variant, j) => {
+        const sA = startAngle + j * subSliceAngle;
+        const eA = sA + subSliceAngle;
+        const mA = sA + subSliceAngle / 2;
         result.push({
-          path: outerPath,
-          label: variant,
-          labelPos: outerLabel,
-          color: fam.color,
-          emotion: variant,
-          family: fam,
-          ring: "outer",
-          outerIndex: j,
+          path:        arcPath(cx, cy, ring1Out, ring2Out, sA, eA),
+          labelText:   variant,
+          labelPos:    polarToCartesian(cx, cy, (ring1Out + ring2Out) / 2, mA),
+          labelRotate: radialTextRotation(mA),
+          color:       fam.color,
+          baseOpacity: 0.80,
+          emotion:     variant,
+          family:      fam,
+          ring:        "mid",
+          rotated:     true,
+        });
+      });
+
+      // Outer ring — 2 sub-slices of 22.5° each
+      fam.outer.forEach((variant, j) => {
+        const sA = startAngle + j * subSliceAngle;
+        const eA = sA + subSliceAngle;
+        const mA = sA + subSliceAngle / 2;
+        result.push({
+          path:        arcPath(cx, cy, ring2Out, ring3Out, sA, eA),
+          labelText:   variant,
+          labelPos:    polarToCartesian(cx, cy, (ring2Out + ring3Out) / 2, mA),
+          labelRotate: radialTextRotation(mA),
+          color:       fam.color,
+          baseOpacity: 0.62,
+          emotion:     variant,
+          family:      fam,
+          ring:        "outer",
+          rotated:     true,
         });
       });
     });
 
     return result;
-  }, [cx, cy, sliceAngle]);
+  }, [cx, cy, sliceAngle, subSliceAngle]);
 
   return (
     <svg
@@ -128,28 +162,31 @@ export function EmotionWheel({ selected, onSelect, getLabel }: Props) {
     >
       {segments.map((seg) => {
         const displayLabel = label(seg.emotion);
-        const isSelected = selected?.emotion === displayLabel;
-        const isHovered = hovered === seg.emotion;
-        const isFamily = selected?.family === seg.family.name;
-        const dimmed = selected && !isFamily;
-        const baseOpacity = seg.ring === "inner" ? 0.9 : 0.65;
-        const opacity = dimmed ? 0.25 : isSelected ? 1 : isHovered ? 0.95 : baseOpacity;
+        const isSelected   = selected?.emotion === displayLabel;
+        const isHovered    = hovered === seg.emotion;
+        const isFamily     = selected?.family === seg.family.name;
+        const dimmed       = !!(selected && !isFamily);
+        const opacity      = dimmed ? 0.18 : isSelected ? 1 : isHovered ? 0.97 : seg.baseOpacity;
+
+        const textFill  = dimmed ? "rgba(0,0,0,0.12)" : "rgba(0,0,0,0.82)";
+        const fontSize  = seg.ring === "inner" ? 11 : seg.ring === "mid" ? 8.5 : 7.5;
+        const fontWeight= seg.ring === "inner" ? 700 : 500;
 
         return (
-          <g key={seg.emotion + seg.ring}>
+          <g key={`${seg.emotion}-${seg.ring}`}>
             <path
               d={seg.path}
               fill={seg.color}
               opacity={opacity}
-              stroke={isSelected ? "#DC143C" : "#FFFFFF"}
-              strokeWidth={isSelected ? 3 : 1}
-              style={{ cursor: "pointer", transition: "opacity 0.15s, stroke-width 0.15s" }}
+              stroke={isSelected ? "#1a1a1a" : "#FFFFFF"}
+              strokeWidth={isSelected ? 2.5 : 0.8}
+              style={{ cursor: "pointer", transition: "opacity 0.15s" }}
               onClick={() =>
                 onSelect({
-                  emotion: displayLabel,
-                  family: seg.family.name,
-                  energy: seg.family.energy,
-                  valence: seg.family.valence,
+                  emotion:  displayLabel,
+                  family:   seg.family.name,
+                  energy:   seg.family.energy,
+                  valence:  seg.family.valence,
                 })
               }
               onMouseEnter={() => setHovered(seg.emotion)}
@@ -160,10 +197,11 @@ export function EmotionWheel({ selected, onSelect, getLabel }: Props) {
               y={seg.labelPos.y}
               textAnchor="middle"
               dominantBaseline="central"
-              fill={dimmed ? "rgba(0,0,0,0.15)" : "rgba(0,0,0,0.75)"}
+              fill={textFill}
               fontFamily="'Inter', sans-serif"
-              fontWeight={seg.ring === "inner" ? 700 : 500}
-              fontSize={seg.ring === "inner" ? 11 : 9}
+              fontWeight={fontWeight}
+              fontSize={fontSize}
+              transform={seg.rotated ? `rotate(${seg.labelRotate}, ${seg.labelPos.x}, ${seg.labelPos.y})` : undefined}
               style={{ pointerEvents: "none", transition: "fill 0.15s" }}
             >
               {displayLabel}
@@ -172,31 +210,25 @@ export function EmotionWheel({ selected, onSelect, getLabel }: Props) {
         );
       })}
 
-      {/* Center circle */}
-      <circle cx={cx} cy={cy} r={innerR} fill="#F5F0E8" stroke="rgba(0,0,0,0.08)" strokeWidth={1} />
+      {/* Centre circle */}
+      <circle cx={cx} cy={cy} r={centerR} fill="#F5F0E8" stroke="rgba(0,0,0,0.08)" strokeWidth={1} />
       <text
-        x={cx}
-        y={cy - 6}
-        textAnchor="middle"
-        dominantBaseline="central"
+        x={cx} y={cy - 7}
+        textAnchor="middle" dominantBaseline="central"
         fill={selected ? "#DC143C" : "rgba(0,0,0,0.25)"}
         fontFamily="'Playfair Display', Georgia, serif"
-        fontWeight={400}
-        fontStyle="italic"
+        fontWeight={400} fontStyle="italic"
         fontSize={selected ? 13 : 11}
         style={{ transition: "all 0.2s" }}
       >
         {selected?.emotion ?? "How do"}
       </text>
       <text
-        x={cx}
-        y={cy + 10}
-        textAnchor="middle"
-        dominantBaseline="central"
+        x={cx} y={cy + 10}
+        textAnchor="middle" dominantBaseline="central"
         fill={selected ? "rgba(220,20,60,0.6)" : "rgba(0,0,0,0.2)"}
         fontFamily="'Inter', sans-serif"
-        fontWeight={500}
-        fontSize={9}
+        fontWeight={500} fontSize={9}
         style={{ transition: "all 0.2s" }}
       >
         {selected ? selected.family : "you feel?"}

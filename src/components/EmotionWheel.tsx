@@ -19,14 +19,14 @@ export interface EmotionFamily {
 }
 
 export const FAMILIES: EmotionFamily[] = [
-  { name: "Joy",          color: "#FBBF24", energy: "high",  valence: "pleasant",    inner: "Joy",          outer: ["Ecstasy", "Serenity"] },
-  { name: "Trust",        color: "#22C55E", energy: "low",   valence: "pleasant",    inner: "Trust",        outer: ["Admiration", "Acceptance"] },
-  { name: "Fear",         color: "#10B981", energy: "high",  valence: "unpleasant",  inner: "Fear",         outer: ["Terror", "Apprehension"] },
-  { name: "Surprise",     color: "#06B6D4", energy: "high",  valence: "unpleasant",  inner: "Surprise",     outer: ["Amazement", "Distraction"] },
-  { name: "Sadness",      color: "#3B82F6", energy: "low",   valence: "unpleasant",  inner: "Sadness",      outer: ["Grief", "Pensiveness"] },
-  { name: "Disgust",      color: "#8B5CF6", energy: "low",   valence: "unpleasant",  inner: "Disgust",      outer: ["Loathing", "Boredom"] },
-  { name: "Anger",        color: "#EF4444", energy: "high",  valence: "unpleasant",  inner: "Anger",        outer: ["Rage", "Annoyance"] },
-  { name: "Anticipation", color: "#F97316", energy: "high",  valence: "pleasant",    inner: "Anticipation", outer: ["Vigilance", "Interest"] },
+  { name: "Joy",          color: "#FFD700", energy: "high",  valence: "pleasant",    inner: "Joy",          outer: ["Ecstasy", "Serenity"] },
+  { name: "Trust",        color: "#00C000", energy: "low",   valence: "pleasant",    inner: "Trust",        outer: ["Admiration", "Acceptance"] },
+  { name: "Fear",         color: "#00A86B", energy: "high",  valence: "unpleasant",  inner: "Fear",         outer: ["Terror", "Apprehension"] },
+  { name: "Surprise",     color: "#00BFFF", energy: "high",  valence: "unpleasant",  inner: "Surprise",     outer: ["Amazement", "Distraction"] },
+  { name: "Sadness",      color: "#0000FF", energy: "low",   valence: "unpleasant",  inner: "Sadness",      outer: ["Grief", "Pensiveness"] },
+  { name: "Disgust",      color: "#8000FF", energy: "low",   valence: "unpleasant",  inner: "Disgust",      outer: ["Loathing", "Boredom"] },
+  { name: "Anger",        color: "#FF0000", energy: "high",  valence: "unpleasant",  inner: "Anger",        outer: ["Rage", "Annoyance"] },
+  { name: "Anticipation", color: "#FF8000", energy: "high",  valence: "pleasant",    inner: "Anticipation", outer: ["Vigilance", "Interest"] },
 ];
 
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {

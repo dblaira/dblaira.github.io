@@ -56,6 +56,13 @@ const EXPERIMENTS: ExperimentCard[] = [
     status: "live",
     href: "/agents",
   },
+  {
+    label: "DELEGATE",
+    title: "Delegation Brief",
+    desc: "Brief Po in 3 steps: what you want, how you'd think about it, what done looks like.",
+    status: "live",
+    href: "/delegate",
+  },
 ];
 
 // QUOTE removed — replaced by live BeliefCarousel component

@@ -12,14 +12,12 @@ import {
   SimulationNodeDatum,
 } from "d3-force";
 import type { CorrelationPair, CategoryStats } from "@/lib/types";
-import { getCategoryColor } from "@/lib/types";
 
 interface NetworkNode extends SimulationNodeDatum {
   id: string;
   category: string;
   totalCount: number;
   radius: number;
-  color: string;
 }
 
 interface NetworkLink {
@@ -36,12 +34,20 @@ interface OntologyNetworkProps {
   stats: CategoryStats[];
 }
 
+const EDGE_COLORS = {
+  positive: "#4F7F63", // Rise together (muted green)
+  negative: "#B79A7A", // Trade off (muted brown)
+  lagged: "#A74D4D", // Predicts (lagged, muted red)
+} as const;
+
 export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetworkProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [nodes, setNodes] = useState<NetworkNode[]>([]);
   const [links, setLinks] = useState<NetworkLink[]>([]);
   const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
   const [hoveredPair, setHoveredPair] = useState<{ catA: string; catB: string } | null>(null);
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+  const [iconLoadErrors, setIconLoadErrors] = useState<Record<string, true>>({});
   const simulationRef = useRef<ReturnType<typeof forceSimulation<NetworkNode>> | null>(null);
 
   useEffect(() => {
@@ -67,7 +73,6 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
       category: s.category,
       totalCount: s.totalCount,
       radius: minR + (Math.log(s.totalCount + 1) / Math.log(maxCount + 1)) * (maxR - minR),
-      color: getCategoryColor(s.category),
     }));
 
     const newLinks: NetworkLink[] = [];
@@ -82,25 +87,23 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
     }
 
     for (const c of lagged) {
-      const exists = newLinks.some((l) => {
-        const sId = typeof l.source === "string" ? l.source : l.source.id;
-        const tId = typeof l.target === "string" ? l.target : l.target.id;
-        return (sId === c.categoryA && tId === c.categoryB) || (sId === c.categoryB && tId === c.categoryA);
+      newLinks.push({
+        source: c.categoryA,
+        target: c.categoryB,
+        coefficient: c.coefficient,
+        type: "lagged",
+        lag: c.lag,
       });
-      if (!exists) {
-        newLinks.push({
-          source: c.categoryA,
-          target: c.categoryB,
-          coefficient: c.coefficient,
-          type: "lagged",
-          lag: c.lag,
-        });
-      }
     }
 
     setNodes(newNodes);
     setLinks(newLinks);
   }, [correlations, lagged, stats]);
+
+  useEffect(() => {
+    setIconLoadErrors({});
+    setActiveNodeId(null);
+  }, [stats]);
 
   useEffect(() => {
     if (nodes.length === 0 || dimensions.width === 0) return;
@@ -145,9 +148,10 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
           (hoveredPair.catA === sId && hoveredPair.catB === tId) ||
           (hoveredPair.catA === tId && hoveredPair.catB === sId) ||
           hoveredPair.catB === "__ALL__" && (hoveredPair.catA === sId || hoveredPair.catA === tId);
-        return match ? 1 : 0.08;
+        return match ? 1 : (link.type === "lagged" ? 0.2 : 0.08);
       }
-      return 0.15 + Math.abs(link.coefficient) * 0.6;
+      if (link.type === "lagged") return 0.92;
+      return 0.2 + Math.abs(link.coefficient) * 0.55;
     },
     [hoveredPair]
   );
@@ -161,12 +165,19 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
     [hoveredPair]
   );
 
+  const markIconError = useCallback((category: string) => {
+    setIconLoadErrors((current) => {
+      if (current[category]) return current;
+      return { ...current, [category]: true };
+    });
+  }, []);
+
   return (
     <div style={{ position: "relative", width: "100%" }}>
       <svg ref={svgRef} width={dimensions.width} height={dimensions.height} style={{ display: "block" }}>
         <defs>
           <marker id="arrow-lagged" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
-            <path d="M 0 0 L 10 3 L 0 6 z" fill="#F59E0B" opacity="0.7" />
+            <path d="M 0 0 L 10 3 L 0 6 z" fill={EDGE_COLORS.lagged} opacity="0.95" />
           </marker>
         </defs>
 
@@ -176,9 +187,17 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
           if (!source?.x || !target?.x) return null;
 
           const strength = Math.abs(link.coefficient);
-          const strokeWidth = 1 + strength * 5;
-          const color = link.type === "lagged" ? "#F59E0B" : link.type === "positive" ? "#16a34a" : "#DC143C";
-          const dashArray = link.type === "lagged" ? "6,4" : "none";
+          const strokeWidth =
+            link.type === "lagged"
+              ? Math.max(2.2, 1.6 + strength * 2.2)
+              : 0.8 + strength * 3.4;
+          const color =
+            link.type === "lagged"
+              ? EDGE_COLORS.lagged
+              : link.type === "positive"
+              ? EDGE_COLORS.positive
+              : EDGE_COLORS.negative;
+          const dashArray = link.type === "lagged" ? "1,8" : "none";
           const sId = typeof link.source === "string" ? link.source : link.source.id;
           const tId = typeof link.target === "string" ? link.target : link.target.id;
 
@@ -192,6 +211,7 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
               stroke={color}
               strokeWidth={strokeWidth}
               strokeDasharray={dashArray}
+              strokeLinecap={link.type === "lagged" ? "round" : "butt"}
               opacity={edgeOpacity(link)}
               style={{ transition: "opacity 200ms", cursor: "pointer" }}
               markerEnd={link.type === "lagged" ? "url(#arrow-lagged)" : undefined}
@@ -204,7 +224,13 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
         {nodes.map((node) => {
           if (!node.x || !node.y) return null;
           const iconSize = node.radius * 1.1;
-          const fontSize = Math.max(7, Math.min(10, node.radius * 0.32));
+          const fontSize = Math.max(8, Math.min(11, node.radius * 0.34));
+          const labelFits = node.radius >= 22;
+          const iconHref = `/icons/ontology/${node.category}.svg`;
+          const showIcon = labelFits && !iconLoadErrors[node.category];
+          const isHovered = hoveredPair?.catA === node.id && hoveredPair.catB === "__ALL__";
+          const showCategoryLabel = isHovered || activeNodeId === node.id;
+          const fallbackLabel = node.category.slice(0, Math.min(4, node.category.length)).toUpperCase();
 
           return (
             <g
@@ -212,36 +238,52 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
               opacity={nodeOpacity(node)}
               style={{ transition: "opacity 200ms", cursor: "pointer" }}
               onMouseEnter={() => setHoveredPair({ catA: node.id, catB: "__ALL__" })}
-              onMouseLeave={() => setHoveredPair(null)}
+              onMouseLeave={() => {
+                if (activeNodeId !== node.id) setHoveredPair(null);
+              }}
+              onPointerDown={(event) => {
+                event.preventDefault();
+                setHoveredPair({ catA: node.id, catB: "__ALL__" });
+                setActiveNodeId((current) => (current === node.id ? null : node.id));
+              }}
             >
-              <circle cx={node.x} cy={node.y} r={node.radius} fill={node.color} opacity={0.85} />
-              <foreignObject
-                x={node.x - iconSize / 2}
-                y={node.y - iconSize / 2 - (node.radius > 24 ? 2 : 0)}
-                width={iconSize}
-                height={iconSize}
-                style={{ pointerEvents: "none" }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/icons/ontology/${node.category}.svg`}
-                  alt=""
+              <circle cx={node.x} cy={node.y} r={node.radius} fill="rgba(0,0,0,0.001)" />
+              {showIcon && (
+                <image
+                  href={iconHref}
+                  xlinkHref={iconHref}
+                  x={node.x - iconSize / 2}
+                  y={node.y - iconSize / 2 - (node.radius > 24 ? 2 : 0)}
                   width={iconSize}
                   height={iconSize}
-                  style={{
-                    filter: "brightness(0) invert(1)",
-                    opacity: 0.95,
-                    pointerEvents: "none",
-                  }}
+                  preserveAspectRatio="xMidYMid meet"
+                  style={{ pointerEvents: "none", opacity: 0.95 }}
+                  onError={() => markIconError(node.category)}
                 />
-              </foreignObject>
-              {node.radius > 24 && (
+              )}
+              {!showIcon && labelFits && (
                 <text
                   x={node.x}
-                  y={node.y + node.radius - fontSize + 1}
+                  y={node.y}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  fill="rgba(255,255,255,0.8)"
+                  fill="#111"
+                  fontFamily="'Inter', sans-serif"
+                  fontWeight={700}
+                  fontSize={fontSize + 1}
+                  letterSpacing="0.03em"
+                  style={{ pointerEvents: "none" }}
+                >
+                  {fallbackLabel}
+                </text>
+              )}
+              {showCategoryLabel && (
+                <text
+                  x={node.x}
+                  y={node.y + node.radius + fontSize + 1}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fill="rgba(0,0,0,0.84)"
                   fontFamily="'Inter', sans-serif"
                   fontWeight={600}
                   fontSize={fontSize}
@@ -255,24 +297,22 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
           );
         })}
       </svg>
-
-      {/* Legend */}
       <div style={{ display: "flex", gap: "1.5rem", justifyContent: "center", marginTop: "0.75rem", flexWrap: "wrap" }}>
         {[
-          { color: "#16a34a", label: "Rise together" },
-          { color: "#DC143C", label: "Trade off" },
-          { color: "#F59E0B", label: "Predicts (lagged)", dashed: true },
+          { color: EDGE_COLORS.positive, label: "Rise together" },
+          { color: EDGE_COLORS.negative, label: "Trade off" },
+          { color: EDGE_COLORS.lagged, label: "Predicts (lagged)", dashed: true },
         ].map((item) => (
           <div key={item.label} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
             <div
               style={{
                 width: 24,
                 height: 3,
-                background: item.color,
-                borderTop: item.dashed ? `1px dashed ${item.color}` : undefined,
+                background: item.dashed ? "transparent" : item.color,
+                borderTop: item.dashed ? `3px dotted ${item.color}` : undefined,
               }}
             />
-            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: "0.7rem", color: "rgba(0,0,0,0.4)" }}>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: "0.7rem", color: "rgba(0,0,0,0.6)" }}>
               {item.label}
             </span>
           </div>

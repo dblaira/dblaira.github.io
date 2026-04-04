@@ -168,10 +168,6 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
           <marker id="arrow-lagged" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
             <path d="M 0 0 L 10 3 L 0 6 z" fill="#F59E0B" opacity="0.7" />
           </marker>
-          {/* Filter to recolor black SVG icons to white */}
-          <filter id="icon-white">
-            <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0" />
-          </filter>
         </defs>
 
         {links.map((link, i) => {
@@ -219,16 +215,26 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
               onMouseLeave={() => setHoveredPair(null)}
             >
               <circle cx={node.x} cy={node.y} r={node.radius} fill={node.color} opacity={0.85} />
-              <image
-                href={`/icons/ontology/${node.category}.svg`}
+              <foreignObject
                 x={node.x - iconSize / 2}
                 y={node.y - iconSize / 2 - (node.radius > 24 ? 2 : 0)}
                 width={iconSize}
                 height={iconSize}
-                filter="url(#icon-white)"
-                opacity={0.95}
                 style={{ pointerEvents: "none" }}
-              />
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/icons/ontology/${node.category}.svg`}
+                  alt=""
+                  width={iconSize}
+                  height={iconSize}
+                  style={{
+                    filter: "brightness(0) invert(1)",
+                    opacity: 0.95,
+                    pointerEvents: "none",
+                  }}
+                />
+              </foreignObject>
               {node.radius > 24 && (
                 <text
                   x={node.x}

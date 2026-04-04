@@ -168,6 +168,10 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
           <marker id="arrow-lagged" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
             <path d="M 0 0 L 10 3 L 0 6 z" fill="#F59E0B" opacity="0.7" />
           </marker>
+          {/* Filter to recolor black SVG icons to white */}
+          <filter id="icon-white">
+            <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0" />
+          </filter>
         </defs>
 
         {links.map((link, i) => {
@@ -203,8 +207,8 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
 
         {nodes.map((node) => {
           if (!node.x || !node.y) return null;
-          const fontSize = Math.max(8, Math.min(12, node.radius * 0.42));
-          const labelFits = node.radius >= 22;
+          const iconSize = node.radius * 1.1;
+          const fontSize = Math.max(7, Math.min(10, node.radius * 0.32));
 
           return (
             <g
@@ -215,35 +219,30 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
               onMouseLeave={() => setHoveredPair(null)}
             >
               <circle cx={node.x} cy={node.y} r={node.radius} fill={node.color} opacity={0.85} />
-              {labelFits && (
+              <image
+                href={`/icons/ontology/${node.category}.svg`}
+                x={node.x - iconSize / 2}
+                y={node.y - iconSize / 2 - (node.radius > 24 ? 2 : 0)}
+                width={iconSize}
+                height={iconSize}
+                filter="url(#icon-white)"
+                opacity={0.95}
+                style={{ pointerEvents: "none" }}
+              />
+              {node.radius > 24 && (
                 <text
                   x={node.x}
-                  y={node.y - (node.radius > 30 ? 4 : 0)}
+                  y={node.y + node.radius - fontSize + 1}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  fill="#fff"
+                  fill="rgba(255,255,255,0.8)"
                   fontFamily="'Inter', sans-serif"
-                  fontWeight={700}
+                  fontWeight={600}
                   fontSize={fontSize}
                   letterSpacing="0.03em"
                   style={{ textTransform: "uppercase", pointerEvents: "none" }}
                 >
-                  {node.category.length > 8 ? node.category.slice(0, 7) + "." : node.category}
-                </text>
-              )}
-              {labelFits && node.radius > 28 && (
-                <text
-                  x={node.x}
-                  y={node.y + fontSize + 1}
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fill="rgba(255,255,255,0.7)"
-                  fontFamily="'Inter', sans-serif"
-                  fontWeight={400}
-                  fontSize={fontSize - 2}
-                  style={{ pointerEvents: "none" }}
-                >
-                  {node.totalCount}
+                  {node.category.length > 9 ? node.category.slice(0, 8) + "." : node.category}
                 </text>
               )}
             </g>

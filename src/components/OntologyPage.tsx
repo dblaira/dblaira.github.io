@@ -12,6 +12,12 @@ interface AnalysisRow {
   category_stats: CategoryStats[];
 }
 
+function splitCorrelationPairs(pairs: CorrelationPair[]): { instant: CorrelationPair[]; lagged: CorrelationPair[] } {
+  const lagged = pairs.filter((c) => c.lag !== 0 || c.type === "leading");
+  const instant = pairs.filter((c) => c.lag === 0 && c.type !== "leading");
+  return { instant, lagged };
+}
+
 export default function OntologyPage() {
   const [correlations, setCorrelations] = useState<CorrelationPair[]>([]);
   const [lagged, setLagged] = useState<CorrelationPair[]>([]);
@@ -25,12 +31,11 @@ export default function OntologyPage() {
         const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
         const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
         const res = await fetch(
-          `${url}/rest/v1/correlation_analyses?select=correlations,category_stats&order=created_at.desc&limit=1`,
+          `${url}/rest/v1/correlation_analyses?select=correlations,category_stats&order=created_at.desc&limit=8`,
           {
             headers: {
               apikey: key,
-              Authorization: `Bearer ${key}`,
-              Accept: "application/vnd.pgrst.object+json",
+              Authorization: `Bearer ${key}`
             },
           }
         );
@@ -38,11 +43,27 @@ export default function OntologyPage() {
           const body = await res.json().catch(() => ({}));
           throw new Error(body.message || `HTTP ${res.status}`);
         }
-        const row = (await res.json()) as AnalysisRow;
-        const instant = row.correlations.filter((c) => c.lag === 0);
-        const laggedPairs = row.correlations.filter((c) => c.lag !== 0);
-        setCorrelations(instant);
-        setLagged(laggedPairs);
+        const rows = (await res.json()) as AnalysisRow[];
+        if (!Array.isArray(rows) || rows.length === 0) {
+          throw new Error("No correlation analyses found.");
+        }
+
+        // Prefer the most recent run that includes predictive/lagged links.
+        let row = rows[0];
+        let split = splitCorrelationPairs(row.correlations ?? []);
+        if (split.lagged.length === 0) {
+          for (const candidate of rows.slice(1)) {
+            const candidateSplit = splitCorrelationPairs(candidate.correlations ?? []);
+            if (candidateSplit.lagged.length > 0) {
+              row = candidate;
+              split = candidateSplit;
+              break;
+            }
+          }
+        }
+
+        setCorrelations(split.instant);
+        setLagged(split.lagged);
         setStats(row.category_stats);
       } catch (e) {
         const msg = e instanceof Error ? e.message : (typeof e === "object" && e !== null && "message" in e) ? String((e as { message: string }).message) : String(e);

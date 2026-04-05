@@ -40,6 +40,10 @@ const EDGE_COLORS = {
   lagged: "#A74D4D", // Predicts (lagged, muted red)
 } as const;
 
+function toIconSlug(category: string): string {
+  return category.trim().toLowerCase().replace(/\s+/g, "-");
+}
+
 export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetworkProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [nodes, setNodes] = useState<NetworkNode[]>([]);
@@ -226,8 +230,9 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
           const iconSize = node.radius * 1.1;
           const fontSize = Math.max(8, Math.min(11, node.radius * 0.34));
           const labelFits = node.radius >= 22;
-          const iconHref = `/icons/ontology/${node.category}.svg`;
-          const showIcon = labelFits && !iconLoadErrors[node.category];
+          const iconSlug = toIconSlug(node.category);
+          const iconHref = `/icons/ontology/${iconSlug}.svg`;
+          const showIcon = labelFits && !iconLoadErrors[iconSlug];
           const isHovered = hoveredPair?.catA === node.id && hoveredPair.catB === "__ALL__";
           const showCategoryLabel = isHovered || activeNodeId === node.id;
           const fallbackLabel = node.category.slice(0, Math.min(4, node.category.length)).toUpperCase();
@@ -258,7 +263,7 @@ export function OntologyNetwork({ correlations, lagged, stats }: OntologyNetwork
                   height={iconSize}
                   preserveAspectRatio="xMidYMid meet"
                   style={{ pointerEvents: "none", opacity: 0.95 }}
-                  onError={() => markIconError(node.category)}
+                  onError={() => markIconError(iconSlug)}
                 />
               )}
               {!showIcon && labelFits && (

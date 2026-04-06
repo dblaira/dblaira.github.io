@@ -133,8 +133,9 @@ export default function MarkmapViewer() {
     const { root } = transformer.transform(markdown);
 
     let counter = 0;
+    const nodeIdMap = new WeakMap<object, number>();
     const assignIds = (node: typeof root) => {
-      node.state = { ...node.state, id: counter++ };
+      nodeIdMap.set(node, counter++);
       node.children?.forEach(assignIds);
     };
     assignIds(root);
@@ -146,7 +147,7 @@ export default function MarkmapViewer() {
 
     mmRef.current = Markmap.create(svg, {
       color: (node: typeof root) => {
-        const id = String(node.state?.id ?? "");
+        const id = String(nodeIdMap.get(node) ?? "");
         return colorOverridesRef.current[id] || CRIMSON;
       },
       duration: 300,

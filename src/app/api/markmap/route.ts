@@ -15,15 +15,11 @@ export async function GET(req: NextRequest) {
   const source = req.nextUrl.searchParams.get("source") ?? "savy";
   const sb = getServerSupabase();
 
-  const { data, error } = await sb
-    .from("markmap_content")
-    .select("id, markdown, title, source, updated_at")
-    .eq("source", source)
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .single();
+  const { data, error } = await sb.rpc("get_latest_markmap", {
+    p_source: source,
+  });
 
-  if (error && error.code !== "PGRST116") {
+  if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -45,19 +41,19 @@ export async function POST(req: NextRequest) {
 
   const sb = getServerSupabase();
 
-  const { data, error } = await sb
-    .from("markmap_content")
-    .insert({
-      markdown,
-      title: title ?? null,
-      source: source ?? "savy",
-    })
-    .select("id, updated_at")
-    .single();
+  const { data, error } = await sb.rpc("insert_markmap", {
+    p_markdown: markdown,
+    p_title: title ?? null,
+    p_source: source ?? "savy",
+  });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, id: data.id, updated_at: data.updated_at });
+  return NextResponse.json({
+    ok: true,
+    id: data?.id,
+    updated_at: data?.updated_at,
+  });
 }

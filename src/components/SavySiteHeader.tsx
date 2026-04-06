@@ -25,7 +25,7 @@ export function SavySiteHeader() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            maxWidth: 720,
+            maxWidth: 1200,
             margin: "0 auto",
           }}
         >

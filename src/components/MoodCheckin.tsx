@@ -107,7 +107,7 @@ export default function MoodCheckin() {
     <div style={{ minHeight: "100vh", background: "#0A0A0A" }}>
       <SavySiteHeader />
       <div style={{ background: "#F5F0E8", minHeight: "calc(100vh - 60px)" }}>
-        <div style={{ padding: "40px 24px 16px", maxWidth: 720, margin: "0 auto" }}>
+        <div className="content-width" style={{ padding: "40px 24px 16px" }}>
           <span
             style={{
               fontFamily: "'Inter', sans-serif",

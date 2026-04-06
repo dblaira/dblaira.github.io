@@ -79,7 +79,7 @@ export default function BeliefLibrary() {
     <div style={{ minHeight: "100vh", background: "#0A0A0A" }}>
       <SavySiteHeader />
       <div style={{ background: "#F5F0E8", minHeight: "calc(100vh - 60px)" }}>
-        <div style={{ padding: "40px 24px 16px", maxWidth: 720, margin: "0 auto" }}>
+        <div className="content-width" style={{ padding: "40px 24px 16px" }}>
           <span
             style={{
               fontFamily: "'Inter', sans-serif",
@@ -107,7 +107,7 @@ export default function BeliefLibrary() {
           </h1>
         </div>
 
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 40px" }}>
+        <div className="content-width" style={{ padding: "0 24px 40px" }}>
           {/* Add button */}
           <div style={{ marginBottom: 24 }}>
             <button

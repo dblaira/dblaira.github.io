@@ -73,7 +73,7 @@ export default function AgentsDashboard() {
       <div style={{ background: CREAM }}>
 
         {/* Hero */}
-        <div style={{ padding: "48px 24px 32px", maxWidth: 720, margin: "0 auto" }}>
+        <div className="content-width" style={{ padding: "48px 24px 32px" }}>
           <h1
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
@@ -103,7 +103,7 @@ export default function AgentsDashboard() {
         </div>
 
         {/* Agent Cards */}
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 32px" }}>
+        <div className="content-width" style={{ padding: "0 24px 32px" }}>
 
           {/* Section label */}
           <div style={{ marginBottom: 12 }}>
@@ -277,7 +277,7 @@ export default function AgentsDashboard() {
         </div>
 
         {/* Markmap — Savy's live mind map */}
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 32px" }}>
+        <div className="content-width" style={{ padding: "0 24px 32px" }}>
           <div style={{ marginBottom: 12 }}>
             <span
               style={{
@@ -296,7 +296,7 @@ export default function AgentsDashboard() {
         </div>
 
         {/* Ontology Section */}
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 32px" }}>
+        <div className="content-width" style={{ padding: "0 24px 32px" }}>
 
           <div style={{ marginBottom: 12 }}>
             <span
@@ -390,7 +390,7 @@ export default function AgentsDashboard() {
         </div>
 
         {/* Activity Feed */}
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 80px" }}>
+        <div className="content-width" style={{ padding: "0 24px 80px" }}>
 
           <div style={{ marginBottom: 12 }}>
             <span

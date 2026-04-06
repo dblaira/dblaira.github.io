@@ -71,6 +71,25 @@ html, body {
   color: var(--text-muted);
 }
 
+/* Responsive content width */
+.content-width {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 1024px) {
+  .content-width {
+    max-width: 960px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .content-width {
+    max-width: 1200px;
+  }
+}
+
 @keyframes savyMenuFadeIn {
   from {
     opacity: 0;

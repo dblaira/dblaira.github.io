@@ -99,10 +99,9 @@ export default function SandboxHome() {
 
       {/* Hero section */}
       <div
+        className="content-width"
         style={{
           padding: "48px 24px 40px",
-          maxWidth: 720,
-          margin: "0 auto",
         }}
       >
         <h1
@@ -135,9 +134,8 @@ export default function SandboxHome() {
 
       {/* Beliefs carousel */}
       <div
+        className="content-width"
         style={{
-          maxWidth: 720,
-          margin: "0 auto",
           padding: "0 24px 32px",
         }}
       >
@@ -154,9 +152,8 @@ export default function SandboxHome() {
 
       {/* Section header */}
       <div
+        className="content-width"
         style={{
-          maxWidth: 720,
-          margin: "0 auto",
           padding: "16px 24px 16px",
           background: "rgba(0,0,0,0.03)",
         }}
@@ -178,9 +175,8 @@ export default function SandboxHome() {
 
       {/* Experiment cards */}
       <div
+        className="content-width"
         style={{
-          maxWidth: 720,
-          margin: "0 auto",
           padding: "16px 24px 80px",
           display: "flex",
           flexDirection: "column",

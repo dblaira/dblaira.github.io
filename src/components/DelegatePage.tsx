@@ -160,7 +160,7 @@ export default function DelegatePage() {
     <div style={{ minHeight: "100vh", background: "#0A0A0A" }}>
       <SavySiteHeader />
       <div style={{ background: "#F5F0E8", minHeight: "calc(100vh - 56px)" }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px 80px" }}>
+        <div className="content-width" style={{ padding: "48px 24px 80px" }}>
 
           <h1 style={{
             fontFamily: "'Playfair Display', Georgia, serif",

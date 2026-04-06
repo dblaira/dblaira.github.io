@@ -246,7 +246,7 @@ export default function SleepDashboard() {
     return (
       <div style={{ background: CREAM, minHeight: "100vh" }}>
         <SavySiteHeader />
-        <div style={{ padding: "80px 24px", maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
+        <div className="content-width" style={{ padding: "80px 24px", textAlign: "center" }}>
           <span
             style={{
               fontFamily: "'Inter', sans-serif",
@@ -274,7 +274,7 @@ export default function SleepDashboard() {
       <SavySiteHeader />
 
       {/* Header */}
-      <div style={{ padding: "40px 24px 24px", maxWidth: 720, margin: "0 auto" }}>
+      <div className="content-width" style={{ padding: "40px 24px 24px" }}>
         <span
           style={{
             fontFamily: "'Inter', sans-serif",
@@ -303,7 +303,7 @@ export default function SleepDashboard() {
       </div>
 
       {error && (
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 16px" }}>
+        <div className="content-width" style={{ padding: "0 24px 16px" }}>
           <div
             style={{
               background: "rgba(220,20,60,0.06)",
@@ -322,7 +322,7 @@ export default function SleepDashboard() {
 
       {/* Today's score — donut */}
       {latest && (
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>
+        <div className="content-width" style={{ padding: "0 24px 24px" }}>
           <div
             style={{
               background: "#FFFFFF",
@@ -403,7 +403,7 @@ export default function SleepDashboard() {
 
       {/* Area chart — trend */}
       {entries.length >= 2 && (
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>
+        <div className="content-width" style={{ padding: "0 24px 24px" }}>
           <div
             style={{
               background: "#FFFFFF",
@@ -432,7 +432,7 @@ export default function SleepDashboard() {
       )}
 
       {/* Add entry */}
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>
+      <div className="content-width" style={{ padding: "0 24px 24px" }}>
         <div style={{ background: "#FFFFFF", borderRadius: 16, padding: "24px" }}>
           <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(0,0,0,0.35)" }}>
             LOG A NIGHT
@@ -472,7 +472,7 @@ export default function SleepDashboard() {
 
       {/* Logged entries — editable */}
       {entries.length > 0 && (
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>
+        <div className="content-width" style={{ padding: "0 24px 24px" }}>
           <div style={{ background: "#FFFFFF", borderRadius: 16, padding: "24px" }}>
             <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(0,0,0,0.35)" }}>
               YOUR ENTRIES
@@ -513,7 +513,7 @@ export default function SleepDashboard() {
       )}
 
       {/* Rating scale reference */}
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 24px" }}>
+      <div className="content-width" style={{ padding: "0 24px 24px" }}>
         <div style={{ background: "#FFFFFF", borderRadius: 16, padding: "24px" }}>
           <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(0,0,0,0.35)" }}>
             RATING SCALE
@@ -538,7 +538,7 @@ export default function SleepDashboard() {
       </div>
 
       {/* CHI research note */}
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 40px" }}>
+      <div className="content-width" style={{ padding: "0 24px 40px" }}>
         <div
           style={{
             background: "#FFFFFF",

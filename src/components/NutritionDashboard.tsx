@@ -14,7 +14,7 @@ import type { Meal, MacroGoals, Food } from "@/lib/nutrition-actions";
 import { useAuth } from "@/lib/useAuth";
 
 // Bold palette from Nutrition App
-const SUN = "#E8C840";
+const SUN = "#F4D160";
 const OCEAN = "#1D5D9B";
 const CHARCOAL = "#2C2C2C";
 const GLASS = "rgba(44,44,44,0.85)";

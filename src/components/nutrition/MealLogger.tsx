@@ -19,7 +19,7 @@ const MEAL_COLORS: Record<string, { bg: string; accent: string }> = {
   Breakfast: { bg: "#B01E68", accent: "rgba(255,255,255,0.15)" },  // fuchsia
   Lunch:     { bg: "#1D5D9B", accent: "rgba(255,255,255,0.15)" },  // ocean blue
   Dinner:    { bg: "#F49D1A", accent: "rgba(0,0,0,0.08)" },        // orange
-  Snack:     { bg: "#27AE60", accent: "rgba(255,255,255,0.15)" },   // green
+  Snack:     { bg: "#DC3535", accent: "rgba(255,255,255,0.15)" },   // red
 };
 const MEAL_ORDER = ["Breakfast", "Lunch", "Dinner", "Snack"];
 

@@ -2,6 +2,11 @@
 
 import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { CATEGORY_COLORS } from "@/lib/types";
+import dynamic from "next/dynamic";
+
+const MarkmapViewer = dynamic(() => import("@/components/MarkmapViewer"), {
+  ssr: false,
+});
 
 const CRIMSON = "#DC143C";
 const CREAM = "#F5F0E8";
@@ -269,6 +274,25 @@ export default function AgentsDashboard() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Markmap — Savy's live mind map */}
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 32px" }}>
+          <div style={{ marginBottom: 12 }}>
+            <span
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                color: "rgba(0,0,0,0.35)",
+              }}
+            >
+              Live Outline
+            </span>
+          </div>
+          <MarkmapViewer />
         </div>
 
         {/* Ontology Section */}

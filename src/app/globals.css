@@ -80,13 +80,7 @@ html, body {
 
 @media (min-width: 1024px) {
   .content-width {
-    max-width: 960px;
-  }
-}
-
-@media (min-width: 1440px) {
-  .content-width {
-    max-width: 1200px;
+    max-width: calc(100vw - 80px);
   }
 }
 

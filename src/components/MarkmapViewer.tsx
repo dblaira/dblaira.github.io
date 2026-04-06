@@ -108,7 +108,7 @@ export default function MarkmapViewer() {
       </div>
 
       {/* SVG container */}
-      <div style={{ height: 400, position: "relative" }}>
+      <div style={{ height: "clamp(400px, 60vh, 800px)", position: "relative" }}>
         {loading && (
           <div
             style={{

@@ -6,40 +6,34 @@ const SUPABASE_KEY = (
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )!;
 
-async function query(sql: string, params: Record<string, unknown> = {}) {
-  // Use PostgREST RPC with a raw sql wrapper if available,
-  // otherwise fall back to the pg-meta SQL endpoint
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_latest_markmap`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      // Force schema cache miss by preferring count
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify(params),
-  });
-  return res;
-}
+const HEADERS = {
+  apikey: SUPABASE_KEY,
+  Authorization: `Bearer ${SUPABASE_KEY}`,
+  "Content-Type": "application/json",
+  "Accept-Profile": "public",
+  Accept: "application/json",
+};
 
 /** GET /api/markmap — returns the latest markdown for a given source */
 export async function GET(req: NextRequest) {
   const source = req.nextUrl.searchParams.get("source") ?? "savy";
 
-  // Direct REST call to PostgREST, bypassing JS client cache
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/markmap_content?source=eq.${encodeURIComponent(source)}&order=updated_at.desc&limit=1`,
-    {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
-    }
-  );
+  const url = `${SUPABASE_URL}/rest/v1/markmap_content?source=eq.${encodeURIComponent(source)}&order=updated_at.desc&limit=1`;
+
+  console.log("[markmap GET]", url.replace(SUPABASE_KEY, "***"));
+
+  const res = await fetch(url, {
+    headers: HEADERS,
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     const text = await res.text();
+    console.error("[markmap GET] error:", res.status, text);
+    // If schema cache is stale, return null data instead of error
+    if (text.includes("schema cache")) {
+      return NextResponse.json({ data: null, _cache_stale: true });
+    }
     return NextResponse.json({ error: text }, { status: res.status });
   }
 
@@ -62,12 +56,8 @@ export async function POST(req: NextRequest) {
 
   const res = await fetch(`${SUPABASE_URL}/rest/v1/markmap_content`, {
     method: "POST",
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=representation",
-    },
+    headers: { ...HEADERS, Prefer: "return=representation" },
+    cache: "no-store",
     body: JSON.stringify({
       markdown,
       title: title ?? null,
@@ -77,6 +67,7 @@ export async function POST(req: NextRequest) {
 
   if (!res.ok) {
     const text = await res.text();
+    console.error("[markmap POST] error:", res.status, text);
     return NextResponse.json({ error: text }, { status: res.status });
   }
 

@@ -1,29 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 
-function getServerSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) throw new Error("Supabase not configured");
-  return createClient(url, key);
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_KEY = (
+  process.env.SUPABASE_SERVICE_ROLE_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)!;
+
+async function query(sql: string, params: Record<string, unknown> = {}) {
+  // Use PostgREST RPC with a raw sql wrapper if available,
+  // otherwise fall back to the pg-meta SQL endpoint
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_latest_markmap`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      // Force schema cache miss by preferring count
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(params),
+  });
+  return res;
 }
 
 /** GET /api/markmap — returns the latest markdown for a given source */
 export async function GET(req: NextRequest) {
   const source = req.nextUrl.searchParams.get("source") ?? "savy";
-  const sb = getServerSupabase();
 
-  const { data, error } = await sb.rpc("get_latest_markmap", {
-    p_source: source,
-  });
+  // Direct REST call to PostgREST, bypassing JS client cache
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/markmap_content?source=eq.${encodeURIComponent(source)}&order=updated_at.desc&limit=1`,
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+      },
+    }
+  );
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!res.ok) {
+    const text = await res.text();
+    return NextResponse.json({ error: text }, { status: res.status });
   }
 
-  return NextResponse.json({ data: data ?? null });
+  const rows = await res.json();
+  return NextResponse.json({ data: rows[0] ?? null });
 }
 
 /** POST /api/markmap — push new markdown content */
@@ -39,21 +60,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing markdown" }, { status: 400 });
   }
 
-  const sb = getServerSupabase();
-
-  const { data, error } = await sb.rpc("insert_markmap", {
-    p_markdown: markdown,
-    p_title: title ?? null,
-    p_source: source ?? "savy",
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/markmap_content`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify({
+      markdown,
+      title: title ?? null,
+      source: source ?? "savy",
+    }),
   });
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!res.ok) {
+    const text = await res.text();
+    return NextResponse.json({ error: text }, { status: res.status });
   }
 
+  const [row] = await res.json();
   return NextResponse.json({
     ok: true,
-    id: data?.id,
-    updated_at: data?.updated_at,
+    id: row?.id,
+    updated_at: row?.updated_at,
   });
 }

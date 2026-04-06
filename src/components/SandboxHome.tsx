@@ -15,6 +15,13 @@ interface ExperimentCard {
 
 const EXPERIMENTS: ExperimentCard[] = [
   {
+    label: "NUTRITION",
+    title: "Macro Tracker",
+    desc: "Every ounce, every macro. Barcode scanning, rotation library, meal history with re-log. Built to replace MFP.",
+    status: "live",
+    href: "/nutrition",
+  },
+  {
     label: "SLEEP",
     title: "Sleep Dashboard",
     desc: "Daily score tracking with donut + area chart visualizations. ACM CHI research-backed design.",

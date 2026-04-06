@@ -7,12 +7,15 @@ import { MealLogger } from "@/components/nutrition/MealLogger";
 import { MealHistory } from "@/components/nutrition/MealHistory";
 import { FoodEditor } from "@/components/nutrition/FoodEditor";
 import { BarcodeScanner } from "@/components/nutrition/BarcodeScanner";
+import { MealTemplateEditor } from "@/components/nutrition/MealTemplateEditor";
 import {
   getMealsForDate, getMacroGoals, calculateDayTotals,
   getRotationFoods, createFood, searchFoods,
   lookupBarcode, getFoodByBarcode, logFoodToMeal,
+  getMealTemplates, createMealTemplate, deleteMealTemplate,
+  logMealTemplate, calculateTemplateTotals,
 } from "@/lib/nutrition-actions";
-import type { Meal, MacroGoals, Food } from "@/lib/nutrition-actions";
+import type { Meal, MacroGoals, Food, MealTemplate } from "@/lib/nutrition-actions";
 import { useAuth } from "@/lib/useAuth";
 
 // Bold palette from Nutrition App
@@ -43,6 +46,9 @@ export default function NutritionDashboard() {
   const [editingFood, setEditingFood] = useState<Partial<Food> | undefined>();
   const [showFabScanner, setShowFabScanner] = useState(false);
   const [fabMeal, setFabMeal] = useState<string | null>(null);
+  const [templates, setTemplates] = useState<MealTemplate[]>([]);
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -59,8 +65,9 @@ export default function NutritionDashboard() {
   const totals = calculateDayTotals(meals);
 
   const loadLibrary = useCallback(async () => {
-    const rotation = await getRotationFoods();
+    const [rotation, tmpl] = await Promise.all([getRotationFoods(), getMealTemplates()]);
     setRotationFoods(rotation);
+    setTemplates(tmpl);
   }, []);
 
   useEffect(() => {
@@ -302,6 +309,72 @@ export default function NutritionDashboard() {
                 No rotation foods yet. Add foods and mark them as rotation to build your superfood library.
               </div>
             )}
+
+            {/* Saved Meals */}
+            {!librarySearch && (
+              <div style={{ marginTop: 24 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <h3 style={{
+                    fontFamily: "'Playfair Display', serif", fontSize: 18,
+                    fontWeight: 700, color: CHARCOAL, margin: 0,
+                  }}>
+                    Saved Meals
+                  </h3>
+                  <button onClick={() => setShowTemplateEditor(true)} style={{
+                    padding: "8px 16px", borderRadius: 8, border: "none",
+                    background: OCEAN, color: "#fff",
+                    fontSize: 12, fontWeight: 700, cursor: "pointer",
+                    fontFamily: "'Inter', sans-serif",
+                  }}>
+                    + New Meal
+                  </button>
+                </div>
+
+                {templates.length > 0 ? templates.map(t => {
+                  const totals = calculateTemplateTotals(t);
+                  return (
+                    <div key={t.id} style={{
+                      background: GLASS, borderRadius: 12, padding: 14, marginBottom: 6,
+                      border: `1px solid ${GLASS_BORDER}`, backdropFilter: "blur(16px)",
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div>
+                          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700, color: "#fff" }}>
+                            {t.name}
+                          </span>
+                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
+                            {t.meal_template_items?.length || 0} items · {totals.calories} cal · {totals.protein}p
+                          </div>
+                        </div>
+                        <button onClick={async () => { await deleteMealTemplate(t.id); await loadLibrary(); }} style={{
+                          background: "none", border: "none", fontSize: 14,
+                          color: "rgba(255,255,255,0.2)", cursor: "pointer", padding: "4px 8px",
+                        }}>&times;</button>
+                      </div>
+                      {t.meal_template_items && t.meal_template_items.length > 0 && (
+                        <div style={{ marginTop: 8, borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 6 }}>
+                          {t.meal_template_items.map(item => (
+                            <div key={item.id} style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.5)", padding: "2px 0" }}>
+                              {item.foods?.name}{item.quantity !== 1 ? ` x${item.quantity}` : ""}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }) : (
+                  <div style={{
+                    textAlign: "center", padding: 24,
+                    background: GLASS, borderRadius: 14,
+                    border: `1px solid ${GLASS_BORDER}`,
+                    fontFamily: "'Inter', sans-serif", fontSize: 13,
+                    color: "rgba(255,255,255,0.5)", backdropFilter: "blur(16px)",
+                  }}>
+                    No saved meals yet. Create one to log entire meals with one tap.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -348,7 +421,7 @@ export default function NutritionDashboard() {
             {["Breakfast", "Lunch", "Dinner", "Snack"].map(m => {
               const colors: Record<string, string> = { Breakfast: "#B01E68", Lunch: "#1D5D9B", Dinner: "#F49D1A", Snack: "#DC3535" };
               return (
-                <button key={m} onClick={() => { setFabMeal(m); setShowFabScanner(true); }} style={{
+                <button key={m} onClick={() => setFabMeal(m)} style={{
                   width: "100%", padding: "14px", borderRadius: 10, border: "none",
                   background: colors[m], color: "#fff",
                   fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700,
@@ -358,6 +431,120 @@ export default function NutritionDashboard() {
                 </button>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* FAB action picker — Scan Item or Log Saved Meal */}
+      {fabMeal && fabMeal !== "pick" && !showFabScanner && !showTemplatePicker && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 1500,
+          background: "rgba(0,0,0,0.5)",
+          display: "flex", alignItems: "flex-end", justifyContent: "center",
+          padding: "0 16px 100px",
+        }}
+          onClick={() => setFabMeal(null)}
+        >
+          <div style={{
+            background: GLASS, borderRadius: 16, padding: 16, width: "100%", maxWidth: 400,
+            border: `1px solid ${GLASS_BORDER}`, backdropFilter: "blur(24px)",
+          }}
+            onClick={e => e.stopPropagation()}
+          >
+            <span style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 700,
+              letterSpacing: "0.1em", textTransform: "uppercase",
+              color: "rgba(255,255,255,0.45)", display: "block", marginBottom: 12,
+            }}>
+              Add to {fabMeal}
+            </span>
+            <button onClick={() => setShowFabScanner(true)} style={{
+              width: "100%", padding: "14px", borderRadius: 10, border: "none",
+              background: OCEAN, color: "#fff",
+              fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700,
+              cursor: "pointer", marginBottom: 6,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
+                <path d="M1 8V5a2 2 0 012-2h3M16 3h3a2 2 0 012 2v3M23 16v3a2 2 0 01-2 2h-3M8 21H5a2 2 0 01-2-2v-3"/>
+                <line x1="7" y1="12" x2="17" y2="12"/>
+              </svg>
+              Scan Item
+            </button>
+            <button onClick={async () => {
+              const tmpl = await getMealTemplates();
+              setTemplates(tmpl);
+              setShowTemplatePicker(true);
+            }} style={{
+              width: "100%", padding: "14px", borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.15)", background: "transparent",
+              color: "#fff", fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700,
+              cursor: "pointer",
+            }}>
+              Log Saved Meal
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Template picker from FAB */}
+      {showTemplatePicker && fabMeal && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 1600,
+          background: "rgba(0,0,0,0.5)",
+          display: "flex", alignItems: "flex-end", justifyContent: "center",
+          padding: "0 16px 100px",
+        }}
+          onClick={() => { setShowTemplatePicker(false); setFabMeal(null); }}
+        >
+          <div style={{
+            background: GLASS, borderRadius: 16, padding: 16, width: "100%", maxWidth: 400,
+            maxHeight: "60vh", overflowY: "auto",
+            border: `1px solid ${GLASS_BORDER}`, backdropFilter: "blur(24px)",
+          }}
+            onClick={e => e.stopPropagation()}
+          >
+            <span style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 700,
+              letterSpacing: "0.1em", textTransform: "uppercase",
+              color: "rgba(255,255,255,0.45)", display: "block", marginBottom: 12,
+            }}>
+              Pick a saved meal for {fabMeal}
+            </span>
+            {templates.length > 0 ? templates.map(t => {
+              const totals = calculateTemplateTotals(t);
+              return (
+                <button key={t.id} onClick={async () => {
+                  await logMealTemplate(t.id, fabMeal!, date);
+                  setShowTemplatePicker(false);
+                  setFabMeal(null);
+                  await loadData();
+                }} style={{
+                  width: "100%", padding: "14px 16px", borderRadius: 10,
+                  border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)",
+                  color: "#fff", fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 600,
+                  cursor: "pointer", marginBottom: 6, textAlign: "left",
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                }}>
+                  <div>
+                    <div>{t.name}</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
+                      {t.meal_template_items?.length || 0} items
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 12, color: "#F4D160", fontWeight: 700 }}>
+                    {totals.calories} cal
+                  </span>
+                </button>
+              );
+            }) : (
+              <div style={{
+                textAlign: "center", padding: 20, fontFamily: "'Inter', sans-serif",
+                fontSize: 13, color: "rgba(255,255,255,0.4)",
+              }}>
+                No saved meals yet. Create one in the Library tab.
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -394,6 +581,27 @@ export default function NutritionDashboard() {
               initial={editingFood}
               onSave={handleSaveNewFood}
               onCancel={() => { setShowFoodEditor(false); setEditingFood(undefined); }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Meal template editor modal */}
+      {showTemplateEditor && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 2000,
+          background: "rgba(0,0,0,0.6)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: 20,
+        }}>
+          <div style={{ width: "min(440px, 100%)", maxHeight: "90vh", overflowY: "auto" }}>
+            <MealTemplateEditor
+              onSave={async (templateName, items) => {
+                await createMealTemplate(templateName, items);
+                setShowTemplateEditor(false);
+                await loadLibrary();
+              }}
+              onCancel={() => setShowTemplateEditor(false)}
             />
           </div>
         </div>

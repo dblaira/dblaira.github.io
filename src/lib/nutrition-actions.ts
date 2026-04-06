@@ -330,6 +330,152 @@ export function calculateDayTotals(meals: Meal[]): DayTotals {
   return totals;
 }
 
+// --- Meal Templates ---
+
+export interface MealTemplateItem {
+  id: string;
+  template_id: string;
+  food_id: string;
+  quantity: number;
+  foods: Food;
+}
+
+export interface MealTemplate {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  meal_template_items: MealTemplateItem[];
+}
+
+export async function getMealTemplates(): Promise<MealTemplate[]> {
+  const supabase = getSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from("meal_templates")
+    .select(`
+      id, user_id, name, created_at, updated_at,
+      meal_template_items (
+        id, template_id, food_id, quantity,
+        foods (*)
+      )
+    `)
+    .eq("user_id", user.id)
+    .order("name");
+
+  return (data as unknown as MealTemplate[]) || [];
+}
+
+export async function createMealTemplate(
+  name: string,
+  items: { food_id: string; quantity: number }[]
+): Promise<MealTemplate> {
+  const supabase = getSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { data: template, error } = await supabase
+    .from("meal_templates")
+    .insert({ user_id: user.id, name })
+    .select("*")
+    .single();
+
+  if (error) throw new Error(`Failed to create template: ${error.message}`);
+
+  if (items.length > 0) {
+    const rows = items.map(i => ({
+      template_id: template.id,
+      food_id: i.food_id,
+      quantity: i.quantity,
+    }));
+    const { error: itemError } = await supabase
+      .from("meal_template_items")
+      .insert(rows);
+    if (itemError) throw new Error(`Failed to add template items: ${itemError.message}`);
+  }
+
+  return template as MealTemplate;
+}
+
+export async function deleteMealTemplate(id: string): Promise<void> {
+  const supabase = getSupabase();
+  const { error } = await supabase.from("meal_templates").delete().eq("id", id);
+  if (error) throw new Error(`Failed to delete template: ${error.message}`);
+}
+
+export async function logMealTemplate(
+  templateId: string,
+  mealName: string,
+  date?: string
+): Promise<void> {
+  const supabase = getSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  // Fetch template items
+  const { data: items } = await supabase
+    .from("meal_template_items")
+    .select("food_id, quantity")
+    .eq("template_id", templateId);
+
+  if (!items || items.length === 0) return;
+
+  const targetDate = date || new Date().toISOString().split("T")[0];
+
+  // Get or create meal slot
+  let { data: meal } = await supabase
+    .from("meals")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("date", targetDate)
+    .eq("name", mealName)
+    .single();
+
+  if (!meal) {
+    const { data: newMeal, error } = await supabase
+      .from("meals")
+      .insert({ user_id: user.id, date: targetDate, name: mealName })
+      .select("id")
+      .single();
+    if (error) throw new Error(`Failed to create meal slot: ${error.message}`);
+    meal = newMeal;
+  }
+
+  // Log all items
+  const entries = items.map(i => ({
+    meal_id: meal!.id,
+    food_id: i.food_id,
+    quantity: i.quantity,
+    logged_at: new Date().toISOString(),
+  }));
+
+  const { error } = await supabase.from("meal_entries").insert(entries);
+  if (error) throw new Error(`Failed to log template: ${error.message}`);
+}
+
+export function calculateTemplateTotals(template: MealTemplate): DayTotals {
+  const totals: DayTotals = { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
+  for (const item of template.meal_template_items || []) {
+    const food = item.foods;
+    if (!food) continue;
+    const q = item.quantity || 1;
+    totals.calories += food.calories * q;
+    totals.protein += food.protein * q;
+    totals.carbs += food.carbs * q;
+    totals.fat += food.fat * q;
+    totals.fiber += (food.fiber || 0) * q;
+  }
+  totals.calories = Math.round(totals.calories);
+  totals.protein = Math.round(totals.protein * 10) / 10;
+  totals.carbs = Math.round(totals.carbs * 10) / 10;
+  totals.fat = Math.round(totals.fat * 10) / 10;
+  totals.fiber = Math.round(totals.fiber * 10) / 10;
+  return totals;
+}
+
 // --- Barcode Lookup (via Open Food Facts) ---
 
 export async function lookupBarcode(barcode: string): Promise<Partial<Food> | null> {

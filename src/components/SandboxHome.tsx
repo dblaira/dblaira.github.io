@@ -22,32 +22,11 @@ const EXPERIMENTS: ExperimentCard[] = [
     href: "/sleep",
   },
   {
-    label: "ONTOLOGY",
-    title: "Adam's Ontology",
-    desc: "How 13 life categories connect. Pearson correlations across 92 weeks of data.",
-    status: "live",
-    href: "/ontology",
-  },
-  {
     label: "MOOD",
     title: "Emotion Check-in",
     desc: "Tap the wheel. Tag the trigger. Track how you feel over time.",
     status: "live",
     href: "/mood",
-  },
-  {
-    label: "BELIEFS",
-    title: "Belief Library",
-    desc: "Your personal connections — identity anchors, pattern interrupts, validated principles.",
-    status: "live",
-    href: "/beliefs",
-  },
-  {
-    label: "SYSTEM",
-    title: "INBOX Workflow",
-    desc: "Single capture point. Zero decisions at capture time. Everything finds its home later.",
-    status: "live",
-    href: "/inbox",
   },
   {
     label: "AGENTS",
@@ -62,6 +41,27 @@ const EXPERIMENTS: ExperimentCard[] = [
     desc: "Brief Po in 3 steps: what you want, how you'd think about it, what done looks like.",
     status: "live",
     href: "/delegate",
+  },
+  {
+    label: "ONTOLOGY",
+    title: "Adam's Ontology",
+    desc: "How 13 life categories connect. Pearson correlations across 92 weeks of data.",
+    status: "live",
+    href: "/ontology",
+  },
+  {
+    label: "SYSTEM",
+    title: "INBOX Workflow",
+    desc: "Single capture point. Zero decisions at capture time. Everything finds its home later.",
+    status: "live",
+    href: "/inbox",
+  },
+  {
+    label: "BELIEFS",
+    title: "Belief Library",
+    desc: "Your personal connections — identity anchors, pattern interrupts, validated principles.",
+    status: "live",
+    href: "/beliefs",
   },
 ];
 

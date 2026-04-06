@@ -66,7 +66,7 @@ export default function MarkmapViewer() {
   return (
     <div
       style={{
-        background: "#FFFFFF",
+        background: "rgba(0,0,0,0.03)",
         borderRadius: 12,
         overflow: "hidden",
         position: "relative",

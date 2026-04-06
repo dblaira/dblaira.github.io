@@ -13,8 +13,14 @@ import {
 import type { Meal, MacroGoals, Food } from "@/lib/nutrition-actions";
 import { useAuth } from "@/lib/useAuth";
 
-const CREAM = "#F5F0E8";
-const TEAL = "#14B8A6";
+// Bold palette from Nutrition App
+const SUN = "#E8C840";
+const OCEAN = "#1D5D9B";
+const CHARCOAL = "#2C2C2C";
+const GLASS = "rgba(44,44,44,0.85)";
+const GLASS_BORDER = "rgba(255,255,255,0.1)";
+const ORANGE = "#F49D1A";
+const GREEN = "#27AE60";
 
 type Tab = "today" | "history" | "library";
 
@@ -28,7 +34,6 @@ export default function NutritionDashboard() {
   });
   const [loading, setLoading] = useState(true);
 
-  // Library tab state
   const [librarySearch, setLibrarySearch] = useState("");
   const [libraryResults, setLibraryResults] = useState<Food[]>([]);
   const [rotationFoods, setRotationFoods] = useState<Food[]>([]);
@@ -74,7 +79,6 @@ export default function NutritionDashboard() {
     await loadLibrary();
   };
 
-  // Date navigation
   const shiftDate = (days: number) => {
     const d = new Date(date + "T12:00:00");
     d.setDate(d.getDate() + days);
@@ -88,32 +92,31 @@ export default function NutritionDashboard() {
 
   if (authLoading) {
     return (
-      <div style={{ background: CREAM, minHeight: "100vh" }}>
+      <div style={{ background: SUN, minHeight: "100vh" }}>
         <SavySiteHeader />
-        <div style={{ textAlign: "center", padding: 80, fontFamily: "'Inter', sans-serif", color: "rgba(0,0,0,0.3)" }}>
+        <div style={{ textAlign: "center", padding: 80, fontFamily: "'Inter', sans-serif", color: CHARCOAL }}>
           Loading...
         </div>
       </div>
     );
   }
 
-
   return (
-    <div style={{ background: CREAM, minHeight: "100vh" }}>
+    <div style={{ background: SUN, minHeight: "100vh" }}>
       <SavySiteHeader />
 
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "20px 16px 100px" }}>
         {/* Page title */}
         <h1 style={{
-          fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 400,
-          color: "#1A1A1A", marginBottom: 4, marginTop: 8,
+          fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 700,
+          color: CHARCOAL, marginBottom: 4, marginTop: 8,
         }}>
           Nutrition
         </h1>
         <p style={{
-          fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 500,
+          fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
           letterSpacing: "0.1em", textTransform: "uppercase",
-          color: "rgba(0,0,0,0.3)", marginBottom: 20, marginTop: 0,
+          color: "rgba(44,44,44,0.5)", marginBottom: 20, marginTop: 0,
         }}>
           Every ounce, every macro
         </p>
@@ -121,8 +124,9 @@ export default function NutritionDashboard() {
         {/* Tabs */}
         <div style={{
           display: "flex", gap: 0, marginBottom: 20,
-          background: "#fff", borderRadius: 10, padding: 3,
-          border: "1px solid rgba(0,0,0,0.06)",
+          background: GLASS, borderRadius: 12, padding: 3,
+          border: `1px solid ${GLASS_BORDER}`,
+          backdropFilter: "blur(16px)",
         }}>
           {([
             { key: "today" as Tab, label: "Today" },
@@ -133,11 +137,12 @@ export default function NutritionDashboard() {
               key={t.key}
               onClick={() => setTab(t.key)}
               style={{
-                flex: 1, padding: "10px 0", borderRadius: 8,
-                border: "none", background: tab === t.key ? TEAL : "transparent",
-                color: tab === t.key ? "#fff" : "rgba(0,0,0,0.5)",
-                fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
-                cursor: "pointer", letterSpacing: "0.03em",
+                flex: 1, padding: "10px 0", borderRadius: 9,
+                border: "none",
+                background: tab === t.key ? OCEAN : "transparent",
+                color: tab === t.key ? "#fff" : "rgba(255,255,255,0.5)",
+                fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 700,
+                cursor: "pointer", letterSpacing: "0.05em",
                 transition: "all 0.2s",
               }}
             >
@@ -155,20 +160,20 @@ export default function NutritionDashboard() {
               marginBottom: 16,
             }}>
               <button onClick={() => shiftDate(-1)} style={{
-                background: "none", border: "none", fontSize: 18,
-                color: "rgba(0,0,0,0.3)", cursor: "pointer", padding: "8px 12px",
+                background: "none", border: "none", fontSize: 20,
+                color: CHARCOAL, cursor: "pointer", padding: "8px 12px", fontWeight: 700,
               }}>
                 ‹
               </button>
               <span style={{
-                fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 600, color: "#1A1A1A",
+                fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700, color: CHARCOAL,
               }}>
                 {dateLabel}
               </span>
               <button onClick={() => shiftDate(1)} disabled={isToday} style={{
-                background: "none", border: "none", fontSize: 18,
-                color: isToday ? "rgba(0,0,0,0.1)" : "rgba(0,0,0,0.3)",
-                cursor: isToday ? "not-allowed" : "pointer", padding: "8px 12px",
+                background: "none", border: "none", fontSize: 20,
+                color: isToday ? "rgba(44,44,44,0.2)" : CHARCOAL,
+                cursor: isToday ? "not-allowed" : "pointer", padding: "8px 12px", fontWeight: 700,
               }}>
                 ›
               </button>
@@ -177,8 +182,9 @@ export default function NutritionDashboard() {
             {/* Macro rings */}
             {!loading && (
               <div style={{
-                background: "#fff", borderRadius: 14, padding: 16, marginBottom: 16,
-                border: "1px solid rgba(0,0,0,0.06)",
+                background: GLASS, borderRadius: 16, padding: 16, marginBottom: 16,
+                border: `1px solid ${GLASS_BORDER}`,
+                backdropFilter: "blur(16px)",
               }}>
                 <MacroRings
                   calories={totals.calories}
@@ -190,7 +196,7 @@ export default function NutritionDashboard() {
                 {totals.fiber > 0 && (
                   <div style={{
                     textAlign: "center", fontFamily: "'Inter', sans-serif",
-                    fontSize: 11, color: "rgba(0,0,0,0.35)", marginTop: 4,
+                    fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4,
                   }}>
                     Fiber: {totals.fiber}g
                   </div>
@@ -217,13 +223,13 @@ export default function NutritionDashboard() {
             }}>
               <h3 style={{
                 fontFamily: "'Playfair Display', serif", fontSize: 18,
-                fontWeight: 400, color: "#1A1A1A", margin: 0,
+                fontWeight: 700, color: CHARCOAL, margin: 0,
               }}>
                 Food Library
               </h3>
               <button onClick={() => { setEditingFood(undefined); setShowFoodEditor(true); }} style={{
                 padding: "8px 16px", borderRadius: 8, border: "none",
-                background: TEAL, color: "#fff",
+                background: OCEAN, color: "#fff",
                 fontSize: 12, fontWeight: 700, cursor: "pointer",
                 fontFamily: "'Inter', sans-serif",
               }}>
@@ -237,20 +243,19 @@ export default function NutritionDashboard() {
               placeholder="Search your foods..."
               style={{
                 width: "100%", padding: "12px 14px", borderRadius: 10,
-                border: "2px solid rgba(0,0,0,0.08)", background: "#fff",
+                border: `1px solid ${GLASS_BORDER}`, background: GLASS,
                 fontSize: 14, fontFamily: "'Inter', sans-serif",
-                outline: "none", color: "#1A1A1A", boxSizing: "border-box",
-                marginBottom: 16,
+                outline: "none", color: "#fff", boxSizing: "border-box",
+                marginBottom: 16, backdropFilter: "blur(16px)",
               }}
             />
 
-            {/* Search results */}
             {librarySearch && libraryResults.length > 0 && (
               <div style={{ marginBottom: 20 }}>
                 <span style={{
                   fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 600,
                   letterSpacing: "0.1em", textTransform: "uppercase",
-                  color: "rgba(0,0,0,0.35)", display: "block", marginBottom: 8,
+                  color: "rgba(44,44,44,0.5)", display: "block", marginBottom: 8,
                 }}>
                   Search Results
                 </span>
@@ -260,13 +265,12 @@ export default function NutritionDashboard() {
               </div>
             )}
 
-            {/* Rotation foods */}
             {!librarySearch && rotationFoods.length > 0 && (
               <div>
                 <span style={{
                   fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 600,
                   letterSpacing: "0.1em", textTransform: "uppercase",
-                  color: TEAL, display: "block", marginBottom: 8,
+                  color: ORANGE, display: "block", marginBottom: 8,
                 }}>
                   Rotation Foods ({rotationFoods.length})
                 </span>
@@ -278,8 +282,12 @@ export default function NutritionDashboard() {
 
             {!librarySearch && rotationFoods.length === 0 && (
               <div style={{
-                textAlign: "center", padding: 30, fontFamily: "'Inter', sans-serif",
-                fontSize: 13, color: "rgba(0,0,0,0.35)",
+                textAlign: "center", padding: 30,
+                background: GLASS, borderRadius: 14,
+                border: `1px solid ${GLASS_BORDER}`,
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 13, color: "rgba(255,255,255,0.5)",
+                backdropFilter: "blur(16px)",
               }}>
                 No rotation foods yet. Add foods and mark them as rotation to build your superfood library.
               </div>
@@ -292,7 +300,7 @@ export default function NutritionDashboard() {
       {showFoodEditor && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 2000,
-          background: "rgba(0,0,0,0.5)",
+          background: "rgba(0,0,0,0.6)",
           display: "flex", alignItems: "center", justifyContent: "center",
           padding: 20,
         }}>
@@ -313,29 +321,30 @@ function FoodRow({ food }: { food: Food }) {
   return (
     <div style={{
       display: "flex", justifyContent: "space-between", alignItems: "center",
-      padding: "12px 14px", background: "#fff", borderRadius: 10, marginBottom: 4,
-      border: "1px solid rgba(0,0,0,0.04)",
+      padding: "12px 14px", background: GLASS, borderRadius: 10, marginBottom: 4,
+      border: `1px solid ${GLASS_BORDER}`,
+      backdropFilter: "blur(16px)",
     }}>
       <div>
-        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, color: "#1A1A1A" }}>
+        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: "#fff" }}>
           {food.name}
         </span>
         {food.brand && (
-          <span style={{ fontSize: 11, color: "rgba(0,0,0,0.35)", marginLeft: 6 }}>
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginLeft: 6 }}>
             {food.brand}
           </span>
         )}
-        <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "rgba(0,0,0,0.35)", marginTop: 2 }}>
+        <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>
           {food.serving_size || food.serving_unit}
         </div>
       </div>
       <div style={{ textAlign: "right" }}>
         <span style={{
-          fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: "#1A1A1A",
+          fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 700, color: SUN,
         }}>
           {food.calories} cal
         </span>
-        <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, color: "rgba(0,0,0,0.35)" }}>
+        <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, color: "rgba(255,255,255,0.4)" }}>
           {food.protein}p · {food.carbs}c · {food.fat}f
         </div>
       </div>

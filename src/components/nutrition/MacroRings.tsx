@@ -1,6 +1,13 @@
 "use client";
 
-const TEAL = "#14B8A6";
+const CHARCOAL = "#2C2C2C";
+const OCEAN = "#1D5D9B";
+const OCEAN_LIGHT = "#75C2F6";
+const ORANGE = "#F49D1A";
+const GREEN = "#27AE60";
+const MAGENTA = "#B01E68";
+const SUN = "#FFE15D";
+const RED = "#DC3535";
 
 interface MacroRingProps {
   label: string;
@@ -25,11 +32,11 @@ function MacroRing({ label, current, goal, unit, color, size = 100 }: MacroRingP
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           <circle
             cx={size / 2} cy={size / 2} r={radius}
-            fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth={strokeWidth}
+            fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={strokeWidth}
           />
           <circle
             cx={size / 2} cy={size / 2} r={radius}
-            fill="none" stroke={overGoal ? "#EF4444" : color}
+            fill="none" stroke={overGoal ? RED : color}
             strokeWidth={strokeWidth} strokeLinecap="round"
             strokeDasharray={`${Math.min(progress, circumference)} ${circumference}`}
             strokeDashoffset={circumference * 0.25}
@@ -42,26 +49,26 @@ function MacroRing({ label, current, goal, unit, color, size = 100 }: MacroRingP
         }}>
           <span style={{
             fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: size * 0.28, fontWeight: 400, color: "#1A1A1A", lineHeight: 1,
+            fontSize: size * 0.28, fontWeight: 700, color: "#fff", lineHeight: 1,
           }}>
             {Math.round(current)}
           </span>
           <span style={{
             fontFamily: "'Inter', sans-serif", fontSize: 9, fontWeight: 500,
-            letterSpacing: "0.05em", color: "rgba(0,0,0,0.35)", marginTop: 2,
+            letterSpacing: "0.05em", color: "rgba(255,255,255,0.4)", marginTop: 2,
           }}>
             {unit}
           </span>
         </div>
       </div>
       <span style={{
-        fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
-        letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(0,0,0,0.5)",
+        fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 700,
+        letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(255,255,255,0.6)",
       }}>
         {label}
       </span>
       <span style={{
-        fontFamily: "'Inter', sans-serif", fontSize: 10, color: "rgba(0,0,0,0.3)",
+        fontFamily: "'Inter', sans-serif", fontSize: 10, color: "rgba(255,255,255,0.3)",
       }}>
         / {goal}{unit === "kcal" ? "" : "g"}
       </span>
@@ -83,10 +90,10 @@ export function MacroRings({ calories, protein, carbs, fat, goals }: MacroRingsP
       display: "flex", justifyContent: "space-around", alignItems: "flex-start",
       padding: "16px 0", gap: 8,
     }}>
-      <MacroRing label="Calories" current={calories} goal={goals.calorie_goal} unit="kcal" color={TEAL} size={110} />
-      <MacroRing label="Protein" current={protein} goal={goals.protein_goal} unit="g" color="#3B82F6" />
-      <MacroRing label="Carbs" current={carbs} goal={goals.carbs_goal} unit="g" color="#F59E0B" />
-      <MacroRing label="Fat" current={fat} goal={goals.fat_goal} unit="g" color="#EC4899" />
+      <MacroRing label="Calories" current={calories} goal={goals.calorie_goal} unit="kcal" color={SUN} size={110} />
+      <MacroRing label="Protein" current={protein} goal={goals.protein_goal} unit="g" color={OCEAN_LIGHT} />
+      <MacroRing label="Carbs" current={carbs} goal={goals.carbs_goal} unit="g" color={ORANGE} />
+      <MacroRing label="Fat" current={fat} goal={goals.fat_goal} unit="g" color={MAGENTA} />
     </div>
   );
 }

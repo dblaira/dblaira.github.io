@@ -6,9 +6,11 @@ import { MacroRings } from "@/components/nutrition/MacroRings";
 import { MealLogger } from "@/components/nutrition/MealLogger";
 import { MealHistory } from "@/components/nutrition/MealHistory";
 import { FoodEditor } from "@/components/nutrition/FoodEditor";
+import { BarcodeScanner } from "@/components/nutrition/BarcodeScanner";
 import {
   getMealsForDate, getMacroGoals, calculateDayTotals,
   getRotationFoods, createFood, searchFoods,
+  lookupBarcode, getFoodByBarcode, logFoodToMeal,
 } from "@/lib/nutrition-actions";
 import type { Meal, MacroGoals, Food } from "@/lib/nutrition-actions";
 import { useAuth } from "@/lib/useAuth";
@@ -39,6 +41,8 @@ export default function NutritionDashboard() {
   const [rotationFoods, setRotationFoods] = useState<Food[]>([]);
   const [showFoodEditor, setShowFoodEditor] = useState(false);
   const [editingFood, setEditingFood] = useState<Partial<Food> | undefined>();
+  const [showFabScanner, setShowFabScanner] = useState(false);
+  const [fabMeal, setFabMeal] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -73,9 +77,15 @@ export default function NutritionDashboard() {
   };
 
   const handleSaveNewFood = async (food: Partial<Food>) => {
-    await createFood(food);
+    const saved = await createFood(food);
     setShowFoodEditor(false);
     setEditingFood(undefined);
+    // If triggered from FAB, log to selected meal
+    if (fabMeal && fabMeal !== "pick") {
+      await logFoodToMeal(saved.id, fabMeal, 1, date);
+      setFabMeal(null);
+      await loadData();
+    }
     await loadLibrary();
   };
 
@@ -295,6 +305,81 @@ export default function NutritionDashboard() {
           </div>
         )}
       </div>
+
+      {/* Floating Add Button */}
+      <button
+        onClick={() => setFabMeal("pick")}
+        style={{
+          position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)",
+          width: 64, height: 64, borderRadius: 32, border: "none",
+          background: OCEAN, color: "#fff",
+          fontSize: 32, fontWeight: 300, cursor: "pointer",
+          boxShadow: "0 6px 20px rgba(29,93,155,0.4)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 1000, transition: "transform 0.15s",
+        }}
+      >
+        +
+      </button>
+
+      {/* Meal picker from FAB */}
+      {fabMeal === "pick" && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 1500,
+          background: "rgba(0,0,0,0.5)",
+          display: "flex", alignItems: "flex-end", justifyContent: "center",
+          padding: "0 16px 100px",
+        }}
+          onClick={() => setFabMeal(null)}
+        >
+          <div style={{
+            background: GLASS, borderRadius: 16, padding: 16, width: "100%", maxWidth: 400,
+            border: `1px solid ${GLASS_BORDER}`, backdropFilter: "blur(24px)",
+          }}
+            onClick={e => e.stopPropagation()}
+          >
+            <span style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 700,
+              letterSpacing: "0.1em", textTransform: "uppercase",
+              color: "rgba(255,255,255,0.45)", display: "block", marginBottom: 12,
+            }}>
+              Add to which meal?
+            </span>
+            {["Breakfast", "Lunch", "Dinner", "Snack"].map(m => {
+              const colors: Record<string, string> = { Breakfast: "#B01E68", Lunch: "#1D5D9B", Dinner: "#F49D1A", Snack: "#DC3535" };
+              return (
+                <button key={m} onClick={() => { setFabMeal(m); setShowFabScanner(true); }} style={{
+                  width: "100%", padding: "14px", borderRadius: 10, border: "none",
+                  background: colors[m], color: "#fff",
+                  fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700,
+                  cursor: "pointer", marginBottom: 6,
+                }}>
+                  {m}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* FAB barcode scanner */}
+      {showFabScanner && fabMeal && fabMeal !== "pick" && (
+        <BarcodeScanner
+          onResult={async (barcode) => {
+            setShowFabScanner(false);
+            const existing = await getFoodByBarcode(barcode);
+            if (existing) {
+              setEditingFood(existing);
+              setShowFoodEditor(true);
+              return;
+            }
+            const result = await lookupBarcode(barcode);
+            setEditingFood(result || { barcode });
+            setShowFoodEditor(true);
+          }}
+          onClose={() => { setShowFabScanner(false); setFabMeal(null); }}
+        />
+      )}
 
       {/* Food editor modal */}
       {showFoodEditor && (

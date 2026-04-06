@@ -14,11 +14,35 @@ const HEADERS = {
   Accept: "application/json",
 };
 
-/** GET /api/markmap — returns the latest markdown for a given source */
+/** GET /api/markmap
+ *  ?id=<uuid>        → single row with full markdown
+ *  ?limit=1 (default)→ latest row with full markdown
+ *  ?limit=N          → N most-recent rows (metadata only, no markdown) */
 export async function GET(req: NextRequest) {
-  const source = req.nextUrl.searchParams.get("source") ?? "savy";
+  const id = req.nextUrl.searchParams.get("id");
 
-  const url = `${SUPABASE_URL}/rest/v1/markmap_content?source=eq.${encodeURIComponent(source)}&order=updated_at.desc&limit=1`;
+  if (id) {
+    const url = `${SUPABASE_URL}/rest/v1/markmap_content?id=eq.${encodeURIComponent(id)}&limit=1`;
+    const res = await fetch(url, { headers: HEADERS, cache: "no-store" });
+    if (!res.ok) {
+      return NextResponse.json({ error: await res.text() }, { status: res.status });
+    }
+    const rows = await res.json();
+    return NextResponse.json({ data: rows[0] ?? null });
+  }
+
+  const source = req.nextUrl.searchParams.get("source") ?? "savy";
+  const limit = Math.min(
+    Math.max(parseInt(req.nextUrl.searchParams.get("limit") ?? "1", 10) || 1, 1),
+    50,
+  );
+  const select = limit === 1
+    ? "id,title,markdown,updated_at,source"
+    : "id,title,updated_at,source";
+
+  const url =
+    `${SUPABASE_URL}/rest/v1/markmap_content?source=eq.${encodeURIComponent(source)}` +
+    `&select=${select}&order=updated_at.desc&limit=${limit}`;
 
   console.log("[markmap GET]", url.replace(SUPABASE_KEY, "***"));
 
@@ -30,7 +54,6 @@ export async function GET(req: NextRequest) {
   if (!res.ok) {
     const text = await res.text();
     console.error("[markmap GET] error:", res.status, text);
-    // If schema cache is stale, return null data instead of error
     if (text.includes("schema cache")) {
       return NextResponse.json({ data: null, _cache_stale: true });
     }
@@ -38,7 +61,10 @@ export async function GET(req: NextRequest) {
   }
 
   const rows = await res.json();
-  return NextResponse.json({ data: rows[0] ?? null });
+  if (limit === 1) {
+    return NextResponse.json({ data: rows[0] ?? null });
+  }
+  return NextResponse.json({ data: rows });
 }
 
 /** POST /api/markmap — push new markdown content */

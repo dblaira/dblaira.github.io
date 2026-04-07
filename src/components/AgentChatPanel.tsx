@@ -191,7 +191,179 @@ function ResponseCard({ text }: { text: string }) {
 
 /* ── Main Chat Panel ────────────────────────────────────────────────── */
 
-export default function AgentChatPanel({ agent = "po" }: { agent?: string }) {
+const AGENTS = [
+  { id: "savy", label: "Savy", emoji: "🦊" },
+  { id: "po", label: "Po", emoji: "🐼" },
+  { id: "all", label: "All", emoji: "" },
+];
+
+/* ── Chat History (for activity feed section) ───────────────────────── */
+
+export function ChatHistory() {
+  const [filter, setFilter] = useState("all");
+  const [history, setHistory] = useState<ChatMessage[]>([]);
+
+  const fetchHistory = useCallback(async () => {
+    try {
+      const sb = getSupabase();
+      let q = sb
+        .from("agent_chat")
+        .select("*")
+        .eq("status", "complete")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (filter !== "all") q = q.eq("agent", filter);
+      const { data } = await q;
+      if (data) setHistory(data);
+    } catch {
+      // silent
+    }
+  }, [filter]);
+
+  useEffect(() => {
+    fetchHistory();
+    const interval = setInterval(fetchHistory, 30000);
+    return () => clearInterval(interval);
+  }, [fetchHistory]);
+
+  return (
+    <div>
+      {/* Label + filter */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+        <span
+          style={{
+            fontFamily: INTER,
+            fontSize: 11,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.12em",
+            color: "rgba(0,0,0,0.35)",
+          }}
+        >
+          Chat History
+        </span>
+        <div style={{ display: "flex", gap: 4 }}>
+          {AGENTS.map((a) => (
+            <button
+              key={a.id}
+              onClick={() => setFilter(a.id)}
+              style={{
+                fontFamily: INTER,
+                fontSize: 11,
+                fontWeight: filter === a.id ? 700 : 500,
+                padding: "3px 10px",
+                borderRadius: 16,
+                border: filter === a.id ? `1.5px solid ${CRIMSON}` : "1.5px solid rgba(0,0,0,0.08)",
+                background: filter === a.id ? "rgba(220,20,60,0.06)" : "transparent",
+                color: filter === a.id ? CRIMSON : "rgba(0,0,0,0.35)",
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+            >
+              {a.emoji}{a.emoji ? " " : ""}{a.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div
+        style={{
+          background: "#FFFFFF",
+          borderRadius: 12,
+          padding: "8px 0",
+        }}
+      >
+        {history.length === 0 && (
+          <div
+            style={{
+              fontFamily: INTER,
+              fontSize: 13,
+              color: "rgba(0,0,0,0.25)",
+              textAlign: "center",
+              padding: "24px 0",
+            }}
+          >
+            No completed conversations yet.
+          </div>
+        )}
+        {history.map((msg, i) => {
+          const agentInfo = AGENTS.find((a) => a.id === msg.agent);
+          const snippet = msg.response
+            ? msg.response.replace(/^#+ /gm, "").replace(/[*_`]/g, "").slice(0, 80)
+            : "";
+          return (
+            <div
+              key={msg.id}
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 14,
+                padding: "14px 24px",
+                borderBottom: i < history.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+              }}
+            >
+              <div style={{ position: "relative", paddingTop: 4 }}>
+                <div
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: CRIMSON,
+                    flexShrink: 0,
+                  }}
+                />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontFamily: INTER,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#1A1A1A",
+                    marginBottom: 2,
+                  }}
+                >
+                  {agentInfo?.emoji} {agentInfo?.label} · {msg.message.length > 60 ? msg.message.slice(0, 57) + "..." : msg.message}
+                </div>
+                <div
+                  style={{
+                    fontFamily: INTER,
+                    fontSize: 12,
+                    color: "rgba(0,0,0,0.4)",
+                  }}
+                >
+                  {snippet}{snippet.length >= 80 ? "..." : ""}
+                </div>
+              </div>
+              <div
+                style={{
+                  fontFamily: INTER,
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: "rgba(0,0,0,0.3)",
+                  flexShrink: 0,
+                  paddingTop: 2,
+                }}
+              >
+                {new Date(msg.created_at).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Main Chat Panel ────────────────────────────────────────────────── */
+
+const CHAT_AGENTS = AGENTS.filter((a) => a.id !== "all");
+
+export default function AgentChatPanel({ agent: initialAgent = "savy" }: { agent?: string }) {
+  const [agent, setAgent] = useState(initialAgent);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -266,8 +438,8 @@ export default function AgentChatPanel({ agent = "po" }: { agent?: string }) {
 
   return (
     <div>
-      {/* Section label */}
-      <div style={{ marginBottom: 12 }}>
+      {/* Agent picker */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
         <span
           style={{
             fontFamily: INTER,
@@ -278,8 +450,30 @@ export default function AgentChatPanel({ agent = "po" }: { agent?: string }) {
             color: "rgba(0,0,0,0.35)",
           }}
         >
-          Talk to {agent === "po" ? "Po" : "Savy"}
+          Talk to
         </span>
+        <div style={{ display: "flex", gap: 4 }}>
+          {CHAT_AGENTS.map((a) => (
+            <button
+              key={a.id}
+              onClick={() => setAgent(a.id)}
+              style={{
+                fontFamily: INTER,
+                fontSize: 12,
+                fontWeight: agent === a.id ? 700 : 500,
+                padding: "5px 12px",
+                borderRadius: 20,
+                border: agent === a.id ? `1.5px solid ${CRIMSON}` : "1.5px solid rgba(0,0,0,0.1)",
+                background: agent === a.id ? "rgba(220,20,60,0.06)" : "transparent",
+                color: agent === a.id ? CRIMSON : "rgba(0,0,0,0.4)",
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+            >
+              {a.emoji} {a.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Input */}
@@ -402,7 +596,7 @@ export default function AgentChatPanel({ agent = "po" }: { agent?: string }) {
               padding: "32px 0",
             }}
           >
-            No messages yet. Ask {agent === "po" ? "Po" : "Savy"} something.
+            No messages yet. Ask {AGENTS.find(a => a.id === agent)?.label ?? agent} something.
           </div>
         )}
       </div>

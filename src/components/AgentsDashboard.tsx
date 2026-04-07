@@ -10,6 +10,10 @@ const MarkmapViewer = dynamic(() => import("@/components/MarkmapViewer"), {
 const AgentChatPanel = dynamic(() => import("@/components/AgentChatPanel"), {
   ssr: false,
 });
+const ChatHistory = dynamic(
+  () => import("@/components/AgentChatPanel").then((m) => m.ChatHistory),
+  { ssr: false },
+);
 
 const CRIMSON = "#DC143C";
 const CREAM = "#F5F0E8";
@@ -36,29 +40,6 @@ const CATEGORY_COUNTS: Record<string, number> = {
   learning: 0,
 };
 
-const ACTIVITY = [
-  {
-    emoji: "🐼",
-    agent: "Po",
-    action: "Upgraded to Opus 4.6 + Gemma 4",
-    detail: "primary: claude-opus-4-6 · local: gemma4:26b · cost routing enabled",
-    date: "Apr 7",
-  },
-  {
-    emoji: "🐼",
-    agent: "Po",
-    action: "Hermes agent deployed",
-    detail: "replaced OpenClaw · Telegram + web chat · MCP integrations",
-    date: "Apr 7",
-  },
-  {
-    emoji: "🐼",
-    agent: "Po",
-    action: "Web chat panel live",
-    detail: "mind map responses · todiefor.app/agents",
-    date: "Apr 7",
-  },
-];
 
 function hex(color: string, opacity: number): string {
   // Convert hex to rgba
@@ -397,93 +378,9 @@ export default function AgentsDashboard() {
           </div>
         </div>
 
-        {/* Activity Feed */}
+        {/* Chat History */}
         <div className="content-width" style={{ padding: "0 24px 80px" }}>
-
-          <div style={{ marginBottom: 12 }}>
-            <span
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 11,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.12em",
-                color: "rgba(0,0,0,0.35)",
-              }}
-            >
-              Recent Activity
-            </span>
-          </div>
-
-          <div
-            style={{
-              background: "#FFFFFF",
-              borderRadius: 12,
-              padding: "8px 0",
-            }}
-          >
-            {ACTIVITY.map((item, i) => (
-              <div
-                key={i}
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 14,
-                  padding: "16px 24px",
-                  borderBottom: i < ACTIVITY.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
-                }}
-              >
-                {/* Left dot */}
-                <div style={{ position: "relative", paddingTop: 4 }}>
-                  <div
-                    style={{
-                      width: 8, height: 8, borderRadius: "50%",
-                      background: CRIMSON,
-                      flexShrink: 0,
-                    }}
-                  />
-                </div>
-
-                {/* Content */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: "#1A1A1A",
-                      marginBottom: 2,
-                    }}
-                  >
-                    {item.emoji} {item.agent} · {item.action}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 12,
-                      color: "rgba(0,0,0,0.4)",
-                    }}
-                  >
-                    {item.detail}
-                  </div>
-                </div>
-
-                {/* Date */}
-                <div
-                  style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 11,
-                    fontWeight: 500,
-                    color: "rgba(0,0,0,0.3)",
-                    flexShrink: 0,
-                    paddingTop: 2,
-                  }}
-                >
-                  {item.date}
-                </div>
-              </div>
-            ))}
-          </div>
+          <ChatHistory />
         </div>
 
         {/* Footer */}

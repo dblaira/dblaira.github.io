@@ -449,7 +449,7 @@ export default function AgentChatPanel({ agent = "savy" }: { agent?: string }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          placeholder="Ask something..."
+          placeholder="Delegate..."
           disabled={sending}
           style={{
             flex: 1,
@@ -555,7 +555,7 @@ export default function AgentChatPanel({ agent = "savy" }: { agent?: string }) {
               padding: "32px 0",
             }}
           >
-            No messages yet. Ask {AGENTS.find(a => a.id === agent)?.label ?? agent} something.
+            No delegations yet.
           </div>
         )}
       </div>

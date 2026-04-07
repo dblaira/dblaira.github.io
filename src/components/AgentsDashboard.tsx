@@ -7,6 +7,9 @@ import dynamic from "next/dynamic";
 const MarkmapViewer = dynamic(() => import("@/components/MarkmapViewer"), {
   ssr: false,
 });
+const AgentChatPanel = dynamic(() => import("@/components/AgentChatPanel"), {
+  ssr: false,
+});
 
 const CRIMSON = "#DC143C";
 const CREAM = "#F5F0E8";
@@ -37,23 +40,23 @@ const ACTIVITY = [
   {
     emoji: "🐼",
     agent: "Po",
-    action: "qwen2.5-coder:7b installed",
-    detail: "local coding agent ready",
-    date: "Mar 24",
+    action: "Upgraded to Opus 4.6 + Gemma 4",
+    detail: "primary: claude-opus-4-6 · local: gemma4:26b · cost routing enabled",
+    date: "Apr 7",
   },
   {
     emoji: "🐼",
     agent: "Po",
-    action: "RAG system built",
-    detail: "adam-rag.py · Supabase live queries",
-    date: "Mar 23",
+    action: "Hermes agent deployed",
+    detail: "replaced OpenClaw · Telegram + web chat · MCP integrations",
+    date: "Apr 7",
   },
   {
     emoji: "🐼",
     agent: "Po",
-    action: "LoRA fine-tuning completed",
-    detail: "qwen2.5:7b · 1,000 iterations · 8,069 examples",
-    date: "Mar 23",
+    action: "Web chat panel live",
+    detail: "mind map responses · todiefor.app/agents",
+    date: "Apr 7",
   },
 ];
 
@@ -193,7 +196,7 @@ export default function AgentsDashboard() {
               >
                 <div>Primary Agent · Orchestrator</div>
                 <div style={{ marginTop: 4, color: "rgba(0,0,0,0.3)" }}>
-                  claude-sonnet-4-6
+                  claude-opus-4-6
                 </div>
               </div>
             </div>
@@ -274,6 +277,11 @@ export default function AgentsDashboard() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Chat Panel */}
+        <div className="content-width" style={{ padding: "0 24px 32px" }}>
+          <AgentChatPanel agent="po" />
         </div>
 
         {/* Markmap — Savy's live mind map */}

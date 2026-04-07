@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Transformer } from "markmap-lib";
 import { Markmap } from "markmap-view";
+import { getSupabase } from "@/lib/supabase";
 
 const CRIMSON = "#DC143C";
 const INTER = "'Inter', sans-serif";
@@ -197,15 +198,23 @@ export default function AgentChatPanel({ agent = "po" }: { agent?: string }) {
   const [hasPending, setHasPending] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch recent messages
+  // Fetch recent messages via Supabase client
   const fetchMessages = useCallback(async () => {
     try {
-      const res = await fetch(`/api/chat?agent=${agent}&limit=10`);
-      const json = await res.json();
-      if (json.data) {
-        // API returns desc order, reverse for display
-        setMessages(json.data.reverse());
-        setHasPending(json.data.some((m: ChatMessage) => m.status === "pending" || m.status === "processing"));
+      const sb = getSupabase();
+      const { data, error } = await sb
+        .from("agent_chat")
+        .select("*")
+        .eq("agent", agent)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (error) {
+        console.error("[chat] fetch error:", error.message);
+        return;
+      }
+      if (data) {
+        setMessages(data.reverse());
+        setHasPending(data.some((m: ChatMessage) => m.status === "pending" || m.status === "processing"));
       }
     } catch {
       // silent
@@ -227,10 +236,11 @@ export default function AgentChatPanel({ agent = "po" }: { agent?: string }) {
     setInput("");
 
     try {
-      await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, agent }),
+      const sb = getSupabase();
+      await sb.from("agent_chat").insert({
+        message: text,
+        agent,
+        status: "pending",
       });
       await fetchMessages();
       setHasPending(true);

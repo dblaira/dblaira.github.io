@@ -101,7 +101,7 @@ export default function AgentsDashboard() {
               margin: 0,
             }}
           >
-            Po + Savy · Mac Studio + MacBook Pro
+            Savy + Po · MacBook Pro + Mac Studio
           </p>
         </div>
 
@@ -194,7 +194,7 @@ export default function AgentsDashboard() {
                   lineHeight: 1.7,
                 }}
               >
-                <div>Primary Agent · Orchestrator</div>
+                <div>Orchestrator</div>
                 <div style={{ marginTop: 4, color: "rgba(0,0,0,0.3)" }}>
                   claude-opus-4-6
                 </div>
@@ -207,8 +207,7 @@ export default function AgentsDashboard() {
                 background: "#FFFFFF",
                 borderRadius: 12,
                 padding: "24px",
-                borderLeft: `3px solid rgba(0,0,0,0.1)`,
-                opacity: 0.6,
+                borderLeft: `3px solid #22C55E`,
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
@@ -244,8 +243,9 @@ export default function AgentsDashboard() {
                 <span
                   style={{
                     width: 8, height: 8, borderRadius: "50%",
-                    background: "rgba(0,0,0,0.2)",
+                    background: "#22C55E",
                     display: "inline-block",
+                    boxShadow: "0 0 6px #22C55E",
                   }}
                 />
                 <span
@@ -253,12 +253,12 @@ export default function AgentsDashboard() {
                     fontFamily: "'Inter', sans-serif",
                     fontSize: 11,
                     fontWeight: 600,
-                    color: "rgba(0,0,0,0.3)",
+                    color: "#22C55E",
                     textTransform: "uppercase",
                     letterSpacing: "0.1em",
                   }}
                 >
-                  Offline
+                  Online
                 </span>
               </div>
 
@@ -266,13 +266,13 @@ export default function AgentsDashboard() {
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontSize: 12,
-                  color: "rgba(0,0,0,0.35)",
+                  color: "rgba(0,0,0,0.45)",
                   lineHeight: 1.7,
                 }}
               >
-                <div>Coming Soon</div>
-                <div style={{ marginTop: 4, color: "rgba(0,0,0,0.2)" }}>
-                  —
+                <div>Primary Agent</div>
+                <div style={{ marginTop: 4, color: "rgba(0,0,0,0.3)" }}>
+                  claude-opus-4-6
                 </div>
               </div>
             </div>
@@ -281,7 +281,7 @@ export default function AgentsDashboard() {
 
         {/* Chat Panel */}
         <div className="content-width" style={{ padding: "0 24px 32px" }}>
-          <AgentChatPanel agent="po" />
+          <AgentChatPanel agent="savy" />
         </div>
 
         {/* Markmap — Savy's live mind map */}

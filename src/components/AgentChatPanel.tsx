@@ -402,7 +402,7 @@ export default function AgentChatPanel({ agent = "po" }: { agent?: string }) {
               padding: "32px 0",
             }}
           >
-            No messages yet. Ask Po something.
+            No messages yet. Ask {agent === "po" ? "Po" : "Savy"} something.
           </div>
         )}
       </div>

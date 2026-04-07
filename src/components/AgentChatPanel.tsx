@@ -96,9 +96,9 @@ function ResponseMindMap({ markdown }: { markdown: string }) {
           style={{
             background: "rgba(0,0,0,0.05)",
             border: "none",
-            borderRadius: 6,
-            padding: "4px 8px",
-            fontSize: 11,
+            borderRadius: 8,
+            padding: "8px 14px",
+            fontSize: 14,
             fontFamily: INTER,
             cursor: "pointer",
             color: "rgba(0,0,0,0.5)",
@@ -112,9 +112,9 @@ function ResponseMindMap({ markdown }: { markdown: string }) {
           style={{
             background: "rgba(0,0,0,0.05)",
             border: "none",
-            borderRadius: 6,
-            padding: "4px 8px",
-            fontSize: 11,
+            borderRadius: 8,
+            padding: "8px 14px",
+            fontSize: 14,
             fontFamily: INTER,
             cursor: "pointer",
             color: "rgba(0,0,0,0.5)",
@@ -242,17 +242,17 @@ export function ChatHistory() {
         >
           Chat History
         </span>
-        <div style={{ display: "flex", gap: 4 }}>
+        <div style={{ display: "flex", gap: 6 }}>
           {AGENTS.map((a) => (
             <button
               key={a.id}
               onClick={() => setFilter(a.id)}
               style={{
                 fontFamily: INTER,
-                fontSize: 11,
+                fontSize: 14,
                 fontWeight: filter === a.id ? 700 : 500,
-                padding: "3px 10px",
-                borderRadius: 16,
+                padding: "8px 16px",
+                borderRadius: 20,
                 border: filter === a.id ? `1.5px solid ${CRIMSON}` : "1.5px solid rgba(0,0,0,0.08)",
                 background: filter === a.id ? "rgba(220,20,60,0.06)" : "transparent",
                 color: filter === a.id ? CRIMSON : "rgba(0,0,0,0.35)",
@@ -360,10 +360,7 @@ export function ChatHistory() {
 
 /* ── Main Chat Panel ────────────────────────────────────────────────── */
 
-const CHAT_AGENTS = AGENTS.filter((a) => a.id !== "all");
-
-export default function AgentChatPanel({ agent: initialAgent = "savy" }: { agent?: string }) {
-  const [agent, setAgent] = useState(initialAgent);
+export default function AgentChatPanel({ agent = "savy" }: { agent?: string }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -438,49 +435,11 @@ export default function AgentChatPanel({ agent: initialAgent = "savy" }: { agent
 
   return (
     <div>
-      {/* Agent picker */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-        <span
-          style={{
-            fontFamily: INTER,
-            fontSize: 11,
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.12em",
-            color: "rgba(0,0,0,0.35)",
-          }}
-        >
-          Talk to
-        </span>
-        <div style={{ display: "flex", gap: 4 }}>
-          {CHAT_AGENTS.map((a) => (
-            <button
-              key={a.id}
-              onClick={() => setAgent(a.id)}
-              style={{
-                fontFamily: INTER,
-                fontSize: 12,
-                fontWeight: agent === a.id ? 700 : 500,
-                padding: "5px 12px",
-                borderRadius: 20,
-                border: agent === a.id ? `1.5px solid ${CRIMSON}` : "1.5px solid rgba(0,0,0,0.1)",
-                background: agent === a.id ? "rgba(220,20,60,0.06)" : "transparent",
-                color: agent === a.id ? CRIMSON : "rgba(0,0,0,0.4)",
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}
-            >
-              {a.emoji} {a.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Input */}
+      {/* Input — large touch targets */}
       <div
         style={{
           display: "flex",
-          gap: 8,
+          gap: 10,
           marginBottom: 24,
         }}
       >
@@ -495,10 +454,10 @@ export default function AgentChatPanel({ agent: initialAgent = "savy" }: { agent
           style={{
             flex: 1,
             fontFamily: INTER,
-            fontSize: 14,
-            padding: "12px 16px",
-            borderRadius: 12,
-            border: "1px solid rgba(0,0,0,0.1)",
+            fontSize: 17,
+            padding: "16px 20px",
+            borderRadius: 14,
+            border: "1.5px solid rgba(0,0,0,0.1)",
             background: "#FFFFFF",
             outline: "none",
             color: "#1A1A1A",
@@ -509,10 +468,10 @@ export default function AgentChatPanel({ agent: initialAgent = "savy" }: { agent
           disabled={sending || !input.trim()}
           style={{
             fontFamily: INTER,
-            fontSize: 13,
+            fontSize: 16,
             fontWeight: 600,
-            padding: "12px 20px",
-            borderRadius: 12,
+            padding: "16px 28px",
+            borderRadius: 14,
             border: "none",
             background: sending ? "rgba(0,0,0,0.1)" : CRIMSON,
             color: sending ? "rgba(0,0,0,0.3)" : "#FFFFFF",

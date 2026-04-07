@@ -1,7 +1,7 @@
 "use client";
 
+import { useState } from "react";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
-import { CATEGORY_COLORS } from "@/lib/types";
 import dynamic from "next/dynamic";
 
 const MarkmapViewer = dynamic(() => import("@/components/MarkmapViewer"), {
@@ -17,39 +17,17 @@ const ChatHistory = dynamic(
 
 const CRIMSON = "#DC143C";
 const CREAM = "#F5F0E8";
+const INTER = "'Inter', sans-serif";
+const PLAYFAIR = "'Playfair Display', Georgia, serif";
 
-const CATEGORIES = [
-  "exercise", "nutrition", "ambition", "health", "sleep",
-  "social", "work", "purchase", "affect", "insight",
-  "belief", "entertainment", "learning",
+const AGENTS = [
+  { id: "savy", label: "Savy", emoji: "🦊", machine: "MacBook Pro", role: "Primary Agent" },
+  { id: "po", label: "Po", emoji: "🐼", machine: "Mac Studio", role: "Orchestrator" },
 ];
 
-const CATEGORY_COUNTS: Record<string, number> = {
-  exercise: 3071,
-  nutrition: 674,
-  ambition: 638,
-  health: 624,
-  sleep: 592,
-  social: 592,
-  work: 510,
-  purchase: 433,
-  affect: 0,
-  insight: 0,
-  belief: 0,
-  entertainment: 0,
-  learning: 0,
-};
-
-
-function hex(color: string, opacity: number): string {
-  // Convert hex to rgba
-  const r = parseInt(color.slice(1, 3), 16);
-  const g = parseInt(color.slice(3, 5), 16);
-  const b = parseInt(color.slice(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-}
-
 export default function AgentsDashboard() {
+  const [selectedAgent, setSelectedAgent] = useState("savy");
+
   return (
     <div style={{ minHeight: "100vh", background: "#0A0A0A" }}>
       <SavySiteHeader />
@@ -60,7 +38,7 @@ export default function AgentsDashboard() {
         <div className="content-width" style={{ padding: "48px 24px 32px" }}>
           <h1
             style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
+              fontFamily: PLAYFAIR,
               fontSize: "clamp(32px, 6vw, 44px)",
               fontWeight: 400,
               fontStyle: "italic",
@@ -73,7 +51,7 @@ export default function AgentsDashboard() {
           </h1>
           <p
             style={{
-              fontFamily: "'Inter', sans-serif",
+              fontFamily: INTER,
               fontSize: 13,
               fontWeight: 500,
               textTransform: "uppercase",
@@ -86,14 +64,12 @@ export default function AgentsDashboard() {
           </p>
         </div>
 
-        {/* Agent Cards */}
+        {/* Agent Cards — clickable as picker */}
         <div className="content-width" style={{ padding: "0 24px 32px" }}>
-
-          {/* Section label */}
           <div style={{ marginBottom: 12 }}>
             <span
               style={{
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: INTER,
                 fontSize: 11,
                 fontWeight: 700,
                 textTransform: "uppercase",
@@ -101,168 +77,104 @@ export default function AgentsDashboard() {
                 color: "rgba(0,0,0,0.35)",
               }}
             >
-              Agents
+              Talk to
             </span>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            {/* Po */}
-            <div
-              style={{
-                background: "#FFFFFF",
-                borderRadius: 12,
-                padding: "24px",
-                borderLeft: `3px solid #22C55E`,
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <span style={{ fontSize: 32 }}>🐼</span>
-                <div>
-                  <div
-                    style={{
-                      fontFamily: "'Playfair Display', Georgia, serif",
-                      fontSize: 20,
-                      fontWeight: 400,
-                      color: "#1A1A1A",
-                    }}
-                  >
-                    Po
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 11,
-                      color: "rgba(0,0,0,0.4)",
-                      fontWeight: 500,
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Mac Studio
-                  </div>
-                </div>
-              </div>
-
-              {/* Status */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                <span
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
+            {AGENTS.map((a) => {
+              const active = selectedAgent === a.id;
+              return (
+                <button
+                  key={a.id}
+                  onClick={() => setSelectedAgent(a.id)}
                   style={{
-                    width: 8, height: 8, borderRadius: "50%",
-                    background: "#22C55E",
-                    display: "inline-block",
-                    boxShadow: "0 0 6px #22C55E",
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "#22C55E",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.1em",
+                    background: "#FFFFFF",
+                    borderRadius: 16,
+                    padding: "28px 24px",
+                    border: active ? `2.5px solid ${CRIMSON}` : "2.5px solid transparent",
+                    borderLeft: active ? `4px solid ${CRIMSON}` : `4px solid #22C55E`,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "all 0.15s",
+                    boxShadow: active ? "0 2px 12px rgba(220,20,60,0.12)" : "none",
+                    outline: "none",
                   }}
                 >
-                  Online
-                </span>
-              </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
+                    <span style={{ fontSize: 44 }}>{a.emoji}</span>
+                    <div>
+                      <div
+                        style={{
+                          fontFamily: PLAYFAIR,
+                          fontSize: 24,
+                          fontWeight: 400,
+                          color: active ? CRIMSON : "#1A1A1A",
+                        }}
+                      >
+                        {a.label}
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: INTER,
+                          fontSize: 13,
+                          color: "rgba(0,0,0,0.4)",
+                          fontWeight: 500,
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {a.machine}
+                      </div>
+                    </div>
+                  </div>
 
-              <div
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 12,
-                  color: "rgba(0,0,0,0.45)",
-                  lineHeight: 1.7,
-                }}
-              >
-                <div>Orchestrator</div>
-                <div style={{ marginTop: 4, color: "rgba(0,0,0,0.3)" }}>
-                  claude-opus-4-6
-                </div>
-              </div>
-            </div>
+                  {/* Status */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                    <span
+                      style={{
+                        width: 10, height: 10, borderRadius: "50%",
+                        background: "#22C55E",
+                        display: "inline-block",
+                        boxShadow: "0 0 6px #22C55E",
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: INTER,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#22C55E",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                      }}
+                    >
+                      Online
+                    </span>
+                  </div>
 
-            {/* Savy */}
-            <div
-              style={{
-                background: "#FFFFFF",
-                borderRadius: 12,
-                padding: "24px",
-                borderLeft: `3px solid #22C55E`,
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <span style={{ fontSize: 32 }}>🦊</span>
-                <div>
                   <div
                     style={{
-                      fontFamily: "'Playfair Display', Georgia, serif",
-                      fontSize: 20,
-                      fontWeight: 400,
-                      color: "#1A1A1A",
+                      fontFamily: INTER,
+                      fontSize: 14,
+                      color: "rgba(0,0,0,0.45)",
+                      lineHeight: 1.7,
                     }}
                   >
-                    Savy
+                    <div>{a.role}</div>
+                    <div style={{ marginTop: 4, color: "rgba(0,0,0,0.3)" }}>
+                      claude-opus-4-6
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 11,
-                      color: "rgba(0,0,0,0.4)",
-                      fontWeight: 500,
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    MacBook Pro
-                  </div>
-                </div>
-              </div>
-
-              {/* Status */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                <span
-                  style={{
-                    width: 8, height: 8, borderRadius: "50%",
-                    background: "#22C55E",
-                    display: "inline-block",
-                    boxShadow: "0 0 6px #22C55E",
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "#22C55E",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.1em",
-                  }}
-                >
-                  Online
-                </span>
-              </div>
-
-              <div
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 12,
-                  color: "rgba(0,0,0,0.45)",
-                  lineHeight: 1.7,
-                }}
-              >
-                <div>Primary Agent</div>
-                <div style={{ marginTop: 4, color: "rgba(0,0,0,0.3)" }}>
-                  claude-opus-4-6
-                </div>
-              </div>
-            </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Chat Panel */}
+        {/* Chat Panel — synced with card selection */}
         <div className="content-width" style={{ padding: "0 24px 32px" }}>
-          <AgentChatPanel agent="savy" />
+          <AgentChatPanel agent={selectedAgent} />
         </div>
 
         {/* Markmap — Savy's live mind map */}
@@ -270,7 +182,7 @@ export default function AgentsDashboard() {
           <div style={{ marginBottom: 12 }}>
             <span
               style={{
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: INTER,
                 fontSize: 11,
                 fontWeight: 700,
                 textTransform: "uppercase",
@@ -282,100 +194,6 @@ export default function AgentsDashboard() {
             </span>
           </div>
           <MarkmapViewer />
-        </div>
-
-        {/* Ontology Section */}
-        <div className="content-width" style={{ padding: "0 24px 32px" }}>
-
-          <div style={{ marginBottom: 12 }}>
-            <span
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 11,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.12em",
-                color: "rgba(0,0,0,0.35)",
-              }}
-            >
-              Understood Ontology
-            </span>
-          </div>
-
-          <div
-            style={{
-              background: "#FFFFFF",
-              borderRadius: 12,
-              padding: "24px",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 20 }}>
-              <span
-                style={{
-                  fontFamily: "'Playfair Display', Georgia, serif",
-                  fontSize: 20,
-                  fontWeight: 400,
-                  color: "#1A1A1A",
-                }}
-              >
-                13 Categories
-              </span>
-              <span
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 12,
-                  color: "rgba(0,0,0,0.35)",
-                }}
-              >
-                8,069 extractions · 92 weeks
-              </span>
-            </div>
-
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {CATEGORIES.map((cat) => {
-                const color = CATEGORY_COLORS[cat] ?? "#64748B";
-                const count = CATEGORY_COUNTS[cat];
-                return (
-                  <div
-                    key={cat}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      background: hex(color, 0.08),
-                      border: `1px solid ${hex(color, 0.3)}`,
-                      borderRadius: 20,
-                      padding: "5px 12px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "'Inter', sans-serif",
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: color,
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {cat}
-                    </span>
-                    {count > 0 && (
-                      <span
-                        style={{
-                          fontFamily: "'Inter', sans-serif",
-                          fontSize: 10,
-                          fontWeight: 500,
-                          color: hex(color, 0.7),
-                        }}
-                      >
-                        {count.toLocaleString()}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
         </div>
 
         {/* Chat History */}
@@ -393,7 +211,7 @@ export default function AgentsDashboard() {
         >
           <p
             style={{
-              fontFamily: "'Inter', sans-serif",
+              fontFamily: INTER,
               fontSize: 12,
               color: "rgba(0,0,0,0.3)",
             }}

@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from "react";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
-import { EmotionWheel, type EmotionSelection } from "@/components/EmotionWheel";
+import { type EmotionSelection } from "@/components/EmotionWheel";
+import { EmotionGrid } from "@/components/EmotionGrid";
 import { EmotionHistory } from "@/components/EmotionHistory";
 import { EmotionCustomize } from "@/components/EmotionCustomize";
 import { getSupabase } from "@/lib/supabase";
@@ -168,10 +169,10 @@ export default function MoodCheckin() {
         </div>
 
         {view === "checkin" && (
-          <div style={{ maxWidth: 400, margin: "0 auto", padding: "24px 24px 40px" }}>
+          <div style={{ maxWidth: 480, margin: "0 auto", padding: "24px 24px 40px" }}>
             {step === 1 && (
               <>
-                <EmotionWheel selected={emotion} onSelect={setEmotion} getLabel={getEmotionLabel} />
+                <EmotionGrid selected={emotion} onSelect={setEmotion} getLabel={getEmotionLabel} />
                 <div style={{ textAlign: "center", marginTop: 24 }}>
                   <button
                     type="button"

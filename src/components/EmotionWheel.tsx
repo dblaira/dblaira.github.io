@@ -50,6 +50,21 @@ function arcPath(cx: number, cy: number, rInner: number, rOuter: number, startAn
   ].join(" ");
 }
 
+function lightTint(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function darkenForText(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const f = 0.72;
+  return `rgb(${Math.round(r * f)}, ${Math.round(g * f)}, ${Math.round(b * f)})`;
+}
+
 // Radial text: right side reads inward→outward, left side flipped to stay legible
 function radialTextRotation(midAngleDeg: number): number {
   const a = ((midAngleDeg % 360) + 360) % 360;
@@ -166,21 +181,29 @@ export function EmotionWheel({ selected, onSelect, getLabel }: Props) {
         const isHovered    = hovered === seg.emotion;
         const isFamily     = selected?.family === seg.family.name;
         const dimmed       = !!(selected && !isFamily);
-        const opacity      = dimmed ? 0.18 : isSelected ? 1 : isHovered ? 0.97 : seg.baseOpacity;
 
-        const textFill  = dimmed ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.95)";
-        const fontSize  = seg.ring === "inner" ? 13 : seg.ring === "mid" ? 10 : 9;
-        const fontWeight= seg.ring === "inner" ? 700 : 600;
+        const pathFill = isSelected
+          ? lightTint(seg.color, 0.14)
+          : isHovered
+            ? lightTint(seg.color, 0.07)
+            : "#FFFFFF";
+        const pathStroke     = isSelected ? seg.color : "rgba(0,0,0,0.06)";
+        const pathStrokeWidth = isSelected ? 2.5 : 0.5;
+
+        const textColor   = dimmed ? "rgba(0,0,0,0.10)" : darkenForText(seg.color);
+        const ringOpacity = seg.ring === "inner" ? 1 : seg.ring === "mid" ? 0.85 : 0.68;
+        const textOpacity = dimmed ? 1 : ringOpacity;
+        const fontSize    = seg.ring === "inner" ? 14 : seg.ring === "mid" ? 10 : 9;
+        const fontWeight  = seg.ring === "inner" ? 800 : 700;
 
         return (
           <g key={`${seg.emotion}-${seg.ring}`}>
             <path
               d={seg.path}
-              fill={seg.color}
-              opacity={opacity}
-              stroke={isSelected ? "#1a1a1a" : "#FFFFFF"}
-              strokeWidth={isSelected ? 2.5 : 0.8}
-              style={{ cursor: "pointer", transition: "opacity 0.15s" }}
+              fill={pathFill}
+              stroke={pathStroke}
+              strokeWidth={pathStrokeWidth}
+              style={{ cursor: "pointer", transition: "all 0.15s" }}
               onClick={() =>
                 onSelect({
                   emotion:  displayLabel,
@@ -197,12 +220,13 @@ export function EmotionWheel({ selected, onSelect, getLabel }: Props) {
               y={seg.labelPos.y}
               textAnchor="middle"
               dominantBaseline="central"
-              fill={textFill}
+              fill={textColor}
+              fillOpacity={textOpacity}
               fontFamily="'Inter', sans-serif"
               fontWeight={fontWeight}
               fontSize={fontSize}
               transform={seg.rotated ? `rotate(${seg.labelRotate}, ${seg.labelPos.x}, ${seg.labelPos.y})` : undefined}
-              style={{ pointerEvents: "none", transition: "fill 0.15s" }}
+              style={{ pointerEvents: "none", transition: "fill 0.15s, fill-opacity 0.15s" }}
             >
               {displayLabel}
             </text>

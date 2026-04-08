@@ -1,0 +1,7 @@
+---
+description: Prevents AI from switching interaction modes without explicit user permission
+globs:
+alwaysApply: true
+---
+
+Never switch interaction modes (Plan, Agent, Ask, Debug) without explicit permission from the user. Stay in whatever mode the user has set. If you believe a different mode would be helpful, say so in plain text — do not call SwitchMode.

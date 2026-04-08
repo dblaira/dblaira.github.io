@@ -36,25 +36,11 @@ const EXPERIMENTS: ExperimentCard[] = [
     href: "/mood",
   },
   {
-    label: "DELEGATE",
-    title: "Delegation Brief",
-    desc: "Brief Po in 3 steps: what you want, how you'd think about it, what done looks like.",
-    status: "live",
-    href: "/delegate",
-  },
-  {
     label: "ONTOLOGY",
     title: "Adam's Ontology",
     desc: "How 13 life categories connect. Pearson correlations across 92 weeks of data.",
     status: "live",
     href: "/ontology",
-  },
-  {
-    label: "SYSTEM",
-    title: "INBOX Workflow",
-    desc: "Single capture point. Zero decisions at capture time. Everything finds its home later.",
-    status: "live",
-    href: "/inbox",
   },
   {
     label: "BELIEFS",

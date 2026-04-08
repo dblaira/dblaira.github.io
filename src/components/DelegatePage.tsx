@@ -7,9 +7,9 @@ import { getSupabase } from "@/lib/supabase";
 const CRIMSON = "#DC143C";
 
 const PLACEHOLDERS = {
-  what: "e.g. I want the best search API assigned to each subagent Po manages in OpenClaw",
-  how: "e.g. When I'm choosing a search API, I like to find the top 4 options so I can understand where one is stronger than another — so I can assign specific APIs to specific subagents to improve data quality over time",
-  done: "e.g. 4 APIs chosen and ranked for each major business branch, assigned to each subagent — even if that agent is name-only and not yet live",
+  what: "e.g. I want a comparison of the top 4 search APIs for structured data extraction",
+  how: "e.g. When I'm choosing a search API, I like to find the top 4 options so I can understand where one is stronger than another — so I can pick the best fit for each use case",
+  done: "e.g. 4 APIs chosen and ranked with pros/cons and a recommendation for each use case",
 };
 
 interface DelegationBrief {

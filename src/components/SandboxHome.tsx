@@ -36,13 +36,6 @@ const EXPERIMENTS: ExperimentCard[] = [
     href: "/mood",
   },
   {
-    label: "AGENTS",
-    title: "Agent Dashboard",
-    desc: "Po + Savy workflow. Understood ontology. Agent activity across Mac Studio and MacBook Pro.",
-    status: "live",
-    href: "/agents",
-  },
-  {
     label: "DELEGATE",
     title: "Delegation Brief",
     desc: "Brief Po in 3 steps: what you want, how you'd think about it, what done looks like.",

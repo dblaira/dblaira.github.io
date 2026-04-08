@@ -11,7 +11,6 @@ const NAV_ITEMS: { href: string; label: string; hint?: string }[] = [
   { href: "/nutrition", label: "Nutrition", hint: "Macro Tracker" },
   { href: "/sleep", label: "Sleep", hint: "Dashboard" },
   { href: "/mood", label: "Mood", hint: "Emotion Check-in" },
-  { href: "/agents", label: "Agents", hint: "Agent Dashboard" },
   { href: "/delegate", label: "Delegate", hint: "Brief Po" },
   { href: "/ontology", label: "Ontology", hint: "Adam's Ontology" },
   { href: "/inbox", label: "Inbox", hint: "Workflow" },

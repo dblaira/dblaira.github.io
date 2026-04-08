@@ -14,6 +14,9 @@ const ChatHistory = dynamic(
   () => import("@/components/AgentChatPanel").then((m) => m.ChatHistory),
   { ssr: false },
 );
+const CostDashboard = dynamic(() => import("@/components/CostDashboard"), {
+  ssr: false,
+});
 
 const CRIMSON = "#DC143C";
 const CREAM = "#F5F0E8";
@@ -194,6 +197,11 @@ export default function AgentsDashboard() {
             </span>
           </div>
           <MarkmapViewer />
+        </div>
+
+        {/* API Costs */}
+        <div className="content-width" style={{ padding: "0 24px 32px" }}>
+          <CostDashboard />
         </div>
 
         {/* Chat History */}

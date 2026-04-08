@@ -1,5 +1,5 @@
-import SandboxHome from "@/components/SandboxHome";
+import HomeFeed from "@/components/HomeFeed";
 
 export default function Home() {
-  return <SandboxHome />;
+  return <HomeFeed />;
 }

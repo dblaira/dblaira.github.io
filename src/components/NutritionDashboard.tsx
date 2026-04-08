@@ -16,7 +16,6 @@ import {
   logMealTemplate, calculateTemplateTotals,
 } from "@/lib/nutrition-actions";
 import type { Meal, MacroGoals, Food, MealTemplate } from "@/lib/nutrition-actions";
-import { useAuth } from "@/lib/useAuth";
 
 // Bold palette from Nutrition App
 const SUN = "#F4D160";
@@ -30,7 +29,6 @@ const GREEN = "#27AE60";
 type Tab = "today" | "history" | "library";
 
 export default function NutritionDashboard() {
-  const { user, loading: authLoading } = useAuth();
   const [tab, setTab] = useState<Tab>("today");
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [meals, setMeals] = useState<Meal[]>([]);
@@ -59,8 +57,8 @@ export default function NutritionDashboard() {
   }, [date]);
 
   useEffect(() => {
-    if (user) loadData();
-  }, [user, loadData]);
+    loadData();
+  }, [loadData]);
 
   const totals = calculateDayTotals(meals);
 
@@ -71,8 +69,8 @@ export default function NutritionDashboard() {
   }, []);
 
   useEffect(() => {
-    if (tab === "library" && user) loadLibrary();
-  }, [tab, user, loadLibrary]);
+    if (tab === "library") loadLibrary();
+  }, [tab, loadLibrary]);
 
   const handleLibrarySearch = async (query: string) => {
     setLibrarySearch(query);
@@ -107,16 +105,6 @@ export default function NutritionDashboard() {
     weekday: "short", month: "short", day: "numeric",
   });
 
-  if (authLoading) {
-    return (
-      <div style={{ background: SUN, minHeight: "100vh" }}>
-        <SavySiteHeader />
-        <div style={{ textAlign: "center", padding: 80, fontFamily: "'Inter', sans-serif", color: CHARCOAL }}>
-          Loading...
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={{ background: SUN, minHeight: "100vh" }}>

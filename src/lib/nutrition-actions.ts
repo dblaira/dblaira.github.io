@@ -1,5 +1,7 @@
 import { getSupabase } from "./supabase";
 
+const USER_ID = "76a821e7-ca97-411c-9619-ff8904348e0e";
+
 // --- Types ---
 
 export interface Food {
@@ -90,13 +92,9 @@ export async function getFoodByBarcode(barcode: string): Promise<Food | null> {
 
 export async function createFood(food: Partial<Food>): Promise<Food> {
   const supabase = getSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-
   const { data, error } = await supabase
     .from("foods")
     .insert({
-      created_by: user.id,
       name: food.name,
       brand: food.brand || null,
       calories: food.calories || 0,
@@ -147,16 +145,12 @@ export async function logFoodToMeal(
   date?: string
 ): Promise<void> {
   const supabase = getSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-
   const targetDate = date || new Date().toISOString().split("T")[0];
 
-  // Get or create meal slot
   let { data: meal } = await supabase
     .from("meals")
     .select("id")
-    .eq("user_id", user.id)
+    .eq("user_id", USER_ID)
     .eq("date", targetDate)
     .eq("name", mealName)
     .single();
@@ -164,14 +158,13 @@ export async function logFoodToMeal(
   if (!meal) {
     const { data: newMeal, error } = await supabase
       .from("meals")
-      .insert({ user_id: user.id, date: targetDate, name: mealName })
+      .insert({ user_id: USER_ID, date: targetDate, name: mealName })
       .select("id")
       .single();
     if (error) throw new Error(`Failed to create meal slot: ${error.message}`);
     meal = newMeal;
   }
 
-  // Add food entry
   const { error: entryError } = await supabase
     .from("meal_entries")
     .insert({
@@ -194,9 +187,6 @@ export async function removeMealEntry(entryId: string): Promise<void> {
 
 export async function getMealsForDate(date: string): Promise<Meal[]> {
   const supabase = getSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-
   const { data } = await supabase
     .from("meals")
     .select(`
@@ -206,7 +196,7 @@ export async function getMealsForDate(date: string): Promise<Meal[]> {
         foods (*)
       )
     `)
-    .eq("user_id", user.id)
+    .eq("user_id", USER_ID)
     .eq("date", date)
     .order("created_at");
 
@@ -215,9 +205,6 @@ export async function getMealsForDate(date: string): Promise<Meal[]> {
 
 export async function getMealHistory(days: number = 30): Promise<Meal[]> {
   const supabase = getSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-
   const since = new Date();
   since.setDate(since.getDate() - days);
 
@@ -230,7 +217,7 @@ export async function getMealHistory(days: number = 30): Promise<Meal[]> {
         foods (*)
       )
     `)
-    .eq("user_id", user.id)
+    .eq("user_id", USER_ID)
     .gte("date", since.toISOString().split("T")[0])
     .order("date", { ascending: false })
     .order("created_at");
@@ -242,10 +229,7 @@ export async function getMealHistory(days: number = 30): Promise<Meal[]> {
 
 export async function relogMeal(sourceMealId: string, targetDate?: string): Promise<void> {
   const supabase = getSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
 
-  // Fetch source meal with entries
   const { data: sourceMeal } = await supabase
     .from("meals")
     .select(`name, meal_entries ( food_id, quantity )`)
@@ -256,11 +240,10 @@ export async function relogMeal(sourceMealId: string, targetDate?: string): Prom
 
   const date = targetDate || new Date().toISOString().split("T")[0];
 
-  // Create new meal slot
   let { data: meal } = await supabase
     .from("meals")
     .select("id")
-    .eq("user_id", user.id)
+    .eq("user_id", USER_ID)
     .eq("date", date)
     .eq("name", sourceMeal.name)
     .single();
@@ -268,14 +251,13 @@ export async function relogMeal(sourceMealId: string, targetDate?: string): Prom
   if (!meal) {
     const { data: newMeal, error } = await supabase
       .from("meals")
-      .insert({ user_id: user.id, date, name: sourceMeal.name })
+      .insert({ user_id: USER_ID, date, name: sourceMeal.name })
       .select("id")
       .single();
     if (error) throw new Error(`Failed to create meal slot: ${error.message}`);
     meal = newMeal;
   }
 
-  // Copy all entries
   const entries = (sourceMeal.meal_entries as any[]).map((e: any) => ({
     meal_id: meal!.id,
     food_id: e.food_id,
@@ -293,13 +275,10 @@ export async function relogMeal(sourceMealId: string, targetDate?: string): Prom
 
 export async function getMacroGoals(): Promise<MacroGoals> {
   const supabase = getSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { calorie_goal: 2400, protein_goal: 150, carbs_goal: 250, fat_goal: 80 };
-
   const { data } = await supabase
     .from("profiles")
     .select("calorie_goal, protein_goal, carbs_goal, fat_goal")
-    .eq("id", user.id)
+    .eq("id", USER_ID)
     .single();
 
   return (data as MacroGoals) || { calorie_goal: 2400, protein_goal: 150, carbs_goal: 250, fat_goal: 80 };
@@ -351,9 +330,6 @@ export interface MealTemplate {
 
 export async function getMealTemplates(): Promise<MealTemplate[]> {
   const supabase = getSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-
   const { data } = await supabase
     .from("meal_templates")
     .select(`
@@ -363,7 +339,6 @@ export async function getMealTemplates(): Promise<MealTemplate[]> {
         foods (*)
       )
     `)
-    .eq("user_id", user.id)
     .order("name");
 
   return (data as unknown as MealTemplate[]) || [];
@@ -374,12 +349,9 @@ export async function createMealTemplate(
   items: { food_id: string; quantity: number }[]
 ): Promise<MealTemplate> {
   const supabase = getSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-
   const { data: template, error } = await supabase
     .from("meal_templates")
-    .insert({ user_id: user.id, name })
+    .insert({ user_id: USER_ID, name })
     .select("*")
     .single();
 
@@ -412,10 +384,7 @@ export async function logMealTemplate(
   date?: string
 ): Promise<void> {
   const supabase = getSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
 
-  // Fetch template items
   const { data: items } = await supabase
     .from("meal_template_items")
     .select("food_id, quantity")
@@ -425,11 +394,10 @@ export async function logMealTemplate(
 
   const targetDate = date || new Date().toISOString().split("T")[0];
 
-  // Get or create meal slot
   let { data: meal } = await supabase
     .from("meals")
     .select("id")
-    .eq("user_id", user.id)
+    .eq("user_id", USER_ID)
     .eq("date", targetDate)
     .eq("name", mealName)
     .single();
@@ -437,14 +405,13 @@ export async function logMealTemplate(
   if (!meal) {
     const { data: newMeal, error } = await supabase
       .from("meals")
-      .insert({ user_id: user.id, date: targetDate, name: mealName })
+      .insert({ user_id: USER_ID, date: targetDate, name: mealName })
       .select("id")
       .single();
     if (error) throw new Error(`Failed to create meal slot: ${error.message}`);
     meal = newMeal;
   }
 
-  // Log all items
   const entries = items.map(i => ({
     meal_id: meal!.id,
     food_id: i.food_id,

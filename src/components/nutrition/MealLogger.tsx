@@ -12,8 +12,8 @@ import { BarcodeScanner } from "./BarcodeScanner";
 const SUN = "#FFE15D";
 const OCEAN = "#1D5D9B";
 const CHARCOAL = "#2C2C2C";
-const GLASS = "rgba(44,44,44,0.85)";
-const GLASS_BORDER = "rgba(255,255,255,0.1)";
+const GLASS = "rgba(176,30,104,0.9)";
+const GLASS_BORDER = "rgba(255,255,255,0.15)";
 const ORANGE = "#F49D1A";
 const MEAL_COLORS: Record<string, { bg: string; accent: string }> = {
   Breakfast: { bg: "#B01E68", accent: "rgba(255,255,255,0.15)" },  // fuchsia

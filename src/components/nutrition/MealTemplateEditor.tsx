@@ -6,8 +6,8 @@ import { searchFoods, getRotationFoods } from "@/lib/nutrition-actions";
 
 const OCEAN = "#1D5D9B";
 const CHARCOAL = "#2C2C2C";
-const GLASS = "rgba(44,44,44,0.92)";
-const GLASS_BORDER = "rgba(255,255,255,0.1)";
+const GLASS = "rgba(176,30,104,0.92)";
+const GLASS_BORDER = "rgba(255,255,255,0.15)";
 const ORANGE = "#F49D1A";
 const SUN_LIGHT = "#F4D160";
 

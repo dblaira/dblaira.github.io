@@ -5,7 +5,7 @@ const OCEAN = "#1D5D9B";
 const OCEAN_LIGHT = "#75C2F6";
 const ORANGE = "#F49D1A";
 const GREEN = "#27AE60";
-const MAGENTA = "#B01E68";
+const MAGENTA = "#EC4899";
 const SUN = "#FFE15D";
 const RED = "#DC3535";
 

@@ -4,8 +4,8 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 
 const OCEAN = "#1D5D9B";
-const GLASS = "rgba(44,44,44,0.92)";
-const GLASS_BORDER = "rgba(255,255,255,0.1)";
+const GLASS = "rgba(176,30,104,0.92)";
+const GLASS_BORDER = "rgba(255,255,255,0.15)";
 const RED = "#DC3535";
 const SUN = "#FFE15D";
 

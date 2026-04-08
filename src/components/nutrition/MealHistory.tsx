@@ -7,8 +7,8 @@ import type { Meal } from "@/lib/nutrition-actions";
 const SUN = "#FFE15D";
 const OCEAN = "#1D5D9B";
 const CHARCOAL = "#2C2C2C";
-const GLASS = "rgba(44,44,44,0.85)";
-const GLASS_BORDER = "rgba(255,255,255,0.1)";
+const GLASS = "rgba(176,30,104,0.9)";
+const GLASS_BORDER = "rgba(255,255,255,0.15)";
 
 interface MealHistoryProps { onRelog: () => void; }
 

@@ -199,14 +199,14 @@ export default function AgentsDashboard() {
           <MarkmapViewer />
         </div>
 
-        {/* API Costs */}
+        {/* Chat History */}
         <div className="content-width" style={{ padding: "0 24px 32px" }}>
-          <CostDashboard />
+          <ChatHistory />
         </div>
 
-        {/* Chat History */}
+        {/* API Costs */}
         <div className="content-width" style={{ padding: "0 24px 80px" }}>
-          <ChatHistory />
+          <CostDashboard />
         </div>
 
         {/* Footer */}

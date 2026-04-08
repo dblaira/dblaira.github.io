@@ -1,23 +1,19 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
+import {
+  getMacroGoals,
+  getMealsForDate,
+  getRotationFoods,
+} from "@/lib/nutrition-actions";
+import { buildNutritionTiles, type HomeFeedTile } from "./homeFeedData";
 import styles from "./HomeFeed.module.css";
-
-type FeedTile = {
-  label: string;
-  title: string;
-  text?: string;
-  href?: string;
-  size: "tall" | "medium" | "short";
-  background: string;
-  foreground?: string;
-  meta: string;
-  graphic: "bars" | "grid" | "stack" | "circles" | "none";
-};
 
 const tabs = ["All", "Mood", "Beliefs", "Fuel", "Sleep", "Patterns"];
 
-const feedTiles: FeedTile[] = [
+const staticTiles: HomeFeedTile[] = [
   {
+    variant: "generic",
     label: "Mood",
     title: "How are you feeling?",
     text: "Fast, obvious, one-thumb.",
@@ -29,17 +25,7 @@ const feedTiles: FeedTile[] = [
     graphic: "circles",
   },
   {
-    label: "Sleep",
-    title: "86",
-    text: "readiness",
-    href: "/sleep",
-    size: "medium",
-    background: "linear-gradient(180deg, #dceeff 0%, #9fc8ff 100%)",
-    foreground: "#101010",
-    meta: "Last night",
-    graphic: "bars",
-  },
-  {
+    variant: "generic",
     label: "Belief",
     title: "Move slower to go further",
     href: "/beliefs",
@@ -50,17 +36,7 @@ const feedTiles: FeedTile[] = [
     graphic: "stack",
   },
   {
-    label: "Fuel",
-    title: "Protein first",
-    text: "Meals and momentum.",
-    href: "/nutrition",
-    size: "short",
-    background: "linear-gradient(180deg, #fff2c7 0%, #ffc655 100%)",
-    foreground: "#111111",
-    meta: "Today",
-    graphic: "grid",
-  },
-  {
+    variant: "generic",
     label: "Pattern",
     title: "Sleep up. Mood up.",
     text: "The feed should surface loops, not hide them.",
@@ -71,6 +47,7 @@ const feedTiles: FeedTile[] = [
     graphic: "bars",
   },
   {
+    variant: "generic",
     label: "Ontology",
     title: "Life graph",
     text: "Mind-map readable.",
@@ -82,17 +59,7 @@ const feedTiles: FeedTile[] = [
     graphic: "grid",
   },
   {
-    label: "Sleep",
-    title: "7.4h",
-    text: "median",
-    href: "/sleep",
-    size: "short",
-    background: "linear-gradient(180deg, #eff7ff 0%, #c7def9 100%)",
-    foreground: "#101010",
-    meta: "30 days",
-    graphic: "none",
-  },
-  {
+    variant: "generic",
     label: "Belief",
     title: "Identity before tactics",
     href: "/beliefs",
@@ -104,13 +71,6 @@ const feedTiles: FeedTile[] = [
   },
 ];
 
-const desktopColumns: FeedTile[][] = [
-  [feedTiles[0], feedTiles[3], feedTiles[7]],
-  [feedTiles[1], feedTiles[4]],
-  [feedTiles[2], feedTiles[6]],
-  [feedTiles[5]],
-];
-
 const desktopSignals = [
   { label: "Mood drift", value: "watch" },
   { label: "Protein avg", value: "181g" },
@@ -118,7 +78,34 @@ const desktopSignals = [
   { label: "Belief streak", value: "12d" },
 ];
 
-function TileGraphic({ graphic }: { graphic: FeedTile["graphic"] }) {
+function splitIntoColumns<T>(items: T[], count: number) {
+  return Array.from({ length: count }, () => [] as T[]).map((column, columnIndex) =>
+    items.filter((_, itemIndex) => itemIndex % count === columnIndex)
+  );
+}
+
+function buildHomepageTiles(nutritionTiles: HomeFeedTile[]) {
+  const macroTile = nutritionTiles.find((tile) => tile.variant === "macro-summary");
+  const mealTiles = nutritionTiles.filter((tile) => tile.variant === "meal");
+  const rotationTiles = nutritionTiles.filter((tile) => tile.variant === "rotation-food");
+
+  return [
+    staticTiles[0],
+    macroTile,
+    staticTiles[1],
+    mealTiles[0],
+    rotationTiles[0],
+    staticTiles[2],
+    mealTiles[1],
+    rotationTiles[1],
+    staticTiles[3],
+    mealTiles[2],
+    rotationTiles[2],
+    staticTiles[4],
+  ].filter((tile): tile is HomeFeedTile => Boolean(tile));
+}
+
+function TileGraphic({ graphic }: { graphic: HomeFeedTile["graphic"] }) {
   if (graphic === "bars") {
     return (
       <div className={styles.graphicBars}>
@@ -162,7 +149,69 @@ function TileGraphic({ graphic }: { graphic: FeedTile["graphic"] }) {
   return null;
 }
 
-function FeedTileCard({ tile }: { tile: FeedTile }) {
+function MacroStatRings({ tile }: { tile: HomeFeedTile }) {
+  if (!tile.macroStats) return null;
+
+  const stats = [
+    { label: "Cal", value: tile.macroStats.calories, goal: tile.macroStats.calorieGoal, color: "#ffe15d" },
+    { label: "P", value: tile.macroStats.protein, goal: 180, color: "#75c2f6" },
+    { label: "C", value: tile.macroStats.carbs, goal: 250, color: "#f49d1a" },
+    { label: "F", value: tile.macroStats.fat, goal: 80, color: "#ec4899" },
+  ];
+
+  return (
+    <div className={styles.macroRingRow}>
+      {stats.map((stat) => {
+        const progress = Math.min(stat.value / stat.goal, 1);
+        return (
+          <div
+            key={stat.label}
+            className={styles.macroRing}
+            style={{
+              background: `conic-gradient(${stat.color} ${progress * 360}deg, rgba(255,255,255,0.14) 0deg)`,
+            }}
+          >
+            <div className={styles.macroRingInner}>
+              <strong>{stat.value}</strong>
+              <span>{stat.label}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function TileSupplement({ tile }: { tile: HomeFeedTile }) {
+  if (tile.variant === "macro-summary") {
+    return <MacroStatRings tile={tile} />;
+  }
+
+  if (tile.variant === "meal" && tile.mealStats?.foods.length) {
+    return (
+      <div className={styles.pillRow}>
+        {tile.mealStats.foods.map((food) => (
+          <span key={food} className={styles.contentPill}>
+            {food}
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  if (tile.variant === "rotation-food" && tile.foodStats) {
+    return (
+      <div className={styles.foodMetaBlock}>
+        <span>{tile.foodStats.serving}</span>
+        <span>{tile.foodStats.brand || "Rotation"}</span>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+function FeedTileCard({ tile }: { tile: HomeFeedTile }) {
   const className = `${styles.tile} ${
     tile.size === "tall"
       ? styles.tileTall
@@ -187,6 +236,7 @@ function FeedTileCard({ tile }: { tile: FeedTile }) {
       <span className={styles.tileLabel}>{tile.label}</span>
       <h2 className={styles.tileTitle}>{tile.title}</h2>
       {tile.text ? <p className={styles.tileText}>{tile.text}</p> : null}
+      <TileSupplement tile={tile} />
 
       <div className={styles.tileFooter}>
         <span className={styles.tileMeta}>{tile.meta}</span>
@@ -207,6 +257,44 @@ function FeedTileCard({ tile }: { tile: FeedTile }) {
 }
 
 export default function HomeFeed() {
+  const [nutritionTiles, setNutritionTiles] = useState<HomeFeedTile[]>([]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadNutritionTiles() {
+      try {
+        const today = new Date().toISOString().split("T")[0];
+        const [meals, goals, rotationFoods] = await Promise.all([
+          getMealsForDate(today),
+          getMacroGoals(),
+          getRotationFoods(),
+        ]);
+
+        if (!active) return;
+
+        setNutritionTiles(
+          buildNutritionTiles({
+            meals,
+            goals,
+            rotationFoods,
+          })
+        );
+      } catch {
+        if (active) setNutritionTiles([]);
+      }
+    }
+
+    loadNutritionTiles();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const feedTiles = useMemo(() => buildHomepageTiles(nutritionTiles), [nutritionTiles]);
+  const desktopColumns = useMemo(() => splitIntoColumns(feedTiles, 4), [feedTiles]);
+
   return (
     <div className={styles.page}>
       <div className={styles.mobileOnly}>

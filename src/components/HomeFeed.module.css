@@ -178,6 +178,87 @@
   opacity: 0.88;
 }
 
+.macroRingRow {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+  max-width: 13rem;
+}
+
+.macroRing {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.macroRingInner {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.84);
+  text-align: center;
+}
+
+.macroRingInner strong {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 16px;
+  line-height: 1;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.macroRingInner span {
+  margin-top: 2px;
+  font-family: "Inter", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.pillRow {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+  max-width: 13rem;
+}
+
+.contentPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-family: "Inter", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.foodMetaBlock {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 4px;
+  margin-top: 14px;
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.78;
+}
+
 .tileFooter {
   position: absolute;
   left: 14px;

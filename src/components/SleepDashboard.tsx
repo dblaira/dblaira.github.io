@@ -6,6 +6,11 @@ import { getSupabase } from "@/lib/supabase";
 
 const CRIMSON = "#DC143C";
 const CREAM = "#F5F0E8";
+const GOLD = "#D4AF37";
+const GREEN = "#22C55E";
+const BLACK = "#111111";
+const BLUE = "#2563EB";
+const ROLLING_WINDOW_SIZE = 7;
 
 const SLEEP_RATINGS = [
   { score: 10, label: "Perfect", desc: "Peak sleep. Fully restored, sharp, energized." },
@@ -35,9 +40,11 @@ function formatLabel(date: string): string {
 
 function getAverageColor(averageScore: number | null): string {
   if (averageScore === null) return CRIMSON;
-  if (averageScore >= 7) return CRIMSON;
-  if (averageScore >= 5) return "#22C55E";
-  return "#111111";
+  if (averageScore >= 9) return CRIMSON; // 9-10
+  if (averageScore >= 7) return GOLD;    // 7-8
+  if (averageScore >= 5) return GREEN;   // 5-6
+  if (averageScore >= 3) return BLACK;   // 3-4
+  return BLUE;                           // 0-2
 }
 
 function DonutChart({ score, averageScore }: { score: number; averageScore: number | null }) {
@@ -278,17 +285,18 @@ export default function SleepDashboard() {
 
   const latest = entries.length > 0 ? entries[entries.length - 1] : null;
   const averageScore = entries.length > 0
-    ? entries.reduce((s, d) => s + d.score, 0) / entries.length
+    ? entries.slice(-ROLLING_WINDOW_SIZE).reduce((s, d) => s + d.score, 0) / Math.min(entries.length, ROLLING_WINDOW_SIZE)
     : null;
   const averageColor = getAverageColor(averageScore);
   const avg = averageScore !== null ? averageScore.toFixed(1) : "—";
   const entriesAsc = [...entries].sort((a, b) => a.date.localeCompare(b.date));
   const entriesDesc = [...entriesAsc].reverse();
   const rollingColorById: Record<string, string> = {};
-  let rollingTotal = 0;
   entriesAsc.forEach((entry, idx) => {
-    rollingTotal += entry.score;
-    const rollingAverage = rollingTotal / (idx + 1);
+    const start = Math.max(0, idx - (ROLLING_WINDOW_SIZE - 1));
+    const windowEntries = entriesAsc.slice(start, idx + 1);
+    const rollingAverage =
+      windowEntries.reduce((sum, e) => sum + e.score, 0) / windowEntries.length;
     rollingColorById[entry.id] = getAverageColor(rollingAverage);
   });
 
@@ -367,7 +375,7 @@ export default function SleepDashboard() {
                 color: "rgba(0,0,0,0.35)",
               }}
             >
-              LATEST — {formatLabel(latest.date).toUpperCase()}
+              LATEST — {formatLabel(latest.date).toUpperCase()} (ROLLING {Math.min(entries.length, ROLLING_WINDOW_SIZE)}D)
             </span>
             <DonutChart score={latest.score} averageScore={averageScore} />
             <div style={{ display: "flex", gap: 32, marginTop: 10 }}>
@@ -543,7 +551,7 @@ export default function SleepDashboard() {
           </span>
           <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(0,0,0,0.07)" }}>
             {SLEEP_RATINGS.map((r, i) => {
-              const scoreColor = r.score >= 7 ? CRIMSON : r.score >= 5 ? "#22C55E" : "#111111";
+              const scoreColor = getAverageColor(r.score);
               const bg = i % 2 === 0 ? "#FFFFFF" : "#F5F0E8";
               return (
                 <div key={r.score} style={{ display: "flex", alignItems: "center", gap: 16, padding: "14px 16px", background: bg }}>

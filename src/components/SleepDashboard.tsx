@@ -125,6 +125,8 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
 
   const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
   const areaPath = `${linePath} L ${points[points.length - 1].x} ${padTop + chartH} L ${points[0].x} ${padTop + chartH} Z`;
+  const pointLabelStep = data.length <= 10 ? 1 : data.length <= 16 ? 2 : 3;
+  const dateLabelStep = data.length <= 7 ? 1 : data.length <= 14 ? 2 : data.length <= 21 ? 3 : 4;
 
   const gridLines = [2, 4, 6, 8].map((v) => padTop + chartH - (v / 10) * chartH);
 
@@ -152,31 +154,35 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
       {points.map((p, i) => (
         <g key={i}>
           <circle cx={p.x} cy={p.y} r={4} fill="#FFFFFF" stroke={CRIMSON} strokeWidth={2} />
-          <text
-            x={p.x}
-            y={p.y - 12}
-            textAnchor="middle"
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 11,
-              fontWeight: 600,
-              fill: "#1A1A1A",
-            }}
-          >
-            {p.score}
-          </text>
-          <text
-            x={p.x}
-            y={height - 6}
-            textAnchor="middle"
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 10,
-              fill: "rgba(0,0,0,0.35)",
-            }}
-          >
-            {formatLabel(p.date)}
-          </text>
+          {(i === points.length - 1 || i % pointLabelStep === 0) && (
+            <text
+              x={p.x}
+              y={p.y - 12}
+              textAnchor="middle"
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11,
+                fontWeight: 600,
+                fill: "#1A1A1A",
+              }}
+            >
+              {p.score}
+            </text>
+          )}
+          {(i === 0 || i === points.length - 1 || i % dateLabelStep === 0) && (
+            <text
+              x={p.x}
+              y={height - 6}
+              textAnchor="middle"
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 10,
+                fill: "rgba(0,0,0,0.35)",
+              }}
+            >
+              {formatLabel(p.date)}
+            </text>
+          )}
         </g>
       ))}
     </svg>

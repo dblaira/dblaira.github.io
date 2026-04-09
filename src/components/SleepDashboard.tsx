@@ -33,14 +33,20 @@ function formatLabel(date: string): string {
   });
 }
 
-function DonutChart({ score }: { score: number }) {
+function DonutChart({ score, averageScore }: { score: number; averageScore: number | null }) {
   const size = 180;
   const strokeWidth = 14;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = (score / 10) * circumference;
   const color =
-    score >= 8 ? "#22C55E" : score >= 6 ? "#F59E0B" : CRIMSON;
+    averageScore === null
+      ? CRIMSON
+      : averageScore >= 7
+        ? CRIMSON
+        : averageScore >= 5
+          ? "#22C55E"
+          : "#111111";
 
   return (
     <div style={{ position: "relative", width: size, height: size }}>
@@ -271,9 +277,10 @@ export default function SleepDashboard() {
   }
 
   const latest = entries.length > 0 ? entries[entries.length - 1] : null;
-  const avg = entries.length > 0
-    ? (entries.reduce((s, d) => s + d.score, 0) / entries.length).toFixed(1)
-    : "—";
+  const averageScore = entries.length > 0
+    ? entries.reduce((s, d) => s + d.score, 0) / entries.length
+    : null;
+  const avg = averageScore !== null ? averageScore.toFixed(1) : "—";
 
   return (
     <div style={{ background: CREAM, minHeight: "100vh" }}>
@@ -352,13 +359,13 @@ export default function SleepDashboard() {
             >
               LATEST — {formatLabel(latest.date).toUpperCase()}
             </span>
-            <DonutChart score={latest.score} />
-            <div style={{ display: "flex", gap: 24, marginTop: 8 }}>
+            <DonutChart score={latest.score} averageScore={averageScore} />
+            <div style={{ display: "flex", gap: 32, marginTop: 10 }}>
               <div style={{ textAlign: "center" }}>
                 <div
                   style={{
                     fontFamily: "'Playfair Display', Georgia, serif",
-                    fontSize: 24,
+                    fontSize: 34,
                     color: "#1A1A1A",
                   }}
                 >
@@ -367,7 +374,7 @@ export default function SleepDashboard() {
                 <div
                   style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: 500,
                     letterSpacing: "0.1em",
                     textTransform: "uppercase",
@@ -382,7 +389,7 @@ export default function SleepDashboard() {
                 <div
                   style={{
                     fontFamily: "'Playfair Display', Georgia, serif",
-                    fontSize: 24,
+                    fontSize: 34,
                     color: "#1A1A1A",
                   }}
                 >
@@ -391,7 +398,7 @@ export default function SleepDashboard() {
                 <div
                   style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: 500,
                     letterSpacing: "0.1em",
                     textTransform: "uppercase",

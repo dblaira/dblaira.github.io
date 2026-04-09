@@ -282,6 +282,15 @@ export default function SleepDashboard() {
     : null;
   const averageColor = getAverageColor(averageScore);
   const avg = averageScore !== null ? averageScore.toFixed(1) : "—";
+  const entriesAsc = [...entries].sort((a, b) => a.date.localeCompare(b.date));
+  const entriesDesc = [...entriesAsc].reverse();
+  const rollingColorById: Record<string, string> = {};
+  let rollingTotal = 0;
+  entriesAsc.forEach((entry, idx) => {
+    rollingTotal += entry.score;
+    const rollingAverage = rollingTotal / (idx + 1);
+    rollingColorById[entry.id] = getAverageColor(rollingAverage);
+  });
 
   return (
     <div style={{ background: CREAM, minHeight: "100vh" }}>
@@ -492,13 +501,14 @@ export default function SleepDashboard() {
               YOUR ENTRIES
             </span>
             <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(0,0,0,0.07)" }}>
-              {[...entries].sort((a, b) => b.date.localeCompare(a.date)).map((e, i) => {
+              {entriesDesc.map((e, i) => {
                 const rating = SLEEP_RATINGS.find(r => r.score === e.score);
                 const bg = i % 2 === 0 ? "#FFFFFF" : "#F5F0E8";
+                const rollingColor = rollingColorById[e.id] ?? averageColor;
                 return (
                   <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", background: bg }}>
-                    <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 700, color: averageColor, minWidth: 30, textAlign: "right" as const, lineHeight: 1 }}>{e.score}</span>
-                    <div style={{ width: 3, height: 32, borderRadius: 2, background: averageColor, flexShrink: 0 }} />
+                    <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 700, color: rollingColor, minWidth: 30, textAlign: "right" as const, lineHeight: 1 }}>{e.score}</span>
+                    <div style={{ width: 3, height: 32, borderRadius: 2, background: rollingColor, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700, color: "#1A1A1A" }}>{formatLabel(e.date)}</div>
                       <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "rgba(0,0,0,0.4)" }}>{rating?.label}</div>
@@ -533,11 +543,12 @@ export default function SleepDashboard() {
           </span>
           <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(0,0,0,0.07)" }}>
             {SLEEP_RATINGS.map((r, i) => {
+              const scoreColor = r.score >= 7 ? CRIMSON : r.score >= 5 ? "#22C55E" : "#111111";
               const bg = i % 2 === 0 ? "#FFFFFF" : "#F5F0E8";
               return (
                 <div key={r.score} style={{ display: "flex", alignItems: "center", gap: 16, padding: "14px 16px", background: bg }}>
-                  <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 28, fontWeight: 700, color: averageColor, minWidth: 32, textAlign: "right" as const, lineHeight: 1 }}>{r.score}</span>
-                  <div style={{ width: 3, height: 36, borderRadius: 2, background: averageColor, flexShrink: 0 }} />
+                  <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 28, fontWeight: 700, color: scoreColor, minWidth: 32, textAlign: "right" as const, lineHeight: 1 }}>{r.score}</span>
+                  <div style={{ width: 3, height: 36, borderRadius: 2, background: scoreColor, flexShrink: 0 }} />
                   <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
                     <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, fontWeight: 700, color: "#1A1A1A", letterSpacing: "-0.01em" }}>{r.label}</span>
                     <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "rgba(0,0,0,0.5)", lineHeight: 1.4 }}>{r.desc}</span>

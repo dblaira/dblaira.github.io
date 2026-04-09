@@ -1,6 +1,5 @@
 "use client";
 
-import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { BeliefCarousel } from "@/components/BeliefCarousel";
 
 const CRIMSON = "#DC143C";
@@ -77,23 +76,20 @@ function StatusDot({ status }: { status: ExperimentCard["status"] }) {
 
 export default function SandboxHome() {
   return (
-    <div style={{ minHeight: "100vh", background: "#0A0A0A" }}>
-      <SavySiteHeader />
-
-      {/* Content area — cream background starts here */}
-      <div style={{ background: "#F5F0E8" }}>
+    <div style={{ minHeight: "100vh", background: "#F5F0E8" }}>
+      <div>
 
       {/* Hero section */}
       <div
         className="content-width"
         style={{
-          padding: "48px 24px 40px",
+          padding: "40px 24px 28px",
         }}
       >
         <h1
           style={{
             fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: "clamp(40px, 8vw, 56px)",
+            fontSize: "clamp(42px, 8vw, 58px)",
             fontWeight: 400,
             fontStyle: "italic",
             color: CRIMSON,
@@ -106,10 +102,10 @@ export default function SandboxHome() {
         <p
           style={{
             fontFamily: "'Inter', sans-serif",
-            fontSize: 13,
-            fontWeight: 500,
+            fontSize: 12,
+            fontWeight: 600,
             textTransform: "uppercase",
-            letterSpacing: "0.12em",
+            letterSpacing: "0.18em",
             color: "rgba(0,0,0,0.4)",
             margin: 0,
           }}
@@ -140,7 +136,7 @@ export default function SandboxHome() {
       <div
         className="content-width"
         style={{
-          padding: "16px 24px 16px",
+          padding: "12px 24px 12px",
           background: "rgba(0,0,0,0.03)",
         }}
       >
@@ -163,7 +159,7 @@ export default function SandboxHome() {
       <div
         className="content-width"
         style={{
-          padding: "16px 24px 80px",
+          padding: "12px 24px 80px",
           display: "flex",
           flexDirection: "column",
           gap: 12,

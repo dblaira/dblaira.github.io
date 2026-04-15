@@ -3,15 +3,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { getSupabase } from "@/lib/supabase";
+import { beginEntryEdit } from "@/components/sleepDashboardActions";
 
-// Psychedelic palette
-const PSY_BG     = "#01FF4F"; // page background
-const PSY_PURPLE = "#5600CC"; // tier 9-10
-const PSY_CYAN   = "#00EDF5"; // tier 7-8
-const PSY_YELLOW = "#FFEB00"; // tier 5-6
-const PSY_PINK   = "#FF01D7"; // tier 3-4
-const PSY_RED    = "#FC0019"; // tier 0-2
-const TEXT_STROKE = "0.8px #000";
+// Psychedelic poster palette
+const PSY_BG     = "#FF7A1E";
+const PSY_PURPLE = "#FF9A1F";
+const PSY_CYAN   = "#FFB347";
+const PSY_YELLOW = "#FFEB00";
+const PSY_PINK   = "#FFC928";
+const PSY_RED    = "#FF6A00";
+const PSY_MAROON = "#FFB347";
+const PSY_CREAM  = "#FFF1CC";
 const ROLLING_WINDOW_SIZE = 7;
 
 const SLEEP_RATINGS = [
@@ -40,6 +42,12 @@ function formatLabel(date: string): string {
   });
 }
 
+function formatDayOnly(date: string): string {
+  return new Date(date + "T12:00:00").toLocaleDateString("en-US", {
+    day: "numeric",
+  });
+}
+
 function getAverageColor(averageScore: number | null): string {
   if (averageScore === null) return PSY_RED;
   if (averageScore >= 9) return PSY_PURPLE; // 9-10
@@ -50,24 +58,16 @@ function getAverageColor(averageScore: number | null): string {
 }
 
 function DonutChart({ score, averageScore }: { score: number; averageScore: number | null }) {
-  const size = 180;
-  const strokeWidth = 14;
+  const size = 240;
+  const strokeWidth = 18;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = (score / 10) * circumference;
-  const color = getAverageColor(averageScore);
+  const color = "#FFEB00";
 
   return (
     <div style={{ position: "relative", width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="rgba(0,0,0,0.06)"
-          strokeWidth={strokeWidth}
-        />
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -78,7 +78,7 @@ function DonutChart({ score, averageScore }: { score: number; averageScore: numb
           strokeLinecap="round"
           strokeDasharray={`${progress} ${circumference - progress}`}
           strokeDashoffset={circumference * 0.25}
-          style={{ transition: "stroke-dasharray 0.8s ease" }}
+          style={{ transition: "stroke-dasharray 0.8s ease", filter: "drop-shadow(0 0 12px rgba(255,235,0,0.32))" }}
         />
       </svg>
       <div
@@ -96,27 +96,14 @@ function DonutChart({ score, averageScore }: { score: number; averageScore: numb
       >
         <span
           style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: 48,
+            fontFamily: "'The Psychedelic Peace', 'Playfair Display', Georgia, serif",
+            fontSize: 76,
             fontWeight: 400,
-            color: "#1A1A1A",
-            lineHeight: 1,
+            color: "#FFD54A",
+            lineHeight: 0.92,
           }}
         >
-          {score}
-        </span>
-        <span
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 11,
-            fontWeight: 500,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "rgba(0,0,0,0.35)",
-            marginTop: 4,
-          }}
-        >
-          / 10
+          {averageScore !== null ? averageScore.toFixed(1) : "—"}
         </span>
       </div>
     </div>
@@ -163,12 +150,12 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
         />
       ))}
 
-      <path d={areaPath} fill={`${PSY_PURPLE}15`} />
+      <path d={areaPath} fill="rgba(177, 74, 0, 0.55)" />
       <path d={linePath} fill="none" stroke={PSY_PURPLE} strokeWidth={2.5} strokeLinejoin="round" />
 
       {points.map((p, i) => (
         <g key={i}>
-          <circle cx={p.x} cy={p.y} r={4} fill="#FFFFFF" stroke={PSY_PURPLE} strokeWidth={2} />
+          <circle cx={p.x} cy={p.y} r={4} fill="rgba(177, 74, 0, 1)" stroke={PSY_PURPLE} strokeWidth={2} />
           {(i === points.length - 1 || i % pointLabelStep === 0) && (
             <text
               x={p.x}
@@ -178,24 +165,10 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
                 fontFamily: "'Inter', sans-serif",
                 fontSize: 11,
                 fontWeight: 600,
-                fill: "#1A1A1A",
+                fill: "#FFEB00",
               }}
             >
               {p.score}
-            </text>
-          )}
-          {(i === 0 || i === points.length - 1 || i % dateLabelStep === 0) && (
-            <text
-              x={p.x}
-              y={height - 6}
-              textAnchor="middle"
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 10,
-                fill: "rgba(0,0,0,0.35)",
-              }}
-            >
-              {formatLabel(p.date)}
             </text>
           )}
         </g>
@@ -303,36 +276,34 @@ export default function SleepDashboard() {
   });
 
   return (
-    <div style={{ background: PSY_BG, minHeight: "100vh" }}>
+    <div
+      style={{
+        backgroundColor: PSY_BG,
+        backgroundImage: "radial-gradient(circle, rgba(255,235,0,0.78) 0 3px, transparent 3px), radial-gradient(circle, rgba(255,201,40,0.22) 0 88px, transparent 88px)",
+        backgroundSize: "18px 18px, 320px 320px",
+        backgroundPosition: "0 0, 50% 120px",
+        minHeight: "100vh",
+      }}
+    >
       <SavySiteHeader />
 
-      {/* Header */}
-      <div className="content-width" style={{ padding: "40px 24px 24px" }}>
-        <span
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: "0.15em",
-            textTransform: "uppercase",
-            color: PSY_PURPLE,
-          }}
-        >
-          SLEEP
-        </span>
-        <h1
-          style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: "clamp(32px, 7vw, 44px)",
-            fontWeight: 400,
-            fontStyle: "italic",
-            color: "#1A1A1A",
-            lineHeight: 1.15,
-            margin: "8px 0 0 0",
-          }}
-        >
-          How You Slept
-        </h1>
+      <div className="content-width" style={{ padding: "38px 24px 24px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <h1
+            style={{
+              fontFamily: "'The Psychedelic Peace', 'Playfair Display', Georgia, serif",
+              fontSize: "clamp(48px, 11vw, 92px)",
+              fontWeight: 400,
+              color: "#FFE36A",
+              lineHeight: 0.9,
+              margin: 0,
+            }}
+          >
+            How You
+            <br />
+            Slept
+          </h1>
+        </div>
       </div>
 
       {error && (
@@ -353,139 +324,48 @@ export default function SleepDashboard() {
         </div>
       )}
 
-      {/* Today's score — donut */}
       {latest && (
-        <div className="content-width" style={{ padding: "0 24px 24px" }}>
+        <div className="content-width" style={{ padding: "0 24px 28px" }}>
           <div
             style={{
-              background: "transparent",
-              borderRadius: 16,
-              padding: "32px 24px",
+              background: "rgb(254, 191, 20)",
+              border: "1px solid rgba(254, 191, 20, 0.32)",
+              borderRadius: 28,
+              padding: "28px 24px 24px",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 16,
+              gap: 18,
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
             }}
           >
-            <span
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                color: "rgba(0,0,0,0.35)",
-              }}
-            >
-              LATEST — {formatLabel(latest.date).toUpperCase()} (ROLLING {Math.min(entries.length, ROLLING_WINDOW_SIZE)}D)
-            </span>
             <DonutChart score={latest.score} averageScore={averageScore} />
-            <div style={{ display: "flex", gap: 32, marginTop: 10 }}>
-              <div style={{ textAlign: "center" }}>
-                <div
-                  style={{
-                    fontFamily: "'Playfair Display', Georgia, serif",
-                    fontSize: 34,
-                    color: "#1A1A1A",
-                  }}
-                >
-                  {avg}
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 12,
-                    fontWeight: 500,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: "rgba(0,0,0,0.35)",
-                    marginTop: 2,
-                  }}
-                >
-                  AVG
-                </div>
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <div
-                  style={{
-                    fontFamily: "'Playfair Display', Georgia, serif",
-                    fontSize: 34,
-                    color: "#1A1A1A",
-                  }}
-                >
-                  {entries.length}
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 12,
-                    fontWeight: 500,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: "rgba(0,0,0,0.35)",
-                    marginTop: 2,
-                  }}
-                >
-                  NIGHTS
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Area chart — trend */}
-      {entries.length >= 2 && (
-        <div className="content-width" style={{ padding: "0 24px 24px" }}>
-          <div
-            style={{
-              background: "transparent",
-              borderRadius: 16,
-              padding: "24px 16px",
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                color: "rgba(0,0,0,0.35)",
-                paddingLeft: 8,
-              }}
-            >
-              TREND
-            </span>
-            <div style={{ marginTop: 16 }}>
-              <AreaChart data={entries} />
-            </div>
           </div>
         </div>
       )}
 
       {/* Add entry */}
       <div className="content-width" style={{ padding: "0 24px 24px" }}>
-        <div style={{ background: "transparent", borderRadius: 16, padding: "24px" }}>
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(0,0,0,0.35)" }}>
+        <div style={{ background: "rgb(254, 191, 20)", border: "1px solid rgba(254, 191, 20, 0.32)", borderRadius: 28, padding: "24px" }}>
+          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "#FFEB00" }}>
             LOG A NIGHT
           </span>
           <div style={{ display: "flex", gap: 12, marginTop: 16, alignItems: "flex-end", flexWrap: "wrap" as const }}>
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
-              <label style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "rgba(0,0,0,0.4)", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Date</label>
+              <label style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "#FFFFFF", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Date</label>
               <input
                 type="date"
                 value={newDate}
                 onChange={e => setNewDate(e.target.value)}
-                style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 8, padding: "8px 12px", color: "#1A1A1A", background: "transparent", outline: "none" }}
+                style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, border: "1.5px solid rgba(255,255,255,0.28)", borderRadius: 8, padding: "8px 12px", color: "#FFFFFF", background: "transparent", outline: "none", WebkitAppearance: "none", appearance: "none" }}
               />
             </div>
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
-              <label style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "rgba(0,0,0,0.4)", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Score</label>
+              <label style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "#FFFFFF", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Score</label>
               <select
                 value={newScore}
                 onChange={e => setNewScore(Number(e.target.value))}
-                style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 8, padding: "8px 12px", color: "#1A1A1A", background: "transparent", outline: "none" }}
+                style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, border: "1.5px solid rgba(255,255,255,0.28)", borderRadius: 8, padding: "8px 12px", color: "#FFFFFF", background: "transparent", outline: "none" }}
               >
                 {SLEEP_RATINGS.map(r => (
                   <option key={r.score} value={r.score}>{r.score} — {r.label}</option>
@@ -503,28 +383,58 @@ export default function SleepDashboard() {
         </div>
       </div>
 
+      {/* Area chart — trend */}
+      {entries.length >= 2 && (
+        <div className="content-width" style={{ padding: "0 24px 24px" }}>
+          <div
+            style={{
+              background: "rgb(254, 191, 20)",
+              border: "1px solid rgba(254, 191, 20, 0.32)",
+              borderRadius: 28,
+              padding: "24px 20px",
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "#FFE36A",
+                paddingLeft: 8,
+              }}
+            >
+              TREND
+            </span>
+            <div style={{ marginTop: 16 }}>
+              <AreaChart data={entries} />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Logged entries — editable */}
       {entries.length > 0 && (
         <div className="content-width" style={{ padding: "0 24px 24px" }}>
-          <div style={{ background: "transparent", borderRadius: 16, padding: "24px" }}>
-            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(0,0,0,0.35)" }}>
+          <div style={{ background: "rgb(254, 191, 20)", border: "1px solid rgba(254, 191, 20, 0.32)", borderRadius: 28, padding: "24px" }}>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "#FFE36A" }}>
               YOUR ENTRIES
             </span>
-            <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(0,0,0,0.07)" }}>
+            <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255, 154, 31, 0.28)" }}>
               {entriesDesc.map((e, i) => {
                 const rating = SLEEP_RATINGS.find(r => r.score === e.score);
-                const bg = i % 2 === 0 ? "#FFFFFF" : "#F5F0E8";
+                const bg = i % 2 === 0 ? "rgba(255, 214, 74, 0.45)" : "rgba(255, 227, 106, 0.42)";
                 const rollingColor = rollingColorById[e.id] ?? averageColor;
                 return (
                   <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", background: bg }}>
-                    <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 42, fontWeight: 900, color: rollingColor, WebkitTextStroke: TEXT_STROKE, minWidth: 40, textAlign: "right" as const, lineHeight: 1 }}>{e.score}</span>
+                    <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 42, fontWeight: 900, color: rollingColor, minWidth: 40, textAlign: "right" as const, lineHeight: 1 }}>{e.score}</span>
                     <div style={{ width: 3, height: 32, borderRadius: 2, background: rollingColor, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 42, fontWeight: 900, color: rollingColor, WebkitTextStroke: TEXT_STROKE }}>{formatLabel(e.date)}</div>
-                      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "rgba(0,0,0,0.4)" }}>{rating?.label}</div>
+                      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 42, fontWeight: 900, color: rollingColor }}>{formatDayOnly(e.date)}</div>
                     </div>
                     <button
-                      onClick={() => { setNewDate(e.date); setNewScore(e.score); deleteEntry(e.id); }}
+                      onClick={() => beginEntryEdit(e, setNewDate, setNewScore)}
                       title="Edit"
                       style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, color: "#D97706", background: "rgba(217,119,6,0.08)", border: "none", borderRadius: 6, padding: "6px 10px", cursor: "pointer", marginRight: 4 }}
                     >
@@ -547,14 +457,14 @@ export default function SleepDashboard() {
 
       {/* Rating scale reference */}
       <div className="content-width" style={{ padding: "0 24px 24px" }}>
-        <div style={{ background: "transparent", borderRadius: 16, padding: "24px" }}>
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(0,0,0,0.35)" }}>
+        <div style={{ background: "rgb(254, 191, 20)", border: "1px solid rgba(254, 191, 20, 0.32)", borderRadius: 28, padding: "24px" }}>
+          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "#FFE36A" }}>
             RATING SCALE
           </span>
-          <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(0,0,0,0.07)" }}>
+          <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255, 154, 31, 0.28)" }}>
             {SLEEP_RATINGS.map((r, i) => {
               const scoreColor = getAverageColor(r.score);
-              const bg = i % 2 === 0 ? "#FFFFFF" : "#F5F0E8";
+              const bg = i % 2 === 0 ? "rgba(255, 214, 74, 0.45)" : "rgba(255, 227, 106, 0.42)";
               return (
                 <div key={r.score} style={{ display: "flex", alignItems: "center", gap: 16, padding: "14px 16px", background: bg }}>
                   <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 28, fontWeight: 700, color: scoreColor, minWidth: 32, textAlign: "right" as const, lineHeight: 1 }}>{r.score}</span>
@@ -574,8 +484,9 @@ export default function SleepDashboard() {
       <div className="content-width" style={{ padding: "0 24px 40px" }}>
         <div
           style={{
-            background: "transparent",
-            borderRadius: 16,
+            background: "rgb(254, 191, 20)",
+            border: "1px solid rgba(254, 191, 20, 0.32)",
+            borderRadius: 28,
             padding: "24px",
             display: "flex",
             gap: 16,

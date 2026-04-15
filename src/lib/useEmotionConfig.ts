@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { getSupabase } from "@/lib/supabase";
 
-const STORAGE_KEY = "savy-emotion-config";
+const CONFIG_KEY = "default";
 
 export interface EmotionConfig {
   emotionLabels: Record<string, string>;
@@ -14,26 +15,46 @@ const DEFAULT_CONFIG: EmotionConfig = {
   triggerLabels: {},
 };
 
-function readConfig(): EmotionConfig {
-  if (typeof window === "undefined") return DEFAULT_CONFIG;
+async function fetchConfig(): Promise<EmotionConfig> {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_CONFIG;
-    return { ...DEFAULT_CONFIG, ...JSON.parse(raw) };
+    const sb = getSupabase();
+    const { data, error } = await sb
+      .from("emotion_config")
+      .select("emotion_labels, trigger_labels")
+      .eq("config_key", CONFIG_KEY)
+      .single();
+    if (error || !data) return DEFAULT_CONFIG;
+    return {
+      emotionLabels: data.emotion_labels ?? {},
+      triggerLabels: data.trigger_labels ?? {},
+    };
   } catch {
     return DEFAULT_CONFIG;
   }
 }
 
-function writeConfig(config: EmotionConfig) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+async function persistConfig(config: EmotionConfig) {
+  try {
+    const sb = getSupabase();
+    await sb.from("emotion_config").upsert(
+      {
+        config_key: CONFIG_KEY,
+        emotion_labels: config.emotionLabels,
+        trigger_labels: config.triggerLabels,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "config_key" }
+    );
+  } catch {
+    // silent — UI still works with local state
+  }
 }
 
 export function useEmotionConfig() {
   const [config, setConfig] = useState<EmotionConfig>(DEFAULT_CONFIG);
 
   useEffect(() => {
-    setConfig(readConfig());
+    fetchConfig().then(setConfig);
   }, []);
 
   const setEmotionLabel = useCallback((canonical: string, custom: string) => {
@@ -47,7 +68,7 @@ export function useEmotionConfig() {
       } else {
         next.emotionLabels[canonical] = custom.trim();
       }
-      writeConfig(next);
+      persistConfig(next);
       return next;
     });
   }, []);
@@ -63,7 +84,7 @@ export function useEmotionConfig() {
       } else {
         next.triggerLabels[canonical] = custom.trim();
       }
-      writeConfig(next);
+      persistConfig(next);
       return next;
     });
   }, []);

@@ -41,12 +41,12 @@ function formatLabel(date: string): string {
 }
 
 function getAverageColor(averageScore: number | null): string {
-  if (averageScore === null) return CRIMSON;
-  if (averageScore >= 9) return CRIMSON; // 9-10
-  if (averageScore >= 7) return GOLD;    // 7-8
-  if (averageScore >= 5) return GREEN;   // 5-6
-  if (averageScore >= 3) return BLACK;   // 3-4
-  return BLUE;                           // 0-2
+  if (averageScore === null) return PSY_RED;
+  if (averageScore >= 9) return PSY_PURPLE; // 9-10
+  if (averageScore >= 7) return PSY_CYAN;   // 7-8
+  if (averageScore >= 5) return PSY_YELLOW; // 5-6
+  if (averageScore >= 3) return PSY_PINK;   // 3-4
+  return PSY_RED;                           // 0-2
 }
 
 function DonutChart({ score, averageScore }: { score: number; averageScore: number | null }) {

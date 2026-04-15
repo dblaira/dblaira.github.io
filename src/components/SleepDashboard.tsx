@@ -4,12 +4,14 @@ import { useState, useEffect, useCallback } from "react";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { getSupabase } from "@/lib/supabase";
 
-const CRIMSON = "#DC143C";
-const CREAM = "#F5F0E8";
-const GOLD = "#D4AF37";
-const GREEN = "#22C55E";
-const BLACK = "#111111";
-const BLUE = "#2563EB";
+// Psychedelic palette
+const PSY_BG     = "#01FF4F"; // page background
+const PSY_PURPLE = "#5600CC"; // tier 9-10
+const PSY_CYAN   = "#00EDF5"; // tier 7-8
+const PSY_YELLOW = "#FFEB00"; // tier 5-6
+const PSY_PINK   = "#FF01D7"; // tier 3-4
+const PSY_RED    = "#FC0019"; // tier 0-2
+const TEXT_STROKE = "0.8px #000";
 const ROLLING_WINDOW_SIZE = 7;
 
 const SLEEP_RATINGS = [
@@ -263,7 +265,7 @@ export default function SleepDashboard() {
 
   if (loading) {
     return (
-      <div style={{ background: CREAM, minHeight: "100vh" }}>
+      <div style={{ background: PSY_BG, minHeight: "100vh" }}>
         <SavySiteHeader />
         <div className="content-width" style={{ padding: "80px 24px", textAlign: "center" }}>
           <span
@@ -301,7 +303,7 @@ export default function SleepDashboard() {
   });
 
   return (
-    <div style={{ background: CREAM, minHeight: "100vh" }}>
+    <div style={{ background: PSY_BG, minHeight: "100vh" }}>
       <SavySiteHeader />
 
       {/* Header */}
@@ -356,7 +358,7 @@ export default function SleepDashboard() {
         <div className="content-width" style={{ padding: "0 24px 24px" }}>
           <div
             style={{
-              background: "#FFFFFF",
+              background: "transparent",
               borderRadius: 16,
               padding: "32px 24px",
               display: "flex",
@@ -437,7 +439,7 @@ export default function SleepDashboard() {
         <div className="content-width" style={{ padding: "0 24px 24px" }}>
           <div
             style={{
-              background: "#FFFFFF",
+              background: "transparent",
               borderRadius: 16,
               padding: "24px 16px",
             }}
@@ -464,7 +466,7 @@ export default function SleepDashboard() {
 
       {/* Add entry */}
       <div className="content-width" style={{ padding: "0 24px 24px" }}>
-        <div style={{ background: "#FFFFFF", borderRadius: 16, padding: "24px" }}>
+        <div style={{ background: "transparent", borderRadius: 16, padding: "24px" }}>
           <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(0,0,0,0.35)" }}>
             LOG A NIGHT
           </span>
@@ -475,7 +477,7 @@ export default function SleepDashboard() {
                 type="date"
                 value={newDate}
                 onChange={e => setNewDate(e.target.value)}
-                style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 8, padding: "8px 12px", color: "#1A1A1A", background: CREAM, outline: "none" }}
+                style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 8, padding: "8px 12px", color: "#1A1A1A", background: "transparent", outline: "none" }}
               />
             </div>
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
@@ -483,7 +485,7 @@ export default function SleepDashboard() {
               <select
                 value={newScore}
                 onChange={e => setNewScore(Number(e.target.value))}
-                style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 8, padding: "8px 12px", color: "#1A1A1A", background: CREAM, outline: "none" }}
+                style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 8, padding: "8px 12px", color: "#1A1A1A", background: "transparent", outline: "none" }}
               >
                 {SLEEP_RATINGS.map(r => (
                   <option key={r.score} value={r.score}>{r.score} — {r.label}</option>
@@ -493,7 +495,7 @@ export default function SleepDashboard() {
             <button
               onClick={addEntry}
               disabled={saving}
-              style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", background: added ? "#22C55E" : CRIMSON, color: "#FFFFFF", border: "none", borderRadius: 8, padding: "10px 20px", cursor: saving ? "wait" : "pointer", transition: "background 0.3s", opacity: saving ? 0.7 : 1 }}
+              style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", background: added ? PSY_CYAN : PSY_PURPLE, color: "#FFFFFF", border: "none", borderRadius: 8, padding: "10px 20px", cursor: saving ? "wait" : "pointer", transition: "background 0.3s", opacity: saving ? 0.7 : 1 }}
             >
               {added ? "✓ Added" : saving ? "Saving..." : "Add"}
             </button>
@@ -504,7 +506,7 @@ export default function SleepDashboard() {
       {/* Logged entries — editable */}
       {entries.length > 0 && (
         <div className="content-width" style={{ padding: "0 24px 24px" }}>
-          <div style={{ background: "#FFFFFF", borderRadius: 16, padding: "24px" }}>
+          <div style={{ background: "transparent", borderRadius: 16, padding: "24px" }}>
             <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(0,0,0,0.35)" }}>
               YOUR ENTRIES
             </span>
@@ -515,10 +517,10 @@ export default function SleepDashboard() {
                 const rollingColor = rollingColorById[e.id] ?? averageColor;
                 return (
                   <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", background: bg }}>
-                    <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 700, color: rollingColor, minWidth: 30, textAlign: "right" as const, lineHeight: 1 }}>{e.score}</span>
+                    <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 42, fontWeight: 900, color: rollingColor, WebkitTextStroke: TEXT_STROKE, minWidth: 40, textAlign: "right" as const, lineHeight: 1 }}>{e.score}</span>
                     <div style={{ width: 3, height: 32, borderRadius: 2, background: rollingColor, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700, color: "#1A1A1A" }}>{formatLabel(e.date)}</div>
+                      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 42, fontWeight: 900, color: rollingColor, WebkitTextStroke: TEXT_STROKE }}>{formatLabel(e.date)}</div>
                       <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "rgba(0,0,0,0.4)" }}>{rating?.label}</div>
                     </div>
                     <button
@@ -545,7 +547,7 @@ export default function SleepDashboard() {
 
       {/* Rating scale reference */}
       <div className="content-width" style={{ padding: "0 24px 24px" }}>
-        <div style={{ background: "#FFFFFF", borderRadius: 16, padding: "24px" }}>
+        <div style={{ background: "transparent", borderRadius: 16, padding: "24px" }}>
           <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(0,0,0,0.35)" }}>
             RATING SCALE
           </span>
@@ -572,7 +574,7 @@ export default function SleepDashboard() {
       <div className="content-width" style={{ padding: "0 24px 40px" }}>
         <div
           style={{
-            background: "#FFFFFF",
+            background: "transparent",
             borderRadius: 16,
             padding: "24px",
             display: "flex",

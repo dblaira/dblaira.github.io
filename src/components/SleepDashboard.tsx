@@ -163,12 +163,12 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
         />
       ))}
 
-      <path d={areaPath} fill={`${CRIMSON}15`} />
-      <path d={linePath} fill="none" stroke={CRIMSON} strokeWidth={2.5} strokeLinejoin="round" />
+      <path d={areaPath} fill={`${PSY_PURPLE}15`} />
+      <path d={linePath} fill="none" stroke={PSY_PURPLE} strokeWidth={2.5} strokeLinejoin="round" />
 
       {points.map((p, i) => (
         <g key={i}>
-          <circle cx={p.x} cy={p.y} r={4} fill="#FFFFFF" stroke={CRIMSON} strokeWidth={2} />
+          <circle cx={p.x} cy={p.y} r={4} fill="#FFFFFF" stroke={PSY_PURPLE} strokeWidth={2} />
           {(i === points.length - 1 || i % pointLabelStep === 0) && (
             <text
               x={p.x}
@@ -315,7 +315,7 @@ export default function SleepDashboard() {
             fontWeight: 600,
             letterSpacing: "0.15em",
             textTransform: "uppercase",
-            color: CRIMSON,
+            color: PSY_PURPLE,
           }}
         >
           SLEEP
@@ -339,13 +339,13 @@ export default function SleepDashboard() {
         <div className="content-width" style={{ padding: "0 24px 16px" }}>
           <div
             style={{
-              background: "rgba(220,20,60,0.06)",
-              border: `1px solid ${CRIMSON}30`,
+              background: "rgba(86,0,204,0.06)",
+              border: `1px solid ${PSY_PURPLE}30`,
               borderRadius: 12,
               padding: "12px 16px",
               fontFamily: "'Inter', sans-serif",
               fontSize: 13,
-              color: CRIMSON,
+              color: PSY_PURPLE,
             }}
           >
             {error}
@@ -533,7 +533,7 @@ export default function SleepDashboard() {
                     <button
                       onClick={() => deleteEntry(e.id)}
                       title="Delete"
-                      style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, color: CRIMSON, background: "rgba(220,20,60,0.08)", border: "none", borderRadius: 6, padding: "6px 10px", cursor: "pointer" }}
+                      style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, color: PSY_RED, background: "rgba(252,0,25,0.08)", border: "none", borderRadius: 6, padding: "6px 10px", cursor: "pointer" }}
                     >
                       Delete
                     </button>
@@ -584,7 +584,7 @@ export default function SleepDashboard() {
           <div
             style={{
               width: 3,
-              background: CRIMSON,
+              background: PSY_PURPLE,
               borderRadius: 2,
               flexShrink: 0,
             }}

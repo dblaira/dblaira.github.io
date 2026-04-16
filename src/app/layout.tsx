@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import StudioLink from "@/components/StudioLink";
 
 export const metadata: Metadata = {
   title: "SAVY",
@@ -32,7 +33,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <StudioLink />
+      </body>
     </html>
   );
 }

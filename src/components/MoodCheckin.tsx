@@ -8,6 +8,7 @@ import { EmotionHistory } from "@/components/EmotionHistory";
 import { EmotionCustomize } from "@/components/EmotionCustomize";
 import { getSupabase } from "@/lib/supabase";
 import { useEmotionConfig } from "@/lib/useEmotionConfig";
+import { useTheme } from "@/lib/useTheme";
 
 const CRIMSON = "#DC143C";
 
@@ -25,6 +26,7 @@ const TRIGGER_TAGS = [
 export default function MoodCheckin() {
   const emotionConfig = useEmotionConfig();
   const { getEmotionLabel, getTriggerLabel } = emotionConfig;
+  const theme = useTheme("/mood");
 
   const [view, setView] = useState<"checkin" | "history" | "customize">("checkin");
   const [step, setStep] = useState<1 | 2>(1);
@@ -66,7 +68,7 @@ export default function MoodCheckin() {
         <SavySiteHeader />
         <div
           style={{
-            background: "#F5F0E8",
+            background: theme.canvas,
             minHeight: "calc(100vh - 60px)",
             display: "flex",
             alignItems: "center",
@@ -107,7 +109,7 @@ export default function MoodCheckin() {
   return (
     <div style={{ minHeight: "100vh", background: "#0A0A0A" }}>
       <SavySiteHeader />
-      <div style={{ background: "#F5F0E8", minHeight: "calc(100vh - 60px)" }}>
+      <div style={{ background: theme.canvas, minHeight: "calc(100vh - 60px)" }}>
         <div className="content-width" style={{ padding: "40px 24px 16px" }}>
           <span
             style={{
@@ -123,11 +125,11 @@ export default function MoodCheckin() {
           </span>
           <h1
             style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
+              fontFamily: theme.heading_font,
               fontSize: "clamp(28px, 6vw, 40px)",
               fontWeight: 400,
               fontStyle: "italic",
-              color: "#1A1A1A",
+              color: theme.ink,
               lineHeight: 1.15,
               margin: "8px 0 0 0",
             }}

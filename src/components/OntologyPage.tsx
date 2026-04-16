@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { OntologyNetwork } from "@/components/OntologyNetwork";
+import { useTheme } from "@/lib/useTheme";
 import type { CorrelationPair, CategoryStats } from "@/lib/types";
 
 const CRIMSON = "#DC143C";
@@ -19,6 +20,7 @@ function splitCorrelationPairs(pairs: CorrelationPair[]): { instant: Correlation
 }
 
 export default function OntologyPage() {
+  const theme = useTheme("/ontology");
   const [correlations, setCorrelations] = useState<CorrelationPair[]>([]);
   const [lagged, setLagged] = useState<CorrelationPair[]>([]);
   const [stats, setStats] = useState<CategoryStats[]>([]);
@@ -82,7 +84,7 @@ export default function OntologyPage() {
   return (
     <div style={{ minHeight: "100vh", background: "#0A0A0A" }}>
       <SavySiteHeader />
-      <div style={{ background: "#F5F0E8", minHeight: "calc(100vh - 60px)" }}>
+      <div style={{ background: theme.canvas, minHeight: "calc(100vh - 60px)" }}>
         <div className="content-width" style={{ padding: "40px 24px 16px" }}>
           <span
             style={{
@@ -98,11 +100,11 @@ export default function OntologyPage() {
           </span>
           <h1
             style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
+              fontFamily: theme.heading_font,
               fontSize: "clamp(32px, 7vw, 44px)",
               fontWeight: 400,
               fontStyle: "italic",
-              color: "#1A1A1A",
+              color: theme.ink,
               lineHeight: 1.15,
               margin: "8px 0 0 0",
             }}

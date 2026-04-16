@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { getSupabase } from "@/lib/supabase";
+import { useTheme } from "@/lib/useTheme";
 import { beginEntryEdit } from "@/components/sleepDashboardActions";
 
 // Psychedelic poster palette
@@ -178,6 +179,7 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
 }
 
 export default function SleepDashboard() {
+  const theme = useTheme("/sleep");
   const [entries, setEntries] = useState<SleepEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -238,7 +240,7 @@ export default function SleepDashboard() {
 
   if (loading) {
     return (
-      <div style={{ background: PSY_BG, minHeight: "100vh" }}>
+      <div style={{ background: theme.canvas, minHeight: "100vh" }}>
         <SavySiteHeader />
         <div className="content-width" style={{ padding: "80px 24px", textAlign: "center" }}>
           <span
@@ -278,7 +280,7 @@ export default function SleepDashboard() {
   return (
     <div
       style={{
-        backgroundColor: PSY_BG,
+        backgroundColor: theme.canvas,
         backgroundImage: "radial-gradient(circle, rgba(255,235,0,0.78) 0 3px, transparent 3px), radial-gradient(circle, rgba(255,201,40,0.22) 0 88px, transparent 88px)",
         backgroundSize: "18px 18px, 320px 320px",
         backgroundPosition: "0 0, 50% 120px",

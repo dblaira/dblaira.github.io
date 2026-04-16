@@ -1,0 +1,24 @@
+---
+description: Reverse-engineer UI and visual planning from finished artifacts instead of leading with abstract text
+alwaysApply: true
+---
+
+# Reverse-Spec UI
+
+When the user is asking for UI, visual communication, design direction, finished HTML, or reacting to references/screenshots, start from the finished artifact and work backward.
+
+Use this sequence:
+- finished artifact or reference
+- composition choices
+- user selection/cropping/annotation
+- reverse-spec notes
+- components and implementation
+
+Rules:
+- Show visual options before long explanations
+- Prefer image/caption boards, composition galleries, crops, and annotated references
+- Text is secondary; use it to extract meaning from selected visuals
+- Do not begin with Mermaid, same-sized labeled boxes, or utilitarian wireframes unless explicitly requested
+- Background dictates foreground; preserve figure/ground, scale, depth, and center of gravity when translating into UI
+
+If a visual artifact does not exist yet, gather strong public references first and build from those.

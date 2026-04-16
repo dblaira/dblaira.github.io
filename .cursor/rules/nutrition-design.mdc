@@ -1,0 +1,81 @@
+---
+description: 🍎 Nutrition page design — sunny yellow ground, ocean chrome, magenta glass panels
+globs: src/app/nutrition/**, src/components/NutritionDashboard*, src/components/nutrition/**
+alwaysApply: false
+---
+
+# 🍎 Nutrition — Bold Fitness Tracker
+
+Completely different visual world from the rest of SAVY. Sunny, high-energy, data-dense.
+
+## 🎯 Vibe in One Line
+
+> Bright yellow gym floor, ocean-blue chrome, magenta glass overlays. Fitness tracker energy.
+
+## 🎨 Palette
+
+| Token | Hex | Role |
+|-------|-----|------|
+| SUN | `#F4D160` | Full-page background — the ground color |
+| OCEAN | `#1D5D9B` | Primary buttons, FAB, active tab, interactive chrome |
+| CHARCOAL | `#2C2C2C` | Text on yellow — NOT black, warm dark |
+| GLASS | `rgba(176,30,104,0.9)` | Frosted panels — tabs, macro rings, food rows |
+| GLASS_BORDER | `rgba(255,255,255,0.15)` | Subtle white border on glass panels |
+| ORANGE | `#F49D1A` | Rotation food label, dinner meal button |
+| GREEN | `#27AE60` | Success states |
+
+### Meal Button Colors
+
+| Meal | Color |
+|------|-------|
+| Breakfast | `#B01E68` |
+| Lunch | `#1D5D9B` |
+| Dinner | `#F49D1A` |
+| Snack | `#DC3535` |
+
+## 📐 Layout
+
+- Max width: **480px** centered — mobile-first, single column
+- Glass panels: `backdropFilter: blur(16px)`, `border-radius: 12-16px`
+- FAB: **64px circle**, ocean blue, centered bottom, heavy blue shadow `0 6px 20px rgba(29,93,155,0.4)`
+- Modals: dark scrim `rgba(0,0,0,0.5-0.6)`, glass sheet from bottom
+
+## 🔤 Typography
+
+| Element | Font | Size | Weight |
+|---------|------|------|--------|
+| Page title | Playfair Display | 28px | **700** (heavier than other pages!) |
+| Subtitle | Inter | 11px | 600, uppercase, tracked |
+| Tab labels | Inter | 12px | 700, tracked |
+| Section title | Playfair Display | 18px | 700 |
+| Food name | Inter | 13px | 600 |
+| Macro data | Inter | 11px | 400 |
+| Calorie value | Inter | 13px | 700, color: SUN `#F4D160` |
+
+## 🧊 Glass Panel Pattern
+
+```
+┌─────────────────────────┐
+│  background: GLASS       │  rgba(176,30,104,0.9)
+│  border: GLASS_BORDER    │  rgba(255,255,255,0.15)
+│  border-radius: 12-16px  │
+│  backdrop-filter: blur   │  16-24px
+│  text: white / 0.4-0.5   │
+└─────────────────────────┘
+```
+
+## ✅ Do
+
+- Use SUN yellow as page ground — always
+- Glass panels for data containers, search, modals
+- Ocean blue for primary actions (FAB, buttons, active tabs)
+- Calorie numbers in SUN yellow on dark glass
+- `backdrop-filter: blur()` on all glass panels
+
+## 🚫 Don't
+
+- Don't use cream `#F5F0E8` — that's the home/editorial palette
+- Don't use crimson `#DC143C` for CTAs — use ocean `#1D5D9B`
+- Don't use Playfair italic here — Playfair 700 bold, no italic
+- Don't use standard card shadows — glass blur + borders create depth
+- Don't bring editorial/journal typography into nutrition

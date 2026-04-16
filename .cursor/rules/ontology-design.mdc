@@ -1,0 +1,64 @@
+---
+description: 🧠 Ontology page design — systems map, cream surface, d3-force network, muted earth tones
+globs: src/app/ontology/**, src/components/OntologyPage*, src/components/OntologyNetwork*
+alwaysApply: false
+---
+
+# 🧠 Ontology — Systems Map
+
+Sparse chrome, dense center. The viewport belongs to the force-directed network graph.
+
+## 🎯 Vibe in One Line
+
+> Research figure on warm paper. Muted earth-tone network. The graph IS the page.
+
+## 🎨 Palette
+
+| Role | Color | Notes |
+|------|-------|-------|
+| Page background | `#0A0A0A` → `#F5F0E8` | Dark chrome shell, cream content area |
+| Card / graph container | `#FFFFFF` | Single large white card holds the network |
+| Card shadow | `0 2px 12px rgba(0,0,0,0.06)` | Soft |
+| Card radius | `16px` | |
+| Eyebrow label | `#DC143C` crimson | "ONTOLOGY" |
+| Title text | `#1A1A1A` | |
+| Node labels | `#111` / `rgba(0,0,0,0.84)` | On SVG |
+
+### Edge Colors (d3 network)
+
+| Relationship | Color | Meaning |
+|-------------|-------|---------|
+| Positive | `#4F7F63` | Muted green — "rise together" |
+| Negative | `#B79A7A` | Muted brown — "trade off" |
+| Lagged | `#A74D4D` | Muted red — "predicts" |
+
+## 📐 Layout
+
+- `content-width` centered column
+- One big white card: `borderRadius: 16, padding: 24px 16px`
+- Responsive SVG force graph fills the card
+- Legend row below the graph
+- Minimal header section above — just eyebrow + title
+
+## 🔤 Typography
+
+| Element | Font | Size | Weight | Style |
+|---------|------|------|--------|-------|
+| Eyebrow "ONTOLOGY" | Inter | 11px | 600 | uppercase, crimson, 0.15em tracking |
+| Page title | Playfair Display | clamp(32px, 7vw, 44px) | 400 | italic |
+| Node labels (SVG) | Inter | varies | — | On graph nodes |
+| Loading/error states | Inter | 14px | 400 | centered, muted |
+
+## ✅ Do
+
+- Let the network graph dominate — minimal UI around it
+- Use muted earth tones for edges (green/brown/red)
+- Keep one single white card as the graph container
+- Use the standard cream + crimson eyebrow/title header pattern
+
+## 🚫 Don't
+
+- Don't add heavy UI around the graph — sparse chrome is the point
+- Don't use bright/saturated colors for edges — muted earth tones only
+- Don't use nutrition palette (yellow/ocean/glass) here
+- Don't make the card smaller than viewport width minus padding

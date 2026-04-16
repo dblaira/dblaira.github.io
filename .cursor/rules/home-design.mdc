@@ -1,0 +1,88 @@
+---
+description: 🏠 Home page design — Pinterest-inspired masonry grid with SAVY brand colors
+globs: src/app/page.tsx, src/components/SandboxHome*, src/components/BeliefCarousel*
+alwaysApply: false
+---
+
+# 🏠 Home Page — Pinterest-Style Masonry
+
+Inspired by **Pinterest's homepage**. Dense visual discovery grid. Each card = one tool/experiment.
+
+## 🎯 Vibe in One Line
+
+> Warm, cozy, image-first masonry grid. Browse your tools like browsing a Pinterest board.
+
+## 🎨 Palette
+
+| Role | Color | Notes |
+|------|-------|-------|
+| Page background | `#F5F0E8` (warm cream) | NOT white — warm and cozy like Pinterest's sand tones |
+| Card background | `#FFFFFF` | Clean white cards on cream |
+| Brand accent | `#DC143C` (crimson) | Logo, FAB, primary CTAs only — bold and singular |
+| Primary text | `#1A1A1A` | Card titles |
+| Secondary text | `rgba(0,0,0,0.5)` | Descriptions |
+| Metadata text | `rgba(0,0,0,0.4)` | Labels, timestamps |
+| Status: live | `#22C55E` | Green dot |
+| Status: building | `#DC143C` | Crimson dot |
+| Hover shadow | `0 4px 20px rgba(0,0,0,0.08)` | Subtle lift on hover |
+
+## 📐 Layout — Masonry Grid
+
+- **Masonry grid** for experiment/tool cards (Pinterest's signature layout)
+- Columns: `5+ → 3 → 2 → 1` as viewport shrinks
+- Cards have **varying heights** — no uniform rows
+- Tight gap between cards (8-12px) — content density IS the value
+- No heavy shadows on cards — content carries the visual weight
+- Generous border-radius: **16px** on cards, **20px+** on large containers
+
+## 🔤 Typography
+
+| Element | Font | Size | Weight | Style |
+|---------|------|------|--------|-------|
+| Page title "SAVY" | Playfair Display | clamp(42px, 8vw, 58px) | 400 | italic |
+| Card title | Playfair Display | 22px | 400 | normal |
+| Card description | Inter | 14px | 400 | normal |
+| Section header | Inter | 15px | 800 | uppercase, tracked |
+| Label / metadata | Inter | 11px | 600 | uppercase, 0.12em tracking |
+
+## 🃏 Card Anatomy
+
+```
+┌──────────────────────┐
+│  🟢 NUTRITION        │ ← status dot + uppercase label (11px Inter)
+│                      │
+│  Macro Tracker       │ ← Playfair 22px title
+│                      │
+│  Every ounce, every  │ ← Inter 14px description
+│  macro...            │    color: rgba(0,0,0,0.5)
+│                      │
+└──────────────────────┘
+   border-radius: 12px
+   padding: 24px
+   background: #FFFFFF
+   hover: subtle shadow lift
+```
+
+## 🔘 FAB (Floating Action Button)
+
+- Position: fixed bottom-right (24px offset)
+- Size: 56px circle
+- Background: crimson `#DC143C`
+- Shadow: `0 4px 16px rgba(220, 20, 60, 0.3)`
+- Icon: white "+" at 28px
+
+## ✅ Do
+
+- Use masonry grid layout — cards stack like Pinterest pins
+- Keep cards tight — density = discovery
+- Warm cream background, never cold gray or pure white page
+- Border-radius 12-16px on cards — generous, rounded, cozy
+- Photography/visuals in cards when possible — image-first
+
+## 🚫 Don't
+
+- Don't use the nutrition palette (yellow/ocean/magenta) on this page
+- Don't use heavy shadows — Pinterest is flat, depth comes from content
+- Don't make all cards the same height — varied heights = visual interest
+- Don't use small border-radius (<12px) — generous rounding is core
+- Don't add the SavySiteHeader to home — home has no header bar

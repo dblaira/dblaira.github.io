@@ -28,6 +28,9 @@ yarn-error.log*
 
 # env
 .env
+
+# superpowers brainstorm tooling state
+.superpowers/
 .env.local
 .env.development.local
 .env.test.local

@@ -1,0 +1,50 @@
+---
+description: 🔧 SAVY platform shell — shared header, nav, fonts, dark chrome. Applies to ALL pages.
+globs:
+alwaysApply: true
+---
+
+# 🔧 SAVY Platform Chrome
+
+Shared rules that apply across **every** page/tool in the app.
+
+## 🎨 Brand Constants
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--crimson` | `#DC143C` | Brand accent, logo highlight, active nav |
+| App chrome | `#0A0A0A` | Header bar, body background behind pages |
+| Theme color | `#0A0A0A` | PWA chrome, meta tag |
+
+## 🔤 Fonts (loaded in layout.tsx)
+
+| Role | Font | Fallback |
+|------|------|----------|
+| Display / editorial | `Playfair Display` | Georgia, serif |
+| UI / labels / buttons | `Inter` | -apple-system, sans-serif |
+
+**Rules:**
+- Never add new font imports without explicit approval
+- Playfair = headlines, titles, editorial moments
+- Inter = everything else (buttons, labels, body, metadata)
+
+## 📐 Layout
+
+- `content-width` class = max 720px centered, expands on desktop
+- Mobile-first: all tools target 480px max inner width
+- Safe area insets: always use `env(safe-area-inset-*)` for fixed elements
+
+## 🧭 Navigation (SavySiteHeader + SavyMobileMenu)
+
+- Black `#0A0A0A` header bar with circular logo (40px)
+- Hamburger → full-screen black overlay menu
+- Nav items: uppercase Inter 600, `0.12rem` letter-spacing
+- Active route = crimson text + crimson dot
+- Menu animation: `savyMenuFadeIn` 0.2s ease-out
+
+## 🚫 Don'ts
+
+- Don't change header background from `#0A0A0A`
+- Don't add nav items to `SavyMobileMenu` without updating `NAV_ITEMS` array
+- Don't use colors from one page's palette on another page (each tool owns its own palette)
+- Don't hardcode hex values — use CSS variables from `globals.css` when they exist

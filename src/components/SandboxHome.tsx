@@ -48,6 +48,13 @@ const EXPERIMENTS: ExperimentCard[] = [
     status: "live",
     href: "/beliefs",
   },
+  {
+    label: "STUDIO",
+    title: "Design Studio",
+    desc: "Live theme editor for every room. Canvas, accents, fonts, component kind. Add, delete, rearrange features.",
+    status: "live",
+    href: "/studio",
+  },
 ];
 
 // QUOTE removed — replaced by live BeliefCarousel component

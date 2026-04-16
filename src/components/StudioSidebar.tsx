@@ -26,8 +26,13 @@ export default function StudioSidebar() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
+    const onOpen = () => setOpen(true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("open-studio-sidebar", onOpen);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("open-studio-sidebar", onOpen);
+    };
   }, []);
 
   const patch = useCallback(
@@ -38,239 +43,208 @@ export default function StudioSidebar() {
     [pathname]
   );
 
-  if (hidden) return null;
+  if (hidden || !open) return null;
 
   return (
     <>
-      <button
-        type="button"
-        aria-label={open ? "Close Studio panel" : "Open Studio panel"}
-        onClick={() => setOpen((v) => !v)}
+      <div
+        onClick={() => setOpen(false)}
         style={{
           position: "fixed",
-          right: "calc(14px + env(safe-area-inset-right))",
-          bottom: "calc(14px + env(safe-area-inset-bottom))",
-          zIndex: 10000,
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "8px 14px 8px 10px",
-          background: open ? "#DC143C" : "rgba(10,10,10,0.82)",
+          inset: 0,
+          zIndex: 9998,
+          background: "transparent",
+        }}
+      />
+      <aside
+        role="dialog"
+        aria-label="Studio panel"
+        style={{
+          position: "fixed",
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: "min(360px, 92vw)",
+          zIndex: 9999,
+          background: "#0A0A0A",
           color: "#fff",
-          border: "1px solid rgba(255,255,255,0.12)",
-          borderRadius: 999,
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
+          borderLeft: "1px solid rgba(255,255,255,0.08)",
+          boxShadow: "-12px 0 32px rgba(0,0,0,0.35)",
+          overflowY: "auto",
           fontFamily: "'Inter', -apple-system, sans-serif",
-          fontSize: 11,
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          cursor: "pointer",
-          transition: "background 0.15s ease",
+          animation: "studioSlideIn 0.22s ease-out",
+          padding: "calc(20px + env(safe-area-inset-top)) 20px calc(80px + env(safe-area-inset-bottom))",
         }}
       >
-        <span
+        <style>{`
+          @keyframes studioSlideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+          }
+        `}</style>
+
+        <div
           style={{
-            width: 8,
-            height: 8,
-            borderRadius: 4,
-            background: open ? "#fff" : "#DC143C",
-            boxShadow: open ? "none" : "0 0 0 3px rgba(220,20,60,0.18)",
-          }}
-        />
-        <span
-          style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontStyle: "italic",
-            letterSpacing: 0,
-            textTransform: "none",
-            fontSize: 15,
-            color: open ? "#fff" : "#DC143C",
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            marginBottom: 24,
           }}
         >
-          studio
-        </span>
-        <span style={{ opacity: 0.7, fontSize: 10 }}>{open ? "×" : "↗"}</span>
-      </button>
-
-      {open && (
-        <>
-          <div
-            onClick={() => setOpen(false)}
-            style={{
-              position: "fixed",
-              inset: 0,
-              zIndex: 9998,
-              background: "transparent",
-            }}
-          />
-          <aside
-            role="dialog"
-            aria-label="Studio panel"
-            style={{
-              position: "fixed",
-              top: 0,
-              right: 0,
-              bottom: 0,
-              width: "min(360px, 92vw)",
-              zIndex: 9999,
-              background: "#0A0A0A",
-              color: "#fff",
-              borderLeft: "1px solid rgba(255,255,255,0.08)",
-              boxShadow: "-12px 0 32px rgba(0,0,0,0.35)",
-              overflowY: "auto",
-              fontFamily: "'Inter', -apple-system, sans-serif",
-              animation: "studioSlideIn 0.22s ease-out",
-              padding: "calc(20px + env(safe-area-inset-top)) 20px calc(80px + env(safe-area-inset-bottom))",
-            }}
-          >
-            <style>{`
-              @keyframes studioSlideIn {
-                from { transform: translateX(100%); }
-                to { transform: translateX(0); }
-              }
-            `}</style>
-
-            <div style={{ marginBottom: 24 }}>
-              <div
-                style={{
-                  fontFamily: "'Playfair Display', Georgia, serif",
-                  fontStyle: "italic",
-                  color: "#DC143C",
-                  fontSize: 24,
-                  lineHeight: 1,
-                }}
-              >
-                studio
-              </div>
-              <div
-                style={{
-                  fontSize: 10,
-                  letterSpacing: "0.15em",
-                  textTransform: "uppercase",
-                  color: "rgba(255,255,255,0.4)",
-                  marginTop: 4,
-                }}
-              >
-                editing · {pathname}
-              </div>
-            </div>
-
-            <Section label="canvas">
-              <ColorField
-                hex={theme.canvas}
-                onChange={(hex) => patch({ canvas: hex, ink: contrastInk(hex) })}
-              />
-            </Section>
-
-            <Section label="accents">
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {theme.accents.map((hex, i) => (
-                  <ColorField
-                    key={`${i}-${hex}`}
-                    hex={hex}
-                    compact
-                    onChange={(next) => {
-                      const copy = [...theme.accents];
-                      copy[i] = next;
-                      patch({ accents: copy });
-                    }}
-                    onRemove={() =>
-                      patch({ accents: theme.accents.filter((_, j) => j !== i) })
-                    }
-                  />
-                ))}
-                <button
-                  type="button"
-                  onClick={() => patch({ accents: [...theme.accents, "#888888"] })}
-                  style={addBtn}
-                  aria-label="Add accent"
-                >
-                  +
-                </button>
-              </div>
-            </Section>
-
-            <Section label="heading font">
-              <FontPicker
-                value={theme.heading_font}
-                onChange={(f) => patch({ heading_font: f })}
-              />
-            </Section>
-
-            <Section label="body font">
-              <FontPicker
-                value={theme.body_font}
-                onChange={(f) => patch({ body_font: f })}
-              />
-            </Section>
-
-            <Section label="component kind">
-              <select
-                value={theme.component_kind}
-                onChange={(e) =>
-                  patch({ component_kind: e.target.value as ComponentKind })
-                }
-                style={selectStyle}
-              >
-                <option value="feed-tiles">feed tiles (Pinterest)</option>
-                <option value="meal-blocks">meal blocks</option>
-                <option value="rings-grid">rings grid</option>
-                <option value="emotion-wheel">emotion wheel</option>
-                <option value="graph-nodes">graph nodes</option>
-                <option value="card-stack">card stack</option>
-              </select>
-            </Section>
-
-            <Section label="notes">
-              <textarea
-                value={theme.notes}
-                onChange={(e) => patch({ notes: e.target.value })}
-                rows={3}
-                style={{
-                  ...selectStyle,
-                  resize: "vertical",
-                  fontFamily: "'Playfair Display', serif",
-                  fontStyle: "italic",
-                  fontSize: 14,
-                }}
-              />
-            </Section>
-
+          <div>
             <div
               style={{
-                display: "flex",
-                gap: 8,
-                marginTop: 24,
-                paddingTop: 20,
-                borderTop: "1px solid rgba(255,255,255,0.08)",
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontStyle: "italic",
+                color: "#DC143C",
+                fontSize: 24,
+                lineHeight: 1,
               }}
             >
-              <Link
-                href={`/studio?route=${encodeURIComponent(pathname)}`}
-                onClick={() => setOpen(false)}
-                style={{
-                  flex: 1,
-                  textAlign: "center",
-                  padding: "10px 12px",
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 8,
-                  color: "#fff",
-                  textDecoration: "none",
-                  fontSize: 12,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  fontWeight: 600,
-                }}
-              >
-                open full studio ↗
-              </Link>
+              studio
             </div>
-          </aside>
-        </>
-      )}
+            <div
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: "rgba(255,255,255,0.4)",
+                marginTop: 4,
+              }}
+            >
+              editing · {pathname}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label="Close Studio panel"
+            style={{
+              background: "none",
+              border: "none",
+              color: "rgba(255,255,255,0.5)",
+              cursor: "pointer",
+              fontSize: 20,
+              lineHeight: 1,
+              padding: "4px 6px",
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        <Section label="canvas">
+          <ColorField
+            hex={theme.canvas}
+            onChange={(hex) => patch({ canvas: hex, ink: contrastInk(hex) })}
+          />
+        </Section>
+
+        <Section label="accents">
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {theme.accents.map((hex, i) => (
+              <ColorField
+                key={`${i}-${hex}`}
+                hex={hex}
+                compact
+                onChange={(next) => {
+                  const copy = [...theme.accents];
+                  copy[i] = next;
+                  patch({ accents: copy });
+                }}
+                onRemove={() =>
+                  patch({ accents: theme.accents.filter((_, j) => j !== i) })
+                }
+              />
+            ))}
+            <button
+              type="button"
+              onClick={() => patch({ accents: [...theme.accents, "#888888"] })}
+              style={addBtn}
+              aria-label="Add accent"
+            >
+              +
+            </button>
+          </div>
+        </Section>
+
+        <Section label="heading font">
+          <FontPicker
+            value={theme.heading_font}
+            onChange={(f) => patch({ heading_font: f })}
+          />
+        </Section>
+
+        <Section label="body font">
+          <FontPicker
+            value={theme.body_font}
+            onChange={(f) => patch({ body_font: f })}
+          />
+        </Section>
+
+        <Section label="component kind">
+          <select
+            value={theme.component_kind}
+            onChange={(e) =>
+              patch({ component_kind: e.target.value as ComponentKind })
+            }
+            style={selectStyle}
+          >
+            <option value="feed-tiles">feed tiles (Pinterest)</option>
+            <option value="meal-blocks">meal blocks</option>
+            <option value="rings-grid">rings grid</option>
+            <option value="emotion-wheel">emotion wheel</option>
+            <option value="graph-nodes">graph nodes</option>
+            <option value="card-stack">card stack</option>
+          </select>
+        </Section>
+
+        <Section label="notes">
+          <textarea
+            value={theme.notes}
+            onChange={(e) => patch({ notes: e.target.value })}
+            rows={3}
+            style={{
+              ...selectStyle,
+              resize: "vertical",
+              fontFamily: "'Playfair Display', serif",
+              fontStyle: "italic",
+              fontSize: 14,
+            }}
+          />
+        </Section>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            marginTop: 24,
+            paddingTop: 20,
+            borderTop: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <Link
+            href={`/studio?route=${encodeURIComponent(pathname)}`}
+            onClick={() => setOpen(false)}
+            style={{
+              flex: 1,
+              textAlign: "center",
+              padding: "10px 12px",
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 8,
+              color: "#fff",
+              textDecoration: "none",
+              fontSize: 12,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              fontWeight: 600,
+            }}
+          >
+            open full studio ↗
+          </Link>
+        </div>
+      </aside>
     </>
   );
 }

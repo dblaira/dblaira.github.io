@@ -26,6 +26,7 @@ type Theme = {
   body_font: string;
   component_kind: ComponentKind;
   notes: string;
+  sort_order?: number;
   updated_at?: string;
 };
 
@@ -124,7 +125,11 @@ export default function StudioPage() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("studio_themes").select("*").order("route");
+      const { data } = await supabase
+        .from("studio_themes")
+        .select("*")
+        .order("sort_order", { ascending: true, nullsFirst: false })
+        .order("route");
       const loaded = data && data.length > 0 ? (data as Theme[]) : SEED_THEMES;
       setThemes(loaded);
 
@@ -156,6 +161,64 @@ export default function StudioPage() {
     setTimeout(() => setJustCopied(null), 900);
   };
 
+  const addRoom = useCallback(async () => {
+    const route = prompt("Route path (e.g. /timeline):")?.trim();
+    if (!route || !route.startsWith("/")) return;
+    if (themes.some((t) => t.route === route)) {
+      alert(`A room already exists for ${route}`);
+      return;
+    }
+    const label = prompt("Label:", route.replace("/", "") || "Home")?.trim() || route;
+    const nextOrder = Math.max(-1, ...themes.map((t) => t.sort_order ?? 0)) + 1;
+    const newTheme: Theme = {
+      route,
+      label,
+      canvas: "#F5F0E8",
+      ink: "#1A1A1A",
+      accents: ["#DC143C"],
+      heading_font: "'Playfair Display', Georgia, serif",
+      body_font: "'Inter', -apple-system, sans-serif",
+      component_kind: "feed-tiles",
+      notes: "",
+      sort_order: nextOrder,
+    };
+    setThemes((prev) => [...prev, newTheme]);
+    setActiveRoute(route);
+    await supabase.from("studio_themes").insert(newTheme);
+  }, [themes]);
+
+  const deleteRoom = useCallback(
+    async (route: string) => {
+      if (!confirm(`Delete the "${route}" room? This removes its theme data.`)) return;
+      const remaining = themes.filter((t) => t.route !== route);
+      setThemes(remaining);
+      if (activeRoute === route && remaining.length > 0) {
+        setActiveRoute(remaining[0].route);
+      }
+      await supabase.from("studio_themes").delete().eq("route", route);
+    },
+    [themes, activeRoute]
+  );
+
+  const moveRoom = useCallback(
+    async (route: string, direction: -1 | 1) => {
+      const idx = themes.findIndex((t) => t.route === route);
+      if (idx < 0) return;
+      const swap = idx + direction;
+      if (swap < 0 || swap >= themes.length) return;
+      const next = [...themes];
+      [next[idx], next[swap]] = [next[swap], next[idx]];
+      const reindexed = next.map((t, i) => ({ ...t, sort_order: i }));
+      setThemes(reindexed);
+      await Promise.all(
+        reindexed.map((t) =>
+          supabase.from("studio_themes").update({ sort_order: t.sort_order }).eq("route", t.route)
+        )
+      );
+    },
+    [themes]
+  );
+
   if (loading) {
     return (
       <div style={{ padding: 80, fontFamily: "system-ui", textAlign: "center" }}>
@@ -183,23 +246,83 @@ export default function StudioPage() {
         <div style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 24 }}>
           one shell · many rooms
         </div>
-        {themes.map((t) => (
-          <button
-            key={t.route}
-            onClick={() => setActiveRoute(t.route)}
-            style={{
-              display: "flex", alignItems: "center", gap: 10, width: "100%",
-              padding: "10px 10px", marginBottom: 4,
-              background: t.route === activeRoute ? "rgba(220,20,60,0.12)" : "transparent",
-              border: "none", borderRadius: 8, color: "#fff", textAlign: "left",
-              cursor: "pointer", fontSize: 14, fontFamily: "inherit",
-            }}
-          >
-            <span style={{ width: 18, height: 18, borderRadius: 4, background: t.canvas, flexShrink: 0, border: "1px solid rgba(255,255,255,0.15)" }} />
-            <span>{t.label}</span>
-            <span style={{ marginLeft: "auto", fontSize: 10, color: "rgba(255,255,255,0.35)" }}>{t.route}</span>
-          </button>
-        ))}
+        {themes.map((t, i) => {
+          const isActive = t.route === activeRoute;
+          return (
+            <div
+              key={t.route}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                marginBottom: 4,
+                padding: "2px 4px",
+                background: isActive ? "rgba(220,20,60,0.12)" : "transparent",
+                borderRadius: 8,
+              }}
+            >
+              <button
+                onClick={() => setActiveRoute(t.route)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0,
+                  padding: "8px 6px",
+                  background: "transparent",
+                  border: "none", borderRadius: 8, color: "#fff", textAlign: "left",
+                  cursor: "pointer", fontSize: 14, fontFamily: "inherit",
+                }}
+              >
+                <span style={{ width: 18, height: 18, borderRadius: 4, background: t.canvas, flexShrink: 0, border: "1px solid rgba(255,255,255,0.15)" }} />
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</span>
+                <span style={{ marginLeft: "auto", fontSize: 10, color: "rgba(255,255,255,0.35)", flexShrink: 0 }}>{t.route}</span>
+              </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                <button
+                  onClick={() => moveRoom(t.route, -1)}
+                  disabled={i === 0}
+                  aria-label={`Move ${t.label} up`}
+                  style={rowIconBtn(i === 0)}
+                >
+                  ▲
+                </button>
+                <button
+                  onClick={() => moveRoom(t.route, 1)}
+                  disabled={i === themes.length - 1}
+                  aria-label={`Move ${t.label} down`}
+                  style={rowIconBtn(i === themes.length - 1)}
+                >
+                  ▼
+                </button>
+              </div>
+              <button
+                onClick={() => deleteRoom(t.route)}
+                aria-label={`Delete ${t.label}`}
+                style={{
+                  background: "none", border: "none",
+                  color: "rgba(255,255,255,0.3)",
+                  cursor: "pointer", fontSize: 14,
+                  padding: "0 6px",
+                }}
+              >
+                ×
+              </button>
+            </div>
+          );
+        })}
+        <button
+          onClick={addRoom}
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            width: "100%", marginTop: 12, padding: "10px",
+            background: "transparent",
+            border: "1px dashed rgba(255,255,255,0.2)",
+            borderRadius: 8,
+            color: "rgba(255,255,255,0.6)",
+            cursor: "pointer", fontSize: 12,
+            fontFamily: "inherit", letterSpacing: "0.08em", textTransform: "uppercase",
+          }}
+        >
+          + new room
+        </button>
       </aside>
 
       <main style={{ padding: 32, overflow: "auto" }}>
@@ -494,6 +617,16 @@ const selectStyle: React.CSSProperties = {
   fontSize: 13,
   outline: "none",
 };
+
+const rowIconBtn = (disabled: boolean): React.CSSProperties => ({
+  background: "none",
+  border: "none",
+  color: disabled ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.4)",
+  cursor: disabled ? "default" : "pointer",
+  fontSize: 8,
+  padding: "1px 4px",
+  lineHeight: 1,
+});
 
 const addBtn: React.CSSProperties = {
   width: 36,

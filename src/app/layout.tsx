@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import StudioLink from "@/components/StudioLink";
+import StudioSidebar from "@/components/StudioSidebar";
 
 export const metadata: Metadata = {
   title: "SAVY",
@@ -35,7 +35,7 @@ export default function RootLayout({
       </head>
       <body>
         {children}
-        <StudioLink />
+        <StudioSidebar />
       </body>
     </html>
   );

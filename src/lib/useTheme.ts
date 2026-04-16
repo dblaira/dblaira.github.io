@@ -36,7 +36,7 @@ const FALLBACK: Theme = {
 };
 
 export function useTheme(route: string): Theme {
-  const [theme, setTheme] = useState<Theme>({ ...FALLBACK, route });
+  const [theme, setTheme] = useState<Theme>(() => ({ ...FALLBACK, route }));
 
   useEffect(() => {
     let cancelled = false;

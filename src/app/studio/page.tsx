@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
+import { SavySiteHeader } from "@/components/SavySiteHeader";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -229,16 +230,17 @@ export default function StudioPage() {
   if (!active) return null;
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#0A0A0A",
-        color: "#fff",
-        fontFamily: "'Inter', -apple-system, sans-serif",
-        display: "grid",
-        gridTemplateColumns: "220px 1fr 340px",
-      }}
-    >
+    <div style={{ background: "#0A0A0A", minHeight: "100vh" }}>
+      <SavySiteHeader />
+      <div
+        style={{
+          background: "#0A0A0A",
+          color: "#fff",
+          fontFamily: "'Inter', -apple-system, sans-serif",
+          display: "grid",
+          gridTemplateColumns: "220px 1fr 340px",
+        }}
+      >
       <aside style={{ borderRight: "1px solid rgba(255,255,255,0.08)", padding: "24px 16px" }}>
         <div style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", color: "#DC143C", fontSize: 28, marginBottom: 4 }}>
           studio
@@ -394,6 +396,7 @@ export default function StudioPage() {
           {justCopied?.startsWith("{") ? "copied ✓" : "copy theme JSON"}
         </button>
       </aside>
+      </div>
     </div>
   );
 }

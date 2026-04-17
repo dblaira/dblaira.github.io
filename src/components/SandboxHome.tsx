@@ -1,6 +1,7 @@
 "use client";
 
 import { BeliefCarousel } from "@/components/BeliefCarousel";
+import { pitchHref } from "@/lib/pitchMode";
 
 const CRIMSON = "#DC143C";
 
@@ -243,7 +244,7 @@ export default function SandboxHome() {
           return card.href ? (
             <a
               key={card.label}
-              href={card.href}
+              href={pitchHref(card.href)}
               style={{ textDecoration: "none", color: "inherit" }}
             >
               {inner}

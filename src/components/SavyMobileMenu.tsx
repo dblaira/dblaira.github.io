@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
+import { pitchHref } from "@/lib/pitchMode";
 
 const CRIMSON = "#DC143C";
 
@@ -139,11 +140,12 @@ export function SavyMobileMenu({ isOpen, onClose, user, onSignOut }: SavyMobileM
         </div>
         <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
           {NAV_ITEMS.map((item) => {
-            const active = isActive(item.href);
+            const target = pitchHref(item.href);
+            const active = isActive(item.href) || isActive(target);
             return (
               <li key={item.href}>
                 <Link
-                  href={item.href}
+                  href={target}
                   onClick={onClose}
                   style={{
                     display: "flex",

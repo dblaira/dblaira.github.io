@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
-import { pitchHref } from "@/lib/pitchMode";
 
 const CRIMSON = "#DC143C";
 
@@ -140,12 +139,11 @@ export function SavyMobileMenu({ isOpen, onClose, user, onSignOut }: SavyMobileM
         </div>
         <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
           {NAV_ITEMS.map((item) => {
-            const target = pitchHref(item.href);
-            const active = isActive(item.href) || isActive(target);
+            const active = isActive(item.href);
             return (
               <li key={item.href}>
                 <Link
-                  href={target}
+                  href={item.href}
                   onClick={onClose}
                   style={{
                     display: "flex",
@@ -195,53 +193,6 @@ export function SavyMobileMenu({ isOpen, onClose, user, onSignOut }: SavyMobileM
               </li>
             );
           })}
-        </ul>
-
-        <div
-          style={{
-            marginTop: "2.5rem",
-            color: "rgba(255, 255, 255, 0.5)",
-            fontSize: "0.75rem",
-            fontWeight: 600,
-            letterSpacing: "0.15rem",
-            textTransform: "uppercase",
-            marginBottom: "0.75rem",
-            fontFamily: "'Inter', sans-serif",
-          }}
-        >
-          My Logs
-        </div>
-        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-          {[
-            { href: "/sleep", label: "Sleep Log" },
-            { href: "/mood", label: "Mood Log" },
-            { href: "/nutrition", label: "Nutrition Log" },
-          ].map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                onClick={onClose}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  width: "100%",
-                  padding: "1rem 0",
-                  background: "transparent",
-                  border: "none",
-                  borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-                  color: "#FFFFFF",
-                  fontSize: "0.95rem",
-                  fontWeight: 500,
-                  letterSpacing: "0.08rem",
-                  textTransform: "uppercase",
-                  textDecoration: "none",
-                  fontFamily: "'Inter', sans-serif",
-                }}
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
         </ul>
       </nav>
 

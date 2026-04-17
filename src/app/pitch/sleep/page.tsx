@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { SavyMobileMenu } from "@/components/SavyMobileMenu";
+import { useAuth } from "@/lib/useAuth";
 
 const BG = "#000000";
 const BG_BROWN = "#E8E2D8";
@@ -91,53 +94,73 @@ function formatShortDate(iso: string): string {
 }
 
 function FacadeHeader() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
   return (
-    <div
-      style={{
-        background: BG,
-        paddingTop: "env(safe-area-inset-top, 0px)",
-        borderBottom: `1px solid ${SURFACE_BORDER}`,
-      }}
-    >
+    <>
       <div
         style={{
-          padding: "18px 24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          maxWidth: 1200,
-          margin: "0 auto",
+          background: BG,
+          paddingTop: "env(safe-area-inset-top, 0px)",
+          borderBottom: `1px solid ${SURFACE_BORDER}`,
         }}
       >
-        <span
+        <div
           style={{
-            fontFamily: FONT_SERIF,
-            fontSize: 20,
-            fontWeight: 700,
-            letterSpacing: "0.04em",
-            color: INK,
-            lineHeight: 1,
+            padding: "18px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            maxWidth: 1200,
+            margin: "0 auto",
           }}
         >
-          SAVY.
-        </span>
-        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <span aria-hidden style={{ color: INK, display: "inline-flex" }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="7" />
-              <line x1="20" y1="20" x2="16.5" y2="16.5" />
-            </svg>
-          </span>
-          <span aria-hidden style={{ color: INK, display: "inline-flex" }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="4" y1="7" x2="20" y2="7" />
-              <line x1="4" y1="12" x2="20" y2="12" />
-              <line x1="4" y1="17" x2="20" y2="17" />
-            </svg>
-          </span>
+          <Link
+            href="/"
+            style={{
+              fontFamily: FONT_SERIF,
+              fontSize: 20,
+              fontWeight: 700,
+              letterSpacing: "0.04em",
+              color: INK,
+              lineHeight: 1,
+              textDecoration: "none",
+            }}
+          >
+            SAVY.
+          </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            <span aria-hidden style={{ color: INK, display: "inline-flex" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="7" />
+                <line x1="20" y1="20" x2="16.5" y2="16.5" />
+              </svg>
+            </span>
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={menuOpen}
+              style={{
+                background: "transparent",
+                border: "none",
+                padding: 0,
+                color: INK,
+                display: "inline-flex",
+                cursor: "pointer",
+              }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="4" y1="7" x2="20" y2="7" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="17" x2="20" y2="17" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+      <SavyMobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} user={user} onSignOut={signOut} />
+    </>
   );
 }
 

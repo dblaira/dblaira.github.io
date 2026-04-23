@@ -104,6 +104,17 @@ const SEED_THEMES: Theme[] = [
     component_kind: "card-stack",
     notes: "Paper. Tactile. Identity anchors.",
   },
+  {
+    route: "/parables",
+    label: "Parables",
+    canvas: "#F5F0E8",
+    ink: "#1A1A1A",
+    accents: ["#DC143C", "#0E918C", "#F49D1A"],
+    heading_font: "'Playfair Display', serif",
+    body_font: "'Inter', sans-serif",
+    component_kind: "card-stack",
+    notes: "Field essays. Cream paper, serif body, crimson accent.",
+  },
 ];
 
 async function seedThemes() {

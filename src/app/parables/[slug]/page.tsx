@@ -3,6 +3,16 @@ import Link from "next/link";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { getAllParableSlugs, getParable } from "@/lib/parables";
 
+// Palette mirrored from the Ontology theme. Cream paper reads well in bright
+// environments; dark serif body at 19px/1.7 is the long-form target.
+const BG = "#F5F0E8";
+const INK = "#1A1A1A";
+const CRIMSON = "#DC143C";
+const TEAL = "#0E918C";
+const INK_MUTED = "rgba(26, 26, 26, 0.62)";
+const INK_FAINT = "rgba(26, 26, 26, 0.45)";
+const RULE = "rgba(26, 26, 26, 0.14)";
+
 export async function generateStaticParams() {
   return getAllParableSlugs().map((slug) => ({ slug }));
 }
@@ -40,7 +50,7 @@ export default async function ParablePage({
   if (!parable) notFound();
 
   return (
-    <div style={{ background: "#0A0A0A", color: "#F5F0E8", minHeight: "100vh" }}>
+    <div style={{ background: BG, color: INK, minHeight: "100vh" }}>
       <SavySiteHeader />
 
       <article className="parable-article" style={{ padding: "56px 24px 96px", maxWidth: 680, margin: "0 auto" }}>
@@ -53,7 +63,7 @@ export default async function ParablePage({
               fontWeight: 600,
               letterSpacing: "0.18em",
               textTransform: "uppercase",
-              color: "#DC143C",
+              color: CRIMSON,
               textDecoration: "none",
             }}
           >
@@ -68,7 +78,7 @@ export default async function ParablePage({
             fontWeight: 400,
             lineHeight: 1.15,
             letterSpacing: "-0.01em",
-            color: "#F5F0E8",
+            color: INK,
             margin: "0 0 14px",
           }}
         >
@@ -82,7 +92,7 @@ export default async function ParablePage({
             fontWeight: 500,
             letterSpacing: "0.12em",
             textTransform: "uppercase",
-            color: "rgba(255,255,255,0.45)",
+            color: INK_FAINT,
             marginBottom: 48,
           }}
         >
@@ -100,7 +110,7 @@ export default async function ParablePage({
           font-family: Georgia, 'Playfair Display', serif;
           font-size: 19px;
           line-height: 1.7;
-          color: rgba(245, 240, 232, 0.92);
+          color: ${INK};
         }
         @media (max-width: 520px) {
           .parable-body { font-size: 17.5px; line-height: 1.65; }
@@ -122,44 +132,44 @@ export default async function ParablePage({
           font-size: 26px;
           font-weight: 500;
           line-height: 1.25;
-          color: #F5F0E8;
+          color: ${INK};
           letter-spacing: -0.005em;
           margin-top: 2.2em;
           margin-bottom: 0.6em;
         }
-        .parable-body strong { color: #F5F0E8; font-weight: 600; }
+        .parable-body strong { color: ${INK}; font-weight: 700; }
         .parable-body em { font-style: italic; }
         .parable-body a {
-          color: #DC143C;
+          color: ${CRIMSON};
           text-decoration: underline;
           text-decoration-color: rgba(220, 20, 60, 0.4);
           text-underline-offset: 3px;
         }
-        .parable-body a:hover { text-decoration-color: #DC143C; }
+        .parable-body a:hover { text-decoration-color: ${CRIMSON}; }
         .parable-body blockquote {
           margin: 1.6em 0;
           padding: 4px 0 4px 18px;
-          border-left: 2px solid #DC143C;
-          color: rgba(245, 240, 232, 0.78);
+          border-left: 2px solid ${TEAL};
+          color: ${INK_MUTED};
           font-style: italic;
         }
         .parable-body blockquote p { margin: 0; }
         .parable-body hr {
           border: none;
-          border-top: 1px solid rgba(255, 255, 255, 0.14);
+          border-top: 1px solid ${RULE};
           margin: 3em 0 1.6em;
         }
         /* Any paragraph after the closing <hr> renders as a muted signature */
         .parable-body hr ~ p {
           font-size: 15px;
           line-height: 1.55;
-          color: rgba(255, 255, 255, 0.45);
+          color: ${INK_FAINT};
           font-style: italic;
         }
         .parable-body code {
           font-family: ui-monospace, Menlo, monospace;
           font-size: 0.92em;
-          background: rgba(255,255,255,0.06);
+          background: rgba(26,26,26,0.06);
           padding: 2px 6px;
           border-radius: 4px;
         }

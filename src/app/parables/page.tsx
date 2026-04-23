@@ -7,6 +7,15 @@ export const metadata = {
   description: "Patterns that trace back before modern society and still apply today.",
 };
 
+// Palette mirrored from the Ontology theme — warm cream paper for reading in
+// bright environments, dark ink, crimson as the primary accent.
+const BG = "#F5F0E8";
+const INK = "#1A1A1A";
+const INK_MUTED = "rgba(26, 26, 26, 0.62)";
+const INK_FAINT = "rgba(26, 26, 26, 0.45)";
+const CRIMSON = "#DC143C";
+const RULE = "rgba(26, 26, 26, 0.1)";
+
 function formatDate(iso: string): string {
   if (!iso) return "";
   return new Date(iso + "T12:00:00").toLocaleDateString("en-US", {
@@ -20,10 +29,10 @@ export default function ParablesIndex() {
   const parables = getAllParables();
 
   return (
-    <div style={{ background: "#0A0A0A", color: "#F5F0E8", minHeight: "100vh" }}>
+    <div style={{ background: BG, color: INK, minHeight: "100vh" }}>
       <SavySiteHeader />
 
-      <div className="content-width" style={{ padding: "64px 24px 40px", maxWidth: 720 }}>
+      <div style={{ padding: "64px 24px 40px", maxWidth: 720, margin: "0 auto" }}>
         <div
           style={{
             fontFamily: "'Inter', -apple-system, sans-serif",
@@ -31,7 +40,7 @@ export default function ParablesIndex() {
             fontWeight: 700,
             letterSpacing: "0.22em",
             textTransform: "uppercase",
-            color: "#DC143C",
+            color: CRIMSON,
             marginBottom: 18,
           }}
         >
@@ -45,7 +54,7 @@ export default function ParablesIndex() {
             fontWeight: 400,
             lineHeight: 1.1,
             letterSpacing: "-0.01em",
-            color: "#F5F0E8",
+            color: INK,
             margin: "0 0 18px",
           }}
         >
@@ -57,7 +66,7 @@ export default function ParablesIndex() {
             fontFamily: "Georgia, 'Playfair Display', serif",
             fontSize: 18,
             lineHeight: 1.55,
-            color: "rgba(255,255,255,0.7)",
+            color: INK_MUTED,
             margin: "0 0 64px",
             maxWidth: 520,
           }}
@@ -72,7 +81,7 @@ export default function ParablesIndex() {
             <li
               key={p.slug}
               style={{
-                borderTop: "1px solid rgba(255,255,255,0.1)",
+                borderTop: `1px solid ${RULE}`,
                 paddingTop: 24,
                 paddingBottom: 24,
               }}
@@ -89,10 +98,10 @@ export default function ParablesIndex() {
                   style={{
                     fontFamily: "'Inter', -apple-system, sans-serif",
                     fontSize: 11,
-                    fontWeight: 500,
+                    fontWeight: 600,
                     letterSpacing: "0.14em",
                     textTransform: "uppercase",
-                    color: "rgba(255,255,255,0.45)",
+                    color: INK_FAINT,
                     marginBottom: 8,
                   }}
                 >
@@ -105,7 +114,7 @@ export default function ParablesIndex() {
                     fontWeight: 400,
                     lineHeight: 1.2,
                     margin: "0 0 8px",
-                    color: "#F5F0E8",
+                    color: INK,
                   }}
                 >
                   {p.title}
@@ -115,7 +124,7 @@ export default function ParablesIndex() {
                     fontFamily: "Georgia, 'Playfair Display', serif",
                     fontSize: 16,
                     lineHeight: 1.55,
-                    color: "rgba(255,255,255,0.7)",
+                    color: INK_MUTED,
                     margin: 0,
                   }}
                 >

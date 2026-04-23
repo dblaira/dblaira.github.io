@@ -231,11 +231,11 @@ function SleepDashboardBody() {
   const theme = useTheme("/sleep");
   const edit = useEditMode();
 
-  // Local overrides let every save repaint the page instantly (optimistic
-  // update). Supabase is still the source of truth — when the realtime push
-  // arrives it matches the override, no flicker.
+  // Optimistic local state. Every save updates this instantly, then persists
+  // to Supabase in the background. Realtime push from Supabase reconciles.
   const [overrideCanvas, setOverrideCanvas] = useState<string | null>(null);
   const [overrideAccents, setOverrideAccents] = useState<(string | undefined)[]>([]);
+  const [localOverrides, setLocalOverrides] = useState<Record<string, string>>({});
 
   const canvas     = overrideCanvas    ?? theme.canvas;
   const ink        = overrideAccents[0] ?? theme.accents[0] ?? DEFAULT_INK;
@@ -243,6 +243,54 @@ function SleepDashboardBody() {
   const ring       = overrideAccents[2] ?? theme.accents[2] ?? DEFAULT_RING;
   const atmosphere = overrideAccents[3] ?? theme.accents[3] ?? DEFAULT_ATMOSPHERE;
   const cta        = overrideAccents[4] ?? theme.accents[4] ?? DEFAULT_CTA;
+
+  // Per-element color lookup: local optimistic override → stored override → role fallback.
+  const colorFor = (elementId: string, fallback: string): string =>
+    localOverrides[elementId] ?? theme.overrides?.[elementId] ?? fallback;
+
+  // Writes a per-element color override to the studio_themes.overrides JSONB
+  // column. Optimistic: local state updates instantly, Supabase write happens
+  // in background, realtime subscription reconciles.
+  async function saveOverride(
+    elementId: string,
+    label: string,
+    next: string,
+    opts?: { silent?: boolean }
+  ) {
+    const previous = localOverrides[elementId] ?? theme.overrides?.[elementId];
+
+    // Optimistic local update
+    setLocalOverrides((curr) => ({ ...curr, [elementId]: next }));
+
+    // Persist: merge into the stored overrides map
+    const merged = { ...(theme.overrides ?? {}), ...localOverrides, [elementId]: next };
+    await getSupabase()
+      .from("studio_themes")
+      .update({ overrides: merged })
+      .eq("route", "/sleep");
+
+    if (!opts?.silent) {
+      edit?.showToast({
+        label,
+        message: "Saved",
+        onUndo: async () => {
+          if (previous === undefined) {
+            // Remove from both local state and stored map
+            setLocalOverrides((curr) => {
+              const next = { ...curr };
+              delete next[elementId];
+              return next;
+            });
+            const cleared = { ...(theme.overrides ?? {}), ...localOverrides };
+            delete cleared[elementId];
+            await getSupabase().from("studio_themes").update({ overrides: cleared }).eq("route", "/sleep");
+          } else {
+            await saveOverride(elementId, label, previous, { silent: true });
+          }
+        },
+      });
+    }
+  }
 
   const [entries, setEntries] = useState<SleepEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -410,7 +458,7 @@ function SleepDashboardBody() {
         atmosphere={atmosphere}
         onEditCanvas={() =>
           edit?.setActive({
-            kind: { type: "canvas" },
+            id: "canvas",
             label: ROLE_LABEL.canvas,
             description:
               "The color filling the page behind everything — the warm orange you see around the edges of every card, outside the dot pattern.",
@@ -420,7 +468,7 @@ function SleepDashboardBody() {
         }
         onEditAtmosphere={() =>
           edit?.setActive({
-            kind: { type: "accent", slot: 3 },
+            id: "accent-3",
             label: ROLE_LABEL["accent-3"],
             description:
               "The soft halo behind the donut card and the gentle fill color under the TREND chart line. This sits between the page background and the cards — the quiet atmospheric layer.",
@@ -433,18 +481,18 @@ function SleepDashboardBody() {
       <div className="content-width" style={{ padding: "38px 24px 24px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <Editable
-            kind={{ type: "accent", slot: 0 }}
-            label="Highlight Text"
-            description="Color used for the big 'How You Slept' headline, the small section labels (TREND, YOUR ENTRIES, RATING SCALE), and the score number inside the donut. Changing this affects every highlight text on the page."
-            value={ink}
-            onChange={(v) => saveAccent(0, v)}
+            id="headline"
+            label="Headline"
+            description="The big 'How You Slept' title at the top of the page. Just this headline — nothing else."
+            value={colorFor("headline", ink)}
+            onChange={(v) => saveOverride("headline", "Headline", v)}
           >
             <h1
               style={{
                 fontFamily: "'The Psychedelic Peace', 'Playfair Display', Georgia, serif",
                 fontSize: "clamp(48px, 11vw, 92px)",
                 fontWeight: 400,
-                color: ink,
+                color: colorFor("headline", ink),
                 lineHeight: 0.9,
                 margin: 0,
               }}
@@ -478,16 +526,16 @@ function SleepDashboardBody() {
       {latest && (
         <div className="content-width" style={{ padding: "0 24px 28px" }}>
           <Editable
-            kind={{ type: "accent", slot: 1 }}
-            label="Card Background"
-            description="The yellow-orange fill behind every card on this page (the donut card, the LOG A NIGHT box, the TREND card, YOUR ENTRIES, RATING SCALE, and the research-quote card). Changing this recolors every card at once."
-            value={surface}
-            onChange={(v) => saveAccent(1, v)}
+            id="donut-card-bg"
+            label="Donut Card Background"
+            description="Just the background of the card containing the big score donut. Changing this only affects this one card."
+            value={colorFor("donut-card-bg", surface)}
+            onChange={(v) => saveOverride("donut-card-bg", "Donut Card Background", v)}
           >
             <div
               style={{
-                background: surface,
-                border: `1px solid ${surface}`,
+                background: colorFor("donut-card-bg", surface),
+                border: `1px solid ${colorFor("donut-card-bg", surface)}`,
                 borderRadius: 28,
                 padding: "28px 24px 24px",
                 display: "flex",
@@ -498,13 +546,18 @@ function SleepDashboardBody() {
               }}
             >
               <Editable
-                kind={{ type: "accent", slot: 2 }}
-                label="Donut Ring & Trend Line"
-                description="The ring around the sleep score, the line on the TREND chart, the dot pattern on the page background, and the 'LOG A NIGHT' heading. This is the page's strongest visual signal."
-                value={ring}
-                onChange={(v) => saveAccent(2, v)}
+                id="donut-ring"
+                label="Donut Ring"
+                description="Just the colored ring around the sleep score number in the middle of the card."
+                value={colorFor("donut-ring", ring)}
+                onChange={(v) => saveOverride("donut-ring", "Donut Ring", v)}
               >
-                <DonutChart score={latest.score} averageScore={averageScore} ring={ring} ink={ink} />
+                <DonutChart
+                  score={latest.score}
+                  averageScore={averageScore}
+                  ring={colorFor("donut-ring", ring)}
+                  ink={colorFor("donut-number", ink)}
+                />
               </Editable>
             </div>
           </Editable>
@@ -513,10 +566,25 @@ function SleepDashboardBody() {
 
       {/* Add entry */}
       <div className="content-width" style={{ padding: "0 24px 24px" }}>
-        <div style={{ background: surface, border: `1px solid ${surface}`, borderRadius: 28, padding: "24px" }}>
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: ring }}>
-            LOG A NIGHT
-          </span>
+        <Editable
+          id="log-card-bg"
+          label="Log Night Card Background"
+          description="Just the background of the 'LOG A NIGHT' card. Only this card is recolored."
+          value={colorFor("log-card-bg", surface)}
+          onChange={(v) => saveOverride("log-card-bg", "Log Night Card Background", v)}
+        >
+        <div style={{ background: colorFor("log-card-bg", surface), border: `1px solid ${colorFor("log-card-bg", surface)}`, borderRadius: 28, padding: "24px" }}>
+          <Editable
+            id="log-heading"
+            label="LOG A NIGHT Heading"
+            description="Just the big 'LOG A NIGHT' text above the date and score inputs."
+            value={colorFor("log-heading", ring)}
+            onChange={(v) => saveOverride("log-heading", "LOG A NIGHT Heading", v)}
+          >
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: colorFor("log-heading", ring), display: "block" }}>
+              LOG A NIGHT
+            </span>
+          </Editable>
           <div style={{ display: "flex", gap: 12, marginTop: 16, alignItems: "flex-end", flexWrap: "wrap" as const }}>
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
               <label style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "#FFFFFF", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Date</label>
@@ -540,63 +608,97 @@ function SleepDashboardBody() {
               </select>
             </div>
             <Editable
-              kind={{ type: "accent", slot: 4 }}
+              id="add-button"
               label="Add Button"
-              description="The 'Add' button and the color of any error message banner. Also used as the vertical accent bar on the research-quote card at the bottom of the page."
-              value={cta}
-              onChange={(v) => saveAccent(4, v)}
+              description="The 'Add' button that saves a sleep entry."
+              value={colorFor("add-button", cta)}
+              onChange={(v) => saveOverride("add-button", "Add Button", v)}
               inline
             >
               <button
                 onClick={addEntry}
                 disabled={saving}
-                style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", background: added ? ring : cta, color: "#FFFFFF", border: "none", borderRadius: 8, padding: "10px 20px", cursor: saving ? "wait" : "pointer", transition: "background 0.3s", opacity: saving ? 0.7 : 1 }}
+                style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", background: added ? ring : colorFor("add-button", cta), color: "#FFFFFF", border: "none", borderRadius: 8, padding: "10px 20px", cursor: saving ? "wait" : "pointer", transition: "background 0.3s", opacity: saving ? 0.7 : 1 }}
               >
                 {added ? "✓ Added" : saving ? "Saving..." : "Add"}
               </button>
             </Editable>
           </div>
         </div>
+        </Editable>
       </div>
 
       {/* Area chart — trend */}
       {entries.length >= 2 && (
         <div className="content-width" style={{ padding: "0 24px 24px" }}>
+          <Editable
+            id="trend-card-bg"
+            label="Trend Card Background"
+            description="Just the background of the TREND card (the area chart showing your recent scores)."
+            value={colorFor("trend-card-bg", surface)}
+            onChange={(v) => saveOverride("trend-card-bg", "Trend Card Background", v)}
+          >
           <div
             style={{
-              background: surface,
-              border: `1px solid ${surface}`,
+              background: colorFor("trend-card-bg", surface),
+              border: `1px solid ${colorFor("trend-card-bg", surface)}`,
               borderRadius: 28,
               padding: "24px 20px",
             }}
           >
-            <span
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                color: ink,
-                paddingLeft: 8,
-              }}
+            <Editable
+              id="trend-label"
+              label="TREND Label"
+              description="Just the small 'TREND' uppercase label above the area chart."
+              value={colorFor("trend-label", ink)}
+              onChange={(v) => saveOverride("trend-label", "TREND Label", v)}
+              inline
             >
-              TREND
-            </span>
+              <span
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: colorFor("trend-label", ink),
+                  paddingLeft: 8,
+                }}
+              >
+                TREND
+              </span>
+            </Editable>
             <div style={{ marginTop: 16 }}>
-              <AreaChart data={entries} line={ring} fill={`${atmosphere}55`} label={ink} />
+              <AreaChart data={entries} line={colorFor("chart-line", ring)} fill={`${atmosphere}55`} label={colorFor("chart-labels", ink)} />
             </div>
           </div>
+          </Editable>
         </div>
       )}
 
       {/* Logged entries — editable */}
       {entries.length > 0 && (
         <div className="content-width" style={{ padding: "0 24px 24px" }}>
-          <div style={{ background: surface, border: `1px solid ${surface}`, borderRadius: 28, padding: "24px" }}>
-            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: ink }}>
-              YOUR ENTRIES
-            </span>
+          <Editable
+            id="entries-card-bg"
+            label="Your Entries Card Background"
+            description="Just the background of the 'YOUR ENTRIES' card (the list of logged nights with edit/delete buttons)."
+            value={colorFor("entries-card-bg", surface)}
+            onChange={(v) => saveOverride("entries-card-bg", "Your Entries Card Background", v)}
+          >
+          <div style={{ background: colorFor("entries-card-bg", surface), border: `1px solid ${colorFor("entries-card-bg", surface)}`, borderRadius: 28, padding: "24px" }}>
+            <Editable
+              id="entries-label"
+              label="YOUR ENTRIES Label"
+              description="Just the small 'YOUR ENTRIES' uppercase label above the list of logged nights."
+              value={colorFor("entries-label", ink)}
+              onChange={(v) => saveOverride("entries-label", "YOUR ENTRIES Label", v)}
+              inline
+            >
+              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: colorFor("entries-label", ink) }}>
+                YOUR ENTRIES
+              </span>
+            </Editable>
             <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 20, overflow: "hidden", border: `1px solid ${atmosphere}48` }}>
               {entriesDesc.map((e, i) => {
                 const rating = SLEEP_RATINGS.find(r => r.score === e.score);
@@ -628,15 +730,32 @@ function SleepDashboardBody() {
               })}
             </div>
           </div>
+          </Editable>
         </div>
       )}
 
       {/* Rating scale reference */}
       <div className="content-width" style={{ padding: "0 24px 24px" }}>
-        <div style={{ background: surface, border: `1px solid ${surface}`, borderRadius: 28, padding: "24px" }}>
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: ink }}>
-            RATING SCALE
-          </span>
+        <Editable
+          id="rating-card-bg"
+          label="Rating Scale Card Background"
+          description="Just the background of the 'RATING SCALE' card at the bottom that explains what each score means."
+          value={colorFor("rating-card-bg", surface)}
+          onChange={(v) => saveOverride("rating-card-bg", "Rating Scale Card Background", v)}
+        >
+        <div style={{ background: colorFor("rating-card-bg", surface), border: `1px solid ${colorFor("rating-card-bg", surface)}`, borderRadius: 28, padding: "24px" }}>
+          <Editable
+            id="rating-label"
+            label="RATING SCALE Label"
+            description="Just the small 'RATING SCALE' uppercase label above the 1–10 quality reference list."
+            value={colorFor("rating-label", ink)}
+            onChange={(v) => saveOverride("rating-label", "RATING SCALE Label", v)}
+            inline
+          >
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: colorFor("rating-label", ink) }}>
+              RATING SCALE
+            </span>
+          </Editable>
           <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 20, overflow: "hidden", border: `1px solid ${atmosphere}48` }}>
             {SLEEP_RATINGS.map((r, i) => {
               const scoreColor = getAverageColor(r.score);
@@ -654,28 +773,45 @@ function SleepDashboardBody() {
             })}
           </div>
         </div>
+        </Editable>
       </div>
 
       {/* CHI research note */}
       <div className="content-width" style={{ padding: "0 24px 40px" }}>
+        <Editable
+          id="quote-card-bg"
+          label="Research Quote Card Background"
+          description="Just the background of the italic research-quote card at the very bottom of the page."
+          value={colorFor("quote-card-bg", surface)}
+          onChange={(v) => saveOverride("quote-card-bg", "Research Quote Card Background", v)}
+        >
         <div
           style={{
-            background: surface,
-            border: `1px solid ${surface}`,
+            background: colorFor("quote-card-bg", surface),
+            border: `1px solid ${colorFor("quote-card-bg", surface)}`,
             borderRadius: 28,
             padding: "24px",
             display: "flex",
             gap: 16,
           }}
         >
-          <div
-            style={{
-              width: 3,
-              background: cta,
-              borderRadius: 2,
-              flexShrink: 0,
-            }}
-          />
+          <Editable
+            id="quote-bar"
+            label="Research Quote Accent Bar"
+            description="Just the thin vertical colored bar to the left of the italic research quote."
+            value={colorFor("quote-bar", cta)}
+            onChange={(v) => saveOverride("quote-bar", "Research Quote Accent Bar", v)}
+          >
+            <div
+              style={{
+                width: 3,
+                height: "100%",
+                background: colorFor("quote-bar", cta),
+                borderRadius: 2,
+                flexShrink: 0,
+              }}
+            />
+          </Editable>
           <div>
             <p
               style={{
@@ -700,6 +836,7 @@ function SleepDashboardBody() {
             </span>
           </div>
         </div>
+        </Editable>
       </div>
     </div>
   );

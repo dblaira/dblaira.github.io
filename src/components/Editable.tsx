@@ -1,17 +1,17 @@
 "use client";
 
 import { ReactNode } from "react";
-import { useEditMode, type EditableKind } from "@/lib/useEditMode";
+import { useEditMode } from "@/lib/useEditMode";
 
 /**
  * Wraps a region of the page so it becomes interactive in edit mode.
  *
- * When edit mode is OFF: renders children untouched.
- * When edit mode is ON: renders children inside a dashed outline with a small
- * floating label, and tapping the region opens the color picker panel.
+ * Each Editable has a unique string id. In edit mode, the region gets a thin
+ * dashed outline plus a floating label; tapping it opens the color sheet
+ * bound to that id. Off: renders children untouched.
  */
 export function Editable({
-  kind,
+  id,
   label,
   description,
   value,
@@ -19,7 +19,7 @@ export function Editable({
   children,
   inline = false,
 }: {
-  kind: EditableKind;
+  id: string;
   label: string;
   description: string;
   value: string;
@@ -31,18 +31,14 @@ export function Editable({
   const ctx = useEditMode();
   if (!ctx || !ctx.enabled) return <>{children}</>;
 
-  const isActive =
-    ctx.active &&
-    ctx.active.kind.type === kind.type &&
-    (kind.type === "canvas" ||
-      (ctx.active.kind.type === "accent" && kind.type === "accent" && ctx.active.kind.slot === kind.slot));
+  const isActive = ctx.active?.id === id;
 
   return (
     <div
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();
-        ctx.setActive({ kind, label, description, currentValue: value, onChange });
+        ctx.setActive({ id, label, description, currentValue: value, onChange });
       }}
       style={{
         position: "relative",

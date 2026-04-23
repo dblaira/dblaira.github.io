@@ -10,14 +10,12 @@ import {
   createElement,
 } from "react";
 
-// A single editable thing. "canvas" edits the page background field; "accent"
-// picks a slot (index) in the theme.accents array.
-export type EditableKind =
-  | { type: "canvas" }
-  | { type: "accent"; slot: number };
-
+// A single editable thing identified by a unique string id (e.g. "headline",
+// "trend-label", "accent-3", "canvas"). The onChange is provided by whoever
+// wrapped the region; it decides where the new color gets stored (localStorage
+// for per-element overrides, Supabase for the shared palette chips).
 export type ActiveEdit = {
-  kind: EditableKind;
+  id: string;
   label: string;
   description: string;
   currentValue: string;

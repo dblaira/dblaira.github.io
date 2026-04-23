@@ -21,6 +21,7 @@ export type Theme = {
   body_font: string;
   component_kind: ComponentKind;
   notes: string;
+  overrides: Record<string, string>;
 };
 
 const FALLBACK: Theme = {
@@ -33,6 +34,7 @@ const FALLBACK: Theme = {
   body_font: "'Inter', -apple-system, sans-serif",
   component_kind: "feed-tiles",
   notes: "",
+  overrides: {},
 };
 
 export function useTheme(route: string): Theme {
@@ -48,7 +50,10 @@ export function useTheme(route: string): Theme {
         .select("*")
         .eq("route", route)
         .maybeSingle();
-      if (!cancelled && data) setTheme(data as Theme);
+      if (!cancelled && data) {
+        const row = data as Theme;
+        setTheme({ ...row, overrides: row.overrides ?? {} });
+      }
     };
 
     load();
@@ -59,7 +64,10 @@ export function useTheme(route: string): Theme {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "studio_themes", filter: `route=eq.${route}` },
         (payload) => {
-          if (!cancelled) setTheme(payload.new as Theme);
+          if (!cancelled) {
+            const row = payload.new as Theme;
+            setTheme({ ...row, overrides: row.overrides ?? {} });
+          }
         }
       )
       .subscribe();

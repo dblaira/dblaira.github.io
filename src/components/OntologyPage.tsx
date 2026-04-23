@@ -4,9 +4,16 @@ import { useState, useEffect } from "react";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { OntologyNetwork } from "@/components/OntologyNetwork";
 import { useTheme } from "@/lib/useTheme";
+import { EditModeProvider } from "@/lib/useEditMode";
+import { EditColorSheet } from "@/components/EditColorSheet";
+import { EditToast } from "@/components/EditToast";
+import { usePageEditing } from "@/lib/usePageEditing";
+import { Editable } from "@/components/Editable";
+import { fillStyle } from "@/lib/fills";
 import type { CorrelationPair, CategoryStats } from "@/lib/types";
 
 const CRIMSON = "#DC143C";
+const DEFAULT_NETWORK_CARD = "#FFFFFF";
 
 interface AnalysisRow {
   correlations: CorrelationPair[];
@@ -20,7 +27,18 @@ function splitCorrelationPairs(pairs: CorrelationPair[]): { instant: Correlation
 }
 
 export default function OntologyPage() {
+  return (
+    <EditModeProvider>
+      <OntologyPageBody />
+      <EditColorSheet />
+      <EditToast />
+    </EditModeProvider>
+  );
+}
+
+function OntologyPageBody() {
   const theme = useTheme("/ontology");
+  const { colorFor, fillFor, saveOverride } = usePageEditing("/ontology");
   const [correlations, setCorrelations] = useState<CorrelationPair[]>([]);
   const [lagged, setLagged] = useState<CorrelationPair[]>([]);
   const [stats, setStats] = useState<CategoryStats[]>([]);
@@ -84,39 +102,65 @@ export default function OntologyPage() {
   return (
     <div style={{ minHeight: "100vh", background: "#0A0A0A" }}>
       <SavySiteHeader />
-      <div style={{ background: theme.canvas, minHeight: "calc(100vh - 60px)" }}>
+      <div style={{ ...fillStyle(fillFor("canvas", theme.canvas), theme.canvas), minHeight: "calc(100vh - 60px)" }}>
         <div className="content-width" style={{ padding: "40px 24px 16px" }}>
-          <span
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-              color: CRIMSON,
-            }}
+          <Editable
+            id="ontology-eyebrow"
+            label="ONTOLOGY Eyebrow"
+            description="The small crimson 'ONTOLOGY' label above the title."
+            value={colorFor("ontology-eyebrow", CRIMSON)}
+            onChange={(v) => saveOverride("ontology-eyebrow", "ONTOLOGY Eyebrow", v)}
+            allowFills={false}
+            inline
           >
-            ONTOLOGY
-          </span>
-          <h1
-            style={{
-              fontFamily: theme.heading_font,
-              fontSize: "clamp(32px, 7vw, 44px)",
-              fontWeight: 400,
-              fontStyle: "italic",
-              color: theme.ink,
-              lineHeight: 1.15,
-              margin: "8px 0 0 0",
-            }}
+            <span
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: colorFor("ontology-eyebrow", CRIMSON),
+              }}
+            >
+              ONTOLOGY
+            </span>
+          </Editable>
+          <Editable
+            id="ontology-headline"
+            label="Adam's Ontology Headline"
+            description="The big italic title."
+            value={colorFor("ontology-headline", theme.ink)}
+            onChange={(v) => saveOverride("ontology-headline", "Adam's Ontology Headline", v)}
+            allowFills={false}
           >
-            Adam&rsquo;s Ontology
-          </h1>
+            <h1
+              style={{
+                fontFamily: theme.heading_font,
+                fontSize: "clamp(32px, 7vw, 44px)",
+                fontWeight: 400,
+                fontStyle: "italic",
+                color: colorFor("ontology-headline", theme.ink),
+                lineHeight: 1.15,
+                margin: "8px 0 0 0",
+              }}
+            >
+              Adam&rsquo;s Ontology
+            </h1>
+          </Editable>
         </div>
 
         <div className="content-width" style={{ padding: "0 16px 40px" }}>
+          <Editable
+            id="network-card-bg"
+            label="Network Card Background"
+            description="The card holding the 13-category network graph. The node and edge colors inside are not editable — they encode data meaning."
+            value={fillFor("network-card-bg", DEFAULT_NETWORK_CARD)}
+            onChange={(v) => saveOverride("network-card-bg", "Network Card Background", v)}
+          >
           <div
             style={{
-              background: "#FFFFFF",
+              ...fillStyle(fillFor("network-card-bg", DEFAULT_NETWORK_CARD), DEFAULT_NETWORK_CARD),
               borderRadius: 16,
               padding: "24px 16px",
               boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
@@ -141,6 +185,7 @@ export default function OntologyPage() {
               </div>
             )}
           </div>
+          </Editable>
         </div>
       </div>
     </div>

@@ -6,15 +6,21 @@ import { getSupabase } from "@/lib/supabase";
 import { useTheme } from "@/lib/useTheme";
 import { beginEntryEdit } from "@/components/sleepDashboardActions";
 
-// Psychedelic poster palette
-const PSY_BG     = "#FF7A1E";
-const PSY_PURPLE = "#FF9A1F";
-const PSY_CYAN   = "#FFB347";
-const PSY_YELLOW = "#FFEB00";
-const PSY_PINK   = "#FFC928";
-const PSY_RED    = "#FF6A00";
-const PSY_MAROON = "#FFB347";
-const PSY_CREAM  = "#FFF1CC";
+// Tier colors encode data meaning (quality of score), not branding.
+// These stay fixed so "red = bad, purple = great" never changes.
+const TIER_VERY_HIGH = "#FF9A1F"; // 9-10
+const TIER_HIGH      = "#FFB347"; // 7-8
+const TIER_MID       = "#FFEB00"; // 5-6
+const TIER_LOW       = "#FFC928"; // 3-4
+const TIER_VERY_LOW  = "#FF6A00"; // 0-2
+
+// Brand/look defaults used if Studio hasn't supplied accents yet.
+const DEFAULT_INK        = "#FFE36A"; // headline + section labels + score number
+const DEFAULT_SURFACE    = "#FEBF14"; // card backgrounds
+const DEFAULT_RING       = "#FFEB00"; // donut stroke + area-chart line
+const DEFAULT_ATMOSPHERE = "#FFC928"; // page dot pattern tint
+const DEFAULT_CTA        = "#FF9A1F"; // Add button + error accent
+
 const ROLLING_WINDOW_SIZE = 7;
 
 const SLEEP_RATINGS = [
@@ -50,21 +56,30 @@ function formatDayOnly(date: string): string {
 }
 
 function getAverageColor(averageScore: number | null): string {
-  if (averageScore === null) return PSY_RED;
-  if (averageScore >= 9) return PSY_PURPLE; // 9-10
-  if (averageScore >= 7) return PSY_CYAN;   // 7-8
-  if (averageScore >= 5) return PSY_YELLOW; // 5-6
-  if (averageScore >= 3) return PSY_PINK;   // 3-4
-  return PSY_RED;                           // 0-2
+  if (averageScore === null) return TIER_VERY_LOW;
+  if (averageScore >= 9) return TIER_VERY_HIGH;
+  if (averageScore >= 7) return TIER_HIGH;
+  if (averageScore >= 5) return TIER_MID;
+  if (averageScore >= 3) return TIER_LOW;
+  return TIER_VERY_LOW;
 }
 
-function DonutChart({ score, averageScore }: { score: number; averageScore: number | null }) {
+function DonutChart({
+  score,
+  averageScore,
+  ring,
+  ink,
+}: {
+  score: number;
+  averageScore: number | null;
+  ring: string;
+  ink: string;
+}) {
   const size = 240;
   const strokeWidth = 18;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = (score / 10) * circumference;
-  const color = "#FFEB00";
 
   return (
     <div style={{ position: "relative", width: size, height: size }}>
@@ -74,12 +89,12 @@ function DonutChart({ score, averageScore }: { score: number; averageScore: numb
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={color}
+          stroke={ring}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={`${progress} ${circumference - progress}`}
           strokeDashoffset={circumference * 0.25}
-          style={{ transition: "stroke-dasharray 0.8s ease", filter: "drop-shadow(0 0 12px rgba(255,235,0,0.32))" }}
+          style={{ transition: "stroke-dasharray 0.8s ease" }}
         />
       </svg>
       <div
@@ -100,7 +115,7 @@ function DonutChart({ score, averageScore }: { score: number; averageScore: numb
             fontFamily: "'The Psychedelic Peace', 'Playfair Display', Georgia, serif",
             fontSize: 76,
             fontWeight: 400,
-            color: "#FFD54A",
+            color: ink,
             lineHeight: 0.92,
           }}
         >
@@ -111,7 +126,17 @@ function DonutChart({ score, averageScore }: { score: number; averageScore: numb
   );
 }
 
-function AreaChart({ data }: { data: SleepEntry[] }) {
+function AreaChart({
+  data,
+  line,
+  fill,
+  label,
+}: {
+  data: SleepEntry[];
+  line: string;
+  fill: string;
+  label: string;
+}) {
   const width = 320;
   const height = 140;
   const padX = 32;
@@ -151,12 +176,12 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
         />
       ))}
 
-      <path d={areaPath} fill="rgba(177, 74, 0, 0.55)" />
-      <path d={linePath} fill="none" stroke={PSY_PURPLE} strokeWidth={2.5} strokeLinejoin="round" />
+      <path d={areaPath} fill={fill} />
+      <path d={linePath} fill="none" stroke={line} strokeWidth={2.5} strokeLinejoin="round" />
 
       {points.map((p, i) => (
         <g key={i}>
-          <circle cx={p.x} cy={p.y} r={4} fill="rgba(177, 74, 0, 1)" stroke={PSY_PURPLE} strokeWidth={2} />
+          <circle cx={p.x} cy={p.y} r={4} fill={line} stroke={line} strokeWidth={2} />
           {(i === points.length - 1 || i % pointLabelStep === 0) && (
             <text
               x={p.x}
@@ -166,7 +191,7 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
                 fontFamily: "'Inter', sans-serif",
                 fontSize: 11,
                 fontWeight: 600,
-                fill: "#FFEB00",
+                fill: label,
               }}
             >
               {p.score}
@@ -180,6 +205,15 @@ function AreaChart({ data }: { data: SleepEntry[] }) {
 
 export default function SleepDashboard() {
   const theme = useTheme("/sleep");
+  // Derive the five visual roles from Studio's accent slots, with fallbacks
+  // that preserve the original psychedelic orange/yellow look until Studio
+  // supplies values.
+  const ink        = theme.accents[0] ?? DEFAULT_INK;
+  const surface    = theme.accents[1] ?? DEFAULT_SURFACE;
+  const ring       = theme.accents[2] ?? DEFAULT_RING;
+  const atmosphere = theme.accents[3] ?? DEFAULT_ATMOSPHERE;
+  const cta        = theme.accents[4] ?? DEFAULT_CTA;
+
   const [entries, setEntries] = useState<SleepEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -281,7 +315,7 @@ export default function SleepDashboard() {
     <div
       style={{
         backgroundColor: theme.canvas,
-        backgroundImage: "radial-gradient(circle, rgba(255,235,0,0.78) 0 3px, transparent 3px), radial-gradient(circle, rgba(255,201,40,0.22) 0 88px, transparent 88px)",
+        backgroundImage: `radial-gradient(circle, ${ring} 0 3px, transparent 3px), radial-gradient(circle, ${atmosphere}40 0 88px, transparent 88px)`,
         backgroundSize: "18px 18px, 320px 320px",
         backgroundPosition: "0 0, 50% 120px",
         minHeight: "100vh",
@@ -296,7 +330,7 @@ export default function SleepDashboard() {
               fontFamily: "'The Psychedelic Peace', 'Playfair Display', Georgia, serif",
               fontSize: "clamp(48px, 11vw, 92px)",
               fontWeight: 400,
-              color: "#FFE36A",
+              color: ink,
               lineHeight: 0.9,
               margin: 0,
             }}
@@ -312,13 +346,13 @@ export default function SleepDashboard() {
         <div className="content-width" style={{ padding: "0 24px 16px" }}>
           <div
             style={{
-              background: "rgba(86,0,204,0.06)",
-              border: `1px solid ${PSY_PURPLE}30`,
+              background: "rgba(0,0,0,0.06)",
+              border: `1px solid ${cta}`,
               borderRadius: 12,
               padding: "12px 16px",
               fontFamily: "'Inter', sans-serif",
               fontSize: 13,
-              color: PSY_PURPLE,
+              color: cta,
             }}
           >
             {error}
@@ -330,8 +364,8 @@ export default function SleepDashboard() {
         <div className="content-width" style={{ padding: "0 24px 28px" }}>
           <div
             style={{
-              background: "rgb(254, 191, 20)",
-              border: "1px solid rgba(254, 191, 20, 0.32)",
+              background: surface,
+              border: `1px solid ${surface}`,
               borderRadius: 28,
               padding: "28px 24px 24px",
               display: "flex",
@@ -341,15 +375,15 @@ export default function SleepDashboard() {
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
             }}
           >
-            <DonutChart score={latest.score} averageScore={averageScore} />
+            <DonutChart score={latest.score} averageScore={averageScore} ring={ring} ink={ink} />
           </div>
         </div>
       )}
 
       {/* Add entry */}
       <div className="content-width" style={{ padding: "0 24px 24px" }}>
-        <div style={{ background: "rgb(254, 191, 20)", border: "1px solid rgba(254, 191, 20, 0.32)", borderRadius: 28, padding: "24px" }}>
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "#FFEB00" }}>
+        <div style={{ background: surface, border: `1px solid ${surface}`, borderRadius: 28, padding: "24px" }}>
+          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: ring }}>
             LOG A NIGHT
           </span>
           <div style={{ display: "flex", gap: 12, marginTop: 16, alignItems: "flex-end", flexWrap: "wrap" as const }}>
@@ -377,7 +411,7 @@ export default function SleepDashboard() {
             <button
               onClick={addEntry}
               disabled={saving}
-              style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", background: added ? PSY_CYAN : PSY_PURPLE, color: "#FFFFFF", border: "none", borderRadius: 8, padding: "10px 20px", cursor: saving ? "wait" : "pointer", transition: "background 0.3s", opacity: saving ? 0.7 : 1 }}
+              style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", background: added ? ring : cta, color: "#FFFFFF", border: "none", borderRadius: 8, padding: "10px 20px", cursor: saving ? "wait" : "pointer", transition: "background 0.3s", opacity: saving ? 0.7 : 1 }}
             >
               {added ? "✓ Added" : saving ? "Saving..." : "Add"}
             </button>
@@ -390,8 +424,8 @@ export default function SleepDashboard() {
         <div className="content-width" style={{ padding: "0 24px 24px" }}>
           <div
             style={{
-              background: "rgb(254, 191, 20)",
-              border: "1px solid rgba(254, 191, 20, 0.32)",
+              background: surface,
+              border: `1px solid ${surface}`,
               borderRadius: 28,
               padding: "24px 20px",
             }}
@@ -403,14 +437,14 @@ export default function SleepDashboard() {
                 fontWeight: 600,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
-                color: "#FFE36A",
+                color: ink,
                 paddingLeft: 8,
               }}
             >
               TREND
             </span>
             <div style={{ marginTop: 16 }}>
-              <AreaChart data={entries} />
+              <AreaChart data={entries} line={ring} fill={`${atmosphere}55`} label={ink} />
             </div>
           </div>
         </div>
@@ -419,14 +453,14 @@ export default function SleepDashboard() {
       {/* Logged entries — editable */}
       {entries.length > 0 && (
         <div className="content-width" style={{ padding: "0 24px 24px" }}>
-          <div style={{ background: "rgb(254, 191, 20)", border: "1px solid rgba(254, 191, 20, 0.32)", borderRadius: 28, padding: "24px" }}>
-            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "#FFE36A" }}>
+          <div style={{ background: surface, border: `1px solid ${surface}`, borderRadius: 28, padding: "24px" }}>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: ink }}>
               YOUR ENTRIES
             </span>
-            <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255, 154, 31, 0.28)" }}>
+            <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 20, overflow: "hidden", border: `1px solid ${atmosphere}48` }}>
               {entriesDesc.map((e, i) => {
                 const rating = SLEEP_RATINGS.find(r => r.score === e.score);
-                const bg = i % 2 === 0 ? "rgba(255, 214, 74, 0.45)" : "rgba(255, 227, 106, 0.42)";
+                const bg = i % 2 === 0 ? `${ink}66` : `${ink}55`;
                 const rollingColor = rollingColorById[e.id] ?? averageColor;
                 return (
                   <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", background: bg }}>
@@ -445,7 +479,7 @@ export default function SleepDashboard() {
                     <button
                       onClick={() => deleteEntry(e.id)}
                       title="Delete"
-                      style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, color: PSY_RED, background: "rgba(252,0,25,0.08)", border: "none", borderRadius: 6, padding: "6px 10px", cursor: "pointer" }}
+                      style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, color: TIER_VERY_LOW, background: "rgba(252,0,25,0.08)", border: "none", borderRadius: 6, padding: "6px 10px", cursor: "pointer" }}
                     >
                       Delete
                     </button>
@@ -459,14 +493,14 @@ export default function SleepDashboard() {
 
       {/* Rating scale reference */}
       <div className="content-width" style={{ padding: "0 24px 24px" }}>
-        <div style={{ background: "rgb(254, 191, 20)", border: "1px solid rgba(254, 191, 20, 0.32)", borderRadius: 28, padding: "24px" }}>
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "#FFE36A" }}>
+        <div style={{ background: surface, border: `1px solid ${surface}`, borderRadius: 28, padding: "24px" }}>
+          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: ink }}>
             RATING SCALE
           </span>
-          <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255, 154, 31, 0.28)" }}>
+          <div style={{ marginTop: 16, display: "flex", flexDirection: "column" as const, borderRadius: 20, overflow: "hidden", border: `1px solid ${atmosphere}48` }}>
             {SLEEP_RATINGS.map((r, i) => {
               const scoreColor = getAverageColor(r.score);
-              const bg = i % 2 === 0 ? "rgba(255, 214, 74, 0.45)" : "rgba(255, 227, 106, 0.42)";
+              const bg = i % 2 === 0 ? `${ink}66` : `${ink}55`;
               return (
                 <div key={r.score} style={{ display: "flex", alignItems: "center", gap: 16, padding: "14px 16px", background: bg }}>
                   <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 28, fontWeight: 700, color: scoreColor, minWidth: 32, textAlign: "right" as const, lineHeight: 1 }}>{r.score}</span>
@@ -486,8 +520,8 @@ export default function SleepDashboard() {
       <div className="content-width" style={{ padding: "0 24px 40px" }}>
         <div
           style={{
-            background: "rgb(254, 191, 20)",
-            border: "1px solid rgba(254, 191, 20, 0.32)",
+            background: surface,
+            border: `1px solid ${surface}`,
             borderRadius: 28,
             padding: "24px",
             display: "flex",
@@ -497,7 +531,7 @@ export default function SleepDashboard() {
           <div
             style={{
               width: 3,
-              background: PSY_PURPLE,
+              background: cta,
               borderRadius: 2,
               flexShrink: 0,
             }}

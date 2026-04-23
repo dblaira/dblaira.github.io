@@ -1,0 +1,72 @@
+---
+description: Always define technical terms inline so Adam never has to guess whether a word is jargon or slang
+alwaysApply: true
+---
+
+# Define every technical term the first time you use it
+
+Adam's working-patterns doc documents a vocabulary gap (Silograms 10th percentile, Vocabulary 20th). Technical names don't stick. If you use jargon without defining it, he has to guess whether you're being casual or precise.
+
+## The rule
+
+The first time a response uses any term that isn't everyday English, define it inline in plain language right next to the term.
+
+Use this format:
+
+```
+technical-term (plain-English definition)
+```
+
+The definition goes in parentheses, immediately after the term, in the same sentence. Don't save it for a footnote, glossary, or later paragraph.
+
+## Everyday English vs. jargon — how to decide
+
+Assume a reader who uses Instagram and email daily but has never opened a code editor. If that reader would pause on a word, it's jargon.
+
+When in doubt, define it.
+
+### Define these (not exhaustive)
+
+Programming/web: `component`, `prop`, `state`, `hook`, `token`, `route`, `render`, `repaint`, `commit`, `push`, `revert`, `diff`, `patch`, `branch`, `main`, `PR`, `deploy`, `build`, `CDN`, `websocket`, `webhook`, `API`, `endpoint`, `query`, `mutation`, `auth`, `middleware`, `SSR`, `CSR`, `hydration`, `bundle`, `tree shaking`, `hot reload`, `dev server`.
+
+Design/CSS: `hex`, `rgba`, `viewport`, `breakpoint`, `padding`, `margin`, `drop-shadow`, `filter`, `glyph`, `kerning`, `tracking`, `leading`, `baseline`, `em`, `rem`.
+
+Data/infra: `schema`, `table`, `upsert`, `migration`, `cache`, `env var`, `secret`, `token` (auth), `subscription` (websockets), `realtime channel`.
+
+Git: `HEAD`, `origin`, `upstream`, `rebase`, `reset`, `cherry-pick`, `force push`, `stash`, `merge conflict`.
+
+## Format examples
+
+### Bad — undefined jargon
+
+> Rewire SleepDashboard.tsx to read from theme tokens.
+
+Adam has no anchor for "rewire", "theme tokens", or even the filename style.
+
+### Good — inline definitions
+
+> Change the Sleep page's code (the file at `SleepDashboard.tsx`) so its colors come from the tokens (the six named color/font slots stored in the database) instead of hardcoded values (colors typed directly into the code).
+
+Every non-everyday term is immediately followed by plain English.
+
+## Skip definitions only when
+
+1. Adam used the exact term earlier in the same conversation (he already has the anchor).
+2. The term is a proper noun for a specific product he's already using daily (Supabase, Vercel, Cursor, Safari, Next.js).
+3. The term is a direct file or function name he'll see in his own code and will copy-paste, not speak.
+
+## When unsure, prefer plain English over the technical term
+
+If you can say the same thing without the jargon at all, do that and skip the definition. Example: say "push the change to the live site" instead of "deploy to production".
+
+## Single-word red flags to never use without definition
+
+- `state` → "what the app is currently showing / remembering"
+- `props` → "inputs passed into a component"
+- `hook` → "a small reusable function that lets a component remember things or fetch data"
+- `ref` → "a direct handle to a UI element"
+- `bundle` → "the packaged-up JavaScript that gets shipped to the browser"
+- `schema` → "the shape of a database table (what columns it has)"
+- `subscription` → "a live connection that pushes updates automatically"
+- `websocket` → "a persistent two-way connection between browser and server"
+- `commit` / `push` / `deploy` → "save a change to git history / upload to GitHub / make it live on the internet"

@@ -59,7 +59,13 @@ const SEED_THEMES: Theme[] = [
     label: "Sleep",
     canvas: "#FF7A1E",
     ink: "#1A1A1A",
-    accents: ["#1D5D9B", "#0A0A0A", "#FFFFFF"],
+    // Order matters — these map to visual roles in SleepDashboard:
+    // [0] ink: headline + section labels + entry-row tint
+    // [1] surface: card backgrounds
+    // [2] ring: donut stroke + area-chart line + log-a-night heading
+    // [3] atmosphere: page dot overlay + chart fill
+    // [4] cta: Add button + error accent + pull-quote bar
+    accents: ["#FFE36A", "#FEBF14", "#FFEB00", "#FFC928", "#FF9A1F"],
     heading_font: "'Playfair Display', serif",
     body_font: "'Inter', sans-serif",
     component_kind: "rings-grid",

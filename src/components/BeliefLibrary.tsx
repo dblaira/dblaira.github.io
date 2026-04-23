@@ -37,9 +37,11 @@ export default function BeliefLibrary() {
 
 function BeliefLibraryBody() {
   const { theme, colorFor, fillFor, saveOverride } = usePageEditing("/beliefs");
+  // Pre-existing beliefs accents were magenta + green (Studio preview palette),
+  // not ink/card — read overrides-only, fall back to built-in defaults.
   const canvas = theme.canvas || DEFAULT_BG;
-  const ink = theme.accents[0] ?? DEFAULT_INK;
-  const cardBg = theme.accents[1] ?? DEFAULT_CARD;
+  const ink = DEFAULT_INK;
+  const cardBg = DEFAULT_CARD;
 
   const [beliefs, setBeliefs] = useState<BeliefEntry[]>([]);
   const [loading, setLoading] = useState(true);

@@ -103,11 +103,13 @@ function StatusDot({ status }: { status: ExperimentCard["status"] }) {
 export default function SandboxHome() {
   const { theme, colorFor, fillFor, saveOverride } = usePageEditing("/");
 
+  // Home's existing accents array is for Studio's preview tile, not this
+  // page's rendering. Render from overrides + built-in defaults only.
   const canvas   = theme.canvas || DEFAULT_CANVAS;
-  const ink      = theme.accents[0] ?? DEFAULT_INK;
-  const titleC   = theme.accents[1] ?? DEFAULT_TITLE;
-  const cardBg   = theme.accents[2] ?? DEFAULT_CARD;
-  const stripBg  = theme.accents[3] ?? DEFAULT_SECTION_STRIP;
+  const ink      = DEFAULT_INK;
+  const titleC   = DEFAULT_TITLE;
+  const cardBg   = DEFAULT_CARD;
+  const stripBg  = DEFAULT_SECTION_STRIP;
 
   return (
     <div style={{ minHeight: "100vh", ...fillStyle(fillFor("canvas", canvas), canvas) }}>

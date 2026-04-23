@@ -3,9 +3,20 @@
 import { useState, useEffect, useCallback } from "react";
 import { getSupabase } from "@/lib/supabase";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
+import { EditModeProvider } from "@/lib/useEditMode";
+import { EditColorSheet } from "@/components/EditColorSheet";
+import { EditToast } from "@/components/EditToast";
+import { usePageEditing } from "@/lib/usePageEditing";
+import { Editable } from "@/components/Editable";
+import { fillStyle } from "@/lib/fills";
 import type { BeliefEntry, ConnectionType } from "@/lib/types";
 
 const CRIMSON = "#DC143C";
+
+// Built-in fallbacks.
+const DEFAULT_BG     = "#F5F0E8";
+const DEFAULT_INK    = "#1A1A1A";
+const DEFAULT_CARD   = "#FFFFFF";
 
 const CONNECTION_TYPES: { value: ConnectionType; label: string; color: string }[] = [
   { value: "identity_anchor", label: "Identity Anchor", color: "#8B5CF6" },
@@ -15,6 +26,21 @@ const CONNECTION_TYPES: { value: ConnectionType; label: string; color: string }[
 ];
 
 export default function BeliefLibrary() {
+  return (
+    <EditModeProvider>
+      <BeliefLibraryBody />
+      <EditColorSheet />
+      <EditToast />
+    </EditModeProvider>
+  );
+}
+
+function BeliefLibraryBody() {
+  const { theme, colorFor, fillFor, saveOverride } = usePageEditing("/beliefs");
+  const canvas = theme.canvas || DEFAULT_BG;
+  const ink = theme.accents[0] ?? DEFAULT_INK;
+  const cardBg = theme.accents[1] ?? DEFAULT_CARD;
+
   const [beliefs, setBeliefs] = useState<BeliefEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -78,56 +104,85 @@ export default function BeliefLibrary() {
   return (
     <div style={{ minHeight: "100vh", background: "#0A0A0A" }}>
       <SavySiteHeader />
-      <div style={{ background: "#F5F0E8", minHeight: "calc(100vh - 60px)" }}>
+      <div style={{ ...fillStyle(fillFor("canvas", canvas), canvas), minHeight: "calc(100vh - 60px)" }}>
         <div className="content-width" style={{ padding: "40px 24px 16px" }}>
-          <span
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-              color: CRIMSON,
-            }}
+          <Editable
+            id="beliefs-eyebrow"
+            label="BELIEFS Eyebrow"
+            description="The small crimson 'BELIEFS' label above the Belief Library title."
+            value={colorFor("beliefs-eyebrow", CRIMSON)}
+            onChange={(v) => saveOverride("beliefs-eyebrow", "BELIEFS Eyebrow", v)}
+            allowFills={false}
+            inline
           >
-            BELIEFS
-          </span>
-          <h1
-            style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: "clamp(32px, 7vw, 44px)",
-              fontWeight: 400,
-              fontStyle: "italic",
-              color: "#1A1A1A",
-              lineHeight: 1.15,
-              margin: "8px 0 0 0",
-            }}
+            <span
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: colorFor("beliefs-eyebrow", CRIMSON),
+              }}
+            >
+              BELIEFS
+            </span>
+          </Editable>
+          <Editable
+            id="beliefs-headline"
+            label="Belief Library Headline"
+            description="The big italic 'Belief Library' title."
+            value={colorFor("beliefs-headline", ink)}
+            onChange={(v) => saveOverride("beliefs-headline", "Belief Library Headline", v)}
+            allowFills={false}
           >
-            Belief Library
-          </h1>
+            <h1
+              style={{
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontSize: "clamp(32px, 7vw, 44px)",
+                fontWeight: 400,
+                fontStyle: "italic",
+                color: colorFor("beliefs-headline", ink),
+                lineHeight: 1.15,
+                margin: "8px 0 0 0",
+              }}
+            >
+              Belief Library
+            </h1>
+          </Editable>
         </div>
 
         <div className="content-width" style={{ padding: "0 24px 40px" }}>
           {/* Add button */}
           <div style={{ marginBottom: 24 }}>
-            <button
-              type="button"
-              onClick={() => setShowForm(!showForm)}
-              style={{
-                padding: "12px 24px",
-                background: showForm ? "rgba(0,0,0,0.06)" : CRIMSON,
-                color: showForm ? "#1A1A1A" : "#FFFFFF",
-                border: "none",
-                borderRadius: 8,
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}
+            <Editable
+              id="beliefs-add-button"
+              label="New Belief Button"
+              description="The crimson '+ New Belief' button that opens the create form."
+              value={colorFor("beliefs-add-button", CRIMSON)}
+              onChange={(v) => saveOverride("beliefs-add-button", "New Belief Button", v)}
+              allowFills={false}
+              inline
             >
-              {showForm ? "Cancel" : "+ New Belief"}
-            </button>
+              <button
+                type="button"
+                onClick={() => setShowForm(!showForm)}
+                style={{
+                  padding: "12px 24px",
+                  background: showForm ? "rgba(0,0,0,0.06)" : colorFor("beliefs-add-button", CRIMSON),
+                  color: showForm ? ink : "#FFFFFF",
+                  border: "none",
+                  borderRadius: 8,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "all 0.15s",
+                }}
+              >
+                {showForm ? "Cancel" : "+ New Belief"}
+              </button>
+            </Editable>
           </div>
 
           {/* Create form */}
@@ -223,13 +278,13 @@ export default function BeliefLibrary() {
             </div>
           )}
 
-          {beliefs.map((b) => {
+          {beliefs.map((b, i) => {
             const info = typeInfo(b.connection_type);
-            return (
+            const card = (
               <div
                 key={b.id}
                 style={{
-                  background: "#FFFFFF",
+                  ...fillStyle(fillFor("belief-card-bg", cardBg), cardBg),
                   borderRadius: 12,
                   padding: "20px 24px",
                   marginBottom: 12,
@@ -255,7 +310,7 @@ export default function BeliefLibrary() {
                       fontFamily: "Georgia, 'Playfair Display', serif",
                       fontSize: 16,
                       fontStyle: "italic",
-                      color: "#1A1A1A",
+                      color: colorFor("belief-quote", ink),
                       lineHeight: 1.5,
                       margin: "0 0 8px 0",
                     }}
@@ -300,6 +355,23 @@ export default function BeliefLibrary() {
                   </div>
                 </div>
               </div>
+            );
+
+            // Wrap only the first card so the outline/label show once.
+            // The override id is shared so tapping it affects every card.
+            return i === 0 ? (
+              <Editable
+                key={b.id}
+                id="belief-card-bg"
+                label="Belief Card Background"
+                description="The background behind every belief card. One override applies to all cards on this page."
+                value={fillFor("belief-card-bg", cardBg)}
+                onChange={(v) => saveOverride("belief-card-bg", "Belief Card Background", v)}
+              >
+                {card}
+              </Editable>
+            ) : (
+              card
             );
           })}
         </div>

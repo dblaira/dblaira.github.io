@@ -8,6 +8,12 @@ import { MealHistory } from "@/components/nutrition/MealHistory";
 import { FoodEditor } from "@/components/nutrition/FoodEditor";
 import { BarcodeScanner } from "@/components/nutrition/BarcodeScanner";
 import { MealTemplateEditor } from "@/components/nutrition/MealTemplateEditor";
+import { EditModeProvider } from "@/lib/useEditMode";
+import { EditColorSheet } from "@/components/EditColorSheet";
+import { EditToast } from "@/components/EditToast";
+import { usePageEditing } from "@/lib/usePageEditing";
+import { Editable } from "@/components/Editable";
+import { fillStyle } from "@/lib/fills";
 import {
   getMealsForDate, getMacroGoals, calculateDayTotals,
   getRotationFoods, createFood, searchFoods,
@@ -29,6 +35,17 @@ const GREEN = "#27AE60";
 type Tab = "today" | "history" | "library";
 
 export default function NutritionDashboard() {
+  return (
+    <EditModeProvider>
+      <NutritionDashboardBody />
+      <EditColorSheet />
+      <EditToast />
+    </EditModeProvider>
+  );
+}
+
+function NutritionDashboardBody() {
+  const { colorFor, fillFor, saveOverride } = usePageEditing("/nutrition");
   const [tab, setTab] = useState<Tab>("today");
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [meals, setMeals] = useState<Meal[]>([]);
@@ -107,24 +124,42 @@ export default function NutritionDashboard() {
 
 
   return (
-    <div style={{ background: SUN, minHeight: "100vh" }}>
+    <div style={{ ...fillStyle(fillFor("canvas", SUN), SUN), minHeight: "100vh" }}>
       <SavySiteHeader />
 
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "20px 16px 100px" }}>
         {/* Page title */}
-        <h1 style={{
-          fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 700,
-          color: CHARCOAL, marginBottom: 4, marginTop: 8,
-        }}>
-          Nutrition
-        </h1>
-        <p style={{
-          fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
-          letterSpacing: "0.1em", textTransform: "uppercase",
-          color: "rgba(44,44,44,0.5)", marginBottom: 20, marginTop: 0,
-        }}>
-          Every ounce, every macro
-        </p>
+        <Editable
+          id="nutrition-title"
+          label="Nutrition Title"
+          description="The big 'Nutrition' headline at the top of the page."
+          value={colorFor("nutrition-title", CHARCOAL)}
+          onChange={(v) => saveOverride("nutrition-title", "Nutrition Title", v)}
+          allowFills={false}
+        >
+          <h1 style={{
+            fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 700,
+            color: colorFor("nutrition-title", CHARCOAL), marginBottom: 4, marginTop: 8,
+          }}>
+            Nutrition
+          </h1>
+        </Editable>
+        <Editable
+          id="nutrition-subtitle"
+          label="Nutrition Subtitle"
+          description="The small 'EVERY OUNCE, EVERY MACRO' line under the title."
+          value={colorFor("nutrition-subtitle", "rgba(44,44,44,0.5)")}
+          onChange={(v) => saveOverride("nutrition-subtitle", "Nutrition Subtitle", v)}
+          allowFills={false}
+        >
+          <p style={{
+            fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+            letterSpacing: "0.1em", textTransform: "uppercase",
+            color: colorFor("nutrition-subtitle", "rgba(44,44,44,0.5)"), marginBottom: 20, marginTop: 0,
+          }}>
+            Every ounce, every macro
+          </p>
+        </Editable>
 
         {/* Tabs */}
         <div style={{

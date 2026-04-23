@@ -5,6 +5,9 @@ import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { getSupabase } from "@/lib/supabase";
 import { useTheme } from "@/lib/useTheme";
 import { beginEntryEdit } from "@/components/sleepDashboardActions";
+import { EditModeProvider } from "@/lib/useEditMode";
+import { Editable } from "@/components/Editable";
+import { EditColorSheet } from "@/components/EditColorSheet";
 
 // Tier colors encode data meaning (quality of score), not branding.
 // These stay fixed so "red = bad, purple = great" never changes.
@@ -272,6 +275,19 @@ export default function SleepDashboard() {
     }
   }
 
+  // Writes a new color into one of the five accent slots in Supabase. The
+  // realtime subscription in useTheme pushes the change back to this
+  // component, which then repaints everywhere the slot is used.
+  async function saveAccent(slot: number, next: string) {
+    const nextAccents = [...(theme.accents ?? [])];
+    while (nextAccents.length <= slot) nextAccents.push("#888888");
+    nextAccents[slot] = next;
+    await getSupabase()
+      .from("studio_themes")
+      .update({ accents: nextAccents })
+      .eq("route", "/sleep");
+  }
+
   if (loading) {
     return (
       <div style={{ background: theme.canvas, minHeight: "100vh" }}>
@@ -312,6 +328,7 @@ export default function SleepDashboard() {
   });
 
   return (
+    <EditModeProvider>
     <div
       style={{
         backgroundColor: theme.canvas,
@@ -325,20 +342,28 @@ export default function SleepDashboard() {
 
       <div className="content-width" style={{ padding: "38px 24px 24px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <h1
-            style={{
-              fontFamily: "'The Psychedelic Peace', 'Playfair Display', Georgia, serif",
-              fontSize: "clamp(48px, 11vw, 92px)",
-              fontWeight: 400,
-              color: ink,
-              lineHeight: 0.9,
-              margin: 0,
-            }}
+          <Editable
+            kind={{ type: "accent", slot: 0 }}
+            label="Highlight Text"
+            description="Color used for the big 'How You Slept' headline, the small section labels (TREND, YOUR ENTRIES, RATING SCALE), and the score number inside the donut. Changing this affects every highlight text on the page."
+            value={ink}
+            onChange={(v) => saveAccent(0, v)}
           >
-            How You
-            <br />
-            Slept
-          </h1>
+            <h1
+              style={{
+                fontFamily: "'The Psychedelic Peace', 'Playfair Display', Georgia, serif",
+                fontSize: "clamp(48px, 11vw, 92px)",
+                fontWeight: 400,
+                color: ink,
+                lineHeight: 0.9,
+                margin: 0,
+              }}
+            >
+              How You
+              <br />
+              Slept
+            </h1>
+          </Editable>
         </div>
       </div>
 
@@ -362,21 +387,37 @@ export default function SleepDashboard() {
 
       {latest && (
         <div className="content-width" style={{ padding: "0 24px 28px" }}>
-          <div
-            style={{
-              background: surface,
-              border: `1px solid ${surface}`,
-              borderRadius: 28,
-              padding: "28px 24px 24px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 18,
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
-            }}
+          <Editable
+            kind={{ type: "accent", slot: 1 }}
+            label="Card Background"
+            description="The yellow-orange fill behind every card on this page (the donut card, the LOG A NIGHT box, the TREND card, YOUR ENTRIES, RATING SCALE, and the research-quote card). Changing this recolors every card at once."
+            value={surface}
+            onChange={(v) => saveAccent(1, v)}
           >
-            <DonutChart score={latest.score} averageScore={averageScore} ring={ring} ink={ink} />
-          </div>
+            <div
+              style={{
+                background: surface,
+                border: `1px solid ${surface}`,
+                borderRadius: 28,
+                padding: "28px 24px 24px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 18,
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
+              }}
+            >
+              <Editable
+                kind={{ type: "accent", slot: 2 }}
+                label="Donut Ring & Trend Line"
+                description="The ring around the sleep score, the line on the TREND chart, the dot pattern on the page background, and the 'LOG A NIGHT' heading. This is the page's strongest visual signal."
+                value={ring}
+                onChange={(v) => saveAccent(2, v)}
+              >
+                <DonutChart score={latest.score} averageScore={averageScore} ring={ring} ink={ink} />
+              </Editable>
+            </div>
+          </Editable>
         </div>
       )}
 
@@ -408,13 +449,22 @@ export default function SleepDashboard() {
                 ))}
               </select>
             </div>
-            <button
-              onClick={addEntry}
-              disabled={saving}
-              style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", background: added ? ring : cta, color: "#FFFFFF", border: "none", borderRadius: 8, padding: "10px 20px", cursor: saving ? "wait" : "pointer", transition: "background 0.3s", opacity: saving ? 0.7 : 1 }}
+            <Editable
+              kind={{ type: "accent", slot: 4 }}
+              label="Add Button"
+              description="The 'Add' button and the color of any error message banner. Also used as the vertical accent bar on the research-quote card at the bottom of the page."
+              value={cta}
+              onChange={(v) => saveAccent(4, v)}
+              inline
             >
-              {added ? "✓ Added" : saving ? "Saving..." : "Add"}
-            </button>
+              <button
+                onClick={addEntry}
+                disabled={saving}
+                style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", background: added ? ring : cta, color: "#FFFFFF", border: "none", borderRadius: 8, padding: "10px 20px", cursor: saving ? "wait" : "pointer", transition: "background 0.3s", opacity: saving ? 0.7 : 1 }}
+              >
+                {added ? "✓ Added" : saving ? "Saving..." : "Add"}
+              </button>
+            </Editable>
           </div>
         </div>
       </div>
@@ -562,5 +612,7 @@ export default function SleepDashboard() {
         </div>
       </div>
     </div>
+    <EditColorSheet />
+    </EditModeProvider>
   );
 }

@@ -3,11 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
+import { useEditMode } from "@/lib/useEditMode";
 import { SavyMobileMenu } from "./SavyMobileMenu";
 
 export function SavySiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const edit = useEditMode();
 
   const initial = user?.email?.[0]?.toUpperCase() ?? null;
 
@@ -44,6 +46,38 @@ export function SavySiteHeader() {
             />
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {edit && (
+              <button
+                type="button"
+                onClick={edit.toggle}
+                aria-label={edit.enabled ? "Exit edit mode" : "Enter edit mode"}
+                aria-pressed={edit.enabled}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: edit.enabled ? "#DC143C" : "rgba(255,255,255,0.08)",
+                  border: "none",
+                  color: "#FFFFFF",
+                  padding: "0.5rem",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  transition: "background 0.15s ease",
+                }}
+              >
+                {edit.enabled ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                  </svg>
+                )}
+              </button>
+            )}
             {initial && (
               <div
                 style={{

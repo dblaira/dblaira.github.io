@@ -9,6 +9,12 @@ import { EmotionCustomize } from "@/components/EmotionCustomize";
 import { getSupabase } from "@/lib/supabase";
 import { useEmotionConfig } from "@/lib/useEmotionConfig";
 import { useTheme } from "@/lib/useTheme";
+import { EditModeProvider } from "@/lib/useEditMode";
+import { EditColorSheet } from "@/components/EditColorSheet";
+import { EditToast } from "@/components/EditToast";
+import { usePageEditing } from "@/lib/usePageEditing";
+import { Editable } from "@/components/Editable";
+import { fillStyle } from "@/lib/fills";
 
 const CRIMSON = "#DC143C";
 
@@ -24,9 +30,20 @@ const TRIGGER_TAGS = [
 ];
 
 export default function MoodCheckin() {
+  return (
+    <EditModeProvider>
+      <MoodCheckinBody />
+      <EditColorSheet />
+      <EditToast />
+    </EditModeProvider>
+  );
+}
+
+function MoodCheckinBody() {
   const emotionConfig = useEmotionConfig();
   const { getEmotionLabel, getTriggerLabel } = emotionConfig;
   const theme = useTheme("/mood");
+  const { colorFor, fillFor, saveOverride } = usePageEditing("/mood");
 
   const [view, setView] = useState<"checkin" | "history" | "customize">("checkin");
   const [step, setStep] = useState<1 | 2>(1);
@@ -109,39 +126,58 @@ export default function MoodCheckin() {
   return (
     <div style={{ minHeight: "100vh", background: "#0A0A0A" }}>
       <SavySiteHeader />
-      <div style={{ background: theme.canvas, minHeight: "calc(100vh - 60px)" }}>
+      <div style={{ ...fillStyle(fillFor("canvas", theme.canvas), theme.canvas), minHeight: "calc(100vh - 60px)" }}>
         <div className="content-width" style={{ padding: "40px 24px 16px" }}>
-          <span
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-              color: CRIMSON,
-            }}
+          <Editable
+            id="mood-eyebrow"
+            label="MOOD Eyebrow"
+            description="The small crimson 'MOOD' label above the title."
+            value={colorFor("mood-eyebrow", CRIMSON)}
+            onChange={(v) => saveOverride("mood-eyebrow", "MOOD Eyebrow", v)}
+            allowFills={false}
+            inline
           >
-            MOOD
-          </span>
-          <h1
-            style={{
-              fontFamily: theme.heading_font,
-              fontSize: "clamp(28px, 6vw, 40px)",
-              fontWeight: 400,
-              fontStyle: "italic",
-              color: theme.ink,
-              lineHeight: 1.15,
-              margin: "8px 0 0 0",
-            }}
+            <span
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: colorFor("mood-eyebrow", CRIMSON),
+              }}
+            >
+              MOOD
+            </span>
+          </Editable>
+          <Editable
+            id="mood-headline"
+            label="Mood Headline"
+            description="The big italic title at the top of the Mood page (text changes with view)."
+            value={colorFor("mood-headline", theme.ink)}
+            onChange={(v) => saveOverride("mood-headline", "Mood Headline", v)}
+            allowFills={false}
           >
-            {view === "history"
-              ? "Your Patterns"
-              : view === "customize"
-              ? "Your Words"
-              : step === 1
-              ? "How Are You Feeling?"
-              : "What\u2019s Driving It?"}
-          </h1>
+            <h1
+              style={{
+                fontFamily: theme.heading_font,
+                fontSize: "clamp(28px, 6vw, 40px)",
+                fontWeight: 400,
+                fontStyle: "italic",
+                color: colorFor("mood-headline", theme.ink),
+                lineHeight: 1.15,
+                margin: "8px 0 0 0",
+              }}
+            >
+              {view === "history"
+                ? "Your Patterns"
+                : view === "customize"
+                ? "Your Words"
+                : step === 1
+                ? "How Are You Feeling?"
+                : "What\u2019s Driving It?"}
+            </h1>
+          </Editable>
 
           {/* View toggle */}
           <div style={{ display: "flex", gap: 4, marginTop: 20 }}>

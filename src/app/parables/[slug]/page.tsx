@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
+import { EditingShell } from "@/components/EditingShell";
+import { EditablePageBackground } from "@/components/EditablePageBackground";
 import { getAllParableSlugs, getParable } from "@/lib/parables";
 
 // Palette mirrored from the Ontology theme. Cream paper reads well in bright
@@ -50,7 +52,9 @@ export default async function ParablePage({
   if (!parable) notFound();
 
   return (
-    <div style={{ background: BG, color: INK, minHeight: "100vh" }}>
+    <EditingShell>
+    <EditablePageBackground route="/parables" fallback={BG}>
+      <div style={{ color: INK }}>
       <SavySiteHeader />
 
       <article className="parable-article" style={{ padding: "56px 24px 96px", maxWidth: 680, margin: "0 auto" }}>
@@ -174,6 +178,8 @@ export default async function ParablePage({
           border-radius: 4px;
         }
       `}</style>
-    </div>
+      </div>
+    </EditablePageBackground>
+    </EditingShell>
   );
 }

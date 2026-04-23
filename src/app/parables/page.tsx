@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
+import { EditingShell } from "@/components/EditingShell";
+import { EditablePageBackground } from "@/components/EditablePageBackground";
 import { getAllParables } from "@/lib/parables";
 
 export const metadata = {
@@ -29,7 +31,9 @@ export default function ParablesIndex() {
   const parables = getAllParables();
 
   return (
-    <div style={{ background: BG, color: INK, minHeight: "100vh" }}>
+    <EditingShell>
+    <EditablePageBackground route="/parables" fallback={BG}>
+      <div style={{ color: INK }}>
       <SavySiteHeader />
 
       <div style={{ padding: "64px 24px 40px", maxWidth: 720, margin: "0 auto" }}>
@@ -135,6 +139,8 @@ export default function ParablesIndex() {
           ))}
         </ul>
       </div>
-    </div>
+      </div>
+    </EditablePageBackground>
+    </EditingShell>
   );
 }

@@ -26,11 +26,16 @@ export function EditColorSheet() {
     onChange(next);
   };
 
+  const closeAndRemember = () => {
+    if (/^#[0-9a-fA-F]{6}$/.test(localValue)) ctx.addRecentColor(localValue);
+    ctx.setActive(null);
+  };
+
   return (
     <>
       {/* Tap-away scrim behind the sheet */}
       <div
-        onClick={() => ctx.setActive(null)}
+        onClick={closeAndRemember}
         style={{
           position: "fixed",
           inset: 0,
@@ -82,7 +87,7 @@ export function EditColorSheet() {
           </span>
           <button
             type="button"
-            onClick={() => ctx.setActive(null)}
+            onClick={closeAndRemember}
             style={{
               background: "transparent",
               border: "none",
@@ -118,6 +123,46 @@ export function EditColorSheet() {
         >
           {description}
         </p>
+
+        {ctx.recentColors.length > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "rgba(255,255,255,0.45)",
+                marginBottom: 6,
+              }}
+            >
+              Recent
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {ctx.recentColors.map((hex) => (
+                <button
+                  key={hex}
+                  type="button"
+                  onClick={() => apply(hex)}
+                  aria-label={`Use ${hex}`}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    background: hex,
+                    border:
+                      localValue.toUpperCase() === hex.toUpperCase()
+                        ? "2px solid #FFFFFF"
+                        : "1px solid rgba(255,255,255,0.2)",
+                    cursor: "pointer",
+                    padding: 0,
+                    flexShrink: 0,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         <div
           style={{
@@ -164,7 +209,7 @@ export function EditColorSheet() {
 
         <button
           type="button"
-          onClick={() => ctx.setActive(null)}
+          onClick={closeAndRemember}
           style={{
             width: "100%",
             marginTop: 18,

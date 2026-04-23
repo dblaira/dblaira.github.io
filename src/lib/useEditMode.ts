@@ -1,9 +1,17 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, createElement } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+  createElement,
+} from "react";
 
-// The kinds of things that can be edited in-page. "accent" picks a slot in the
-// theme.accents array; "canvas" edits the page background field.
+// A single editable thing. "canvas" edits the page background field; "accent"
+// picks a slot (index) in the theme.accents array.
 export type EditableKind =
   | { type: "canvas" }
   | { type: "accent"; slot: number };
@@ -16,29 +24,109 @@ export type ActiveEdit = {
   onChange: (next: string) => void;
 };
 
+export type EditToast = {
+  id: number;
+  label: string;
+  message: string;
+  // Called when the user taps Undo inside the toast. Provided by whoever
+  // called showToast; typically reverts the change by re-saving the previous
+  // value.
+  onUndo?: () => void | Promise<void>;
+};
+
 type EditModeContextValue = {
   enabled: boolean;
   toggle: () => void;
   active: ActiveEdit | null;
   setActive: (edit: ActiveEdit | null) => void;
+  toast: EditToast | null;
+  showToast: (toast: Omit<EditToast, "id">) => void;
+  dismissToast: () => void;
+  recentColors: string[];
+  addRecentColor: (hex: string) => void;
 };
 
 const Ctx = createContext<EditModeContextValue | null>(null);
 
+const RECENT_KEY = "savy.editMode.recentColors";
+const RECENT_MAX = 6;
+
+function loadRecent(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(RECENT_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed.filter((v) => typeof v === "string").slice(0, RECENT_MAX);
+  } catch {
+    // ignore
+  }
+  return [];
+}
+
 export function EditModeProvider({ children }: { children: ReactNode }) {
   const [enabled, setEnabled] = useState(false);
   const [active, setActive] = useState<ActiveEdit | null>(null);
+  const [toast, setToast] = useState<EditToast | null>(null);
+  const [recentColors, setRecentColors] = useState<string[]>(() => loadRecent());
+
+  const toggle = useCallback(() => {
+    setEnabled((v) => !v);
+    setActive(null);
+    setToast(null);
+  }, []);
+
+  const showToast = useCallback((t: Omit<EditToast, "id">) => {
+    setToast({ ...t, id: Date.now() });
+  }, []);
+
+  const dismissToast = useCallback(() => setToast(null), []);
+
+  const addRecentColor = useCallback((hex: string) => {
+    if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+    setRecentColors((prev) => {
+      const next = [hex, ...prev.filter((c) => c.toUpperCase() !== hex.toUpperCase())].slice(0, RECENT_MAX);
+      try {
+        window.localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+      } catch {
+        // ignore quota errors
+      }
+      return next;
+    });
+  }, []);
+
+  // Auto-dismiss the toast after ~4s.
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast((curr) => (curr && curr.id === toast.id ? null : curr)), 4200);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  // Escape key: close the active sheet if one is open; otherwise exit edit mode.
+  useEffect(() => {
+    if (!enabled) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (active) setActive(null);
+      else setEnabled(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [enabled, active]);
+
   return createElement(
     Ctx.Provider,
     {
       value: {
         enabled,
-        toggle: () => {
-          setEnabled((v) => !v);
-          setActive(null);
-        },
+        toggle,
         active,
         setActive,
+        toast,
+        showToast,
+        dismissToast,
+        recentColors,
+        addRecentColor,
       },
     },
     children

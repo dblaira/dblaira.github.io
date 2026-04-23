@@ -5,9 +5,10 @@ import { SavySiteHeader } from "@/components/SavySiteHeader";
 import { getSupabase } from "@/lib/supabase";
 import { useTheme } from "@/lib/useTheme";
 import { beginEntryEdit } from "@/components/sleepDashboardActions";
-import { EditModeProvider } from "@/lib/useEditMode";
+import { EditModeProvider, useEditMode } from "@/lib/useEditMode";
 import { Editable } from "@/components/Editable";
 import { EditColorSheet } from "@/components/EditColorSheet";
+import { EditToast } from "@/components/EditToast";
 
 // Tier colors encode data meaning (quality of score), not branding.
 // These stay fixed so "red = bad, purple = great" never changes.
@@ -206,16 +207,42 @@ function AreaChart({
   );
 }
 
+// Plain-English labels for the six editable roles on this page.
+const ROLE_LABEL: Record<string, string> = {
+  canvas: "Page Background",
+  "accent-0": "Highlight Text",
+  "accent-1": "Card Background",
+  "accent-2": "Donut Ring & Trend Line",
+  "accent-3": "Page Dots & Chart Fill",
+  "accent-4": "Add Button",
+};
+
 export default function SleepDashboard() {
+  return (
+    <EditModeProvider>
+      <SleepDashboardBody />
+      <EditColorSheet />
+      <EditToast />
+    </EditModeProvider>
+  );
+}
+
+function SleepDashboardBody() {
   const theme = useTheme("/sleep");
-  // Derive the five visual roles from Studio's accent slots, with fallbacks
-  // that preserve the original psychedelic orange/yellow look until Studio
-  // supplies values.
-  const ink        = theme.accents[0] ?? DEFAULT_INK;
-  const surface    = theme.accents[1] ?? DEFAULT_SURFACE;
-  const ring       = theme.accents[2] ?? DEFAULT_RING;
-  const atmosphere = theme.accents[3] ?? DEFAULT_ATMOSPHERE;
-  const cta        = theme.accents[4] ?? DEFAULT_CTA;
+  const edit = useEditMode();
+
+  // Local overrides let every save repaint the page instantly (optimistic
+  // update). Supabase is still the source of truth — when the realtime push
+  // arrives it matches the override, no flicker.
+  const [overrideCanvas, setOverrideCanvas] = useState<string | null>(null);
+  const [overrideAccents, setOverrideAccents] = useState<(string | undefined)[]>([]);
+
+  const canvas     = overrideCanvas    ?? theme.canvas;
+  const ink        = overrideAccents[0] ?? theme.accents[0] ?? DEFAULT_INK;
+  const surface    = overrideAccents[1] ?? theme.accents[1] ?? DEFAULT_SURFACE;
+  const ring       = overrideAccents[2] ?? theme.accents[2] ?? DEFAULT_RING;
+  const atmosphere = overrideAccents[3] ?? theme.accents[3] ?? DEFAULT_ATMOSPHERE;
+  const cta        = overrideAccents[4] ?? theme.accents[4] ?? DEFAULT_CTA;
 
   const [entries, setEntries] = useState<SleepEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -275,22 +302,61 @@ export default function SleepDashboard() {
     }
   }
 
-  // Writes a new color into one of the five accent slots in Supabase. The
-  // realtime subscription in useTheme pushes the change back to this
-  // component, which then repaints everywhere the slot is used.
-  async function saveAccent(slot: number, next: string) {
-    const nextAccents = [...(theme.accents ?? [])];
-    while (nextAccents.length <= slot) nextAccents.push("#888888");
-    nextAccents[slot] = next;
+  // Writes a new color into one of the five accent slots. Updates local
+  // state instantly (so the page repaints right away), then persists to
+  // Supabase in the background, then pops a toast with an Undo button.
+  async function saveAccent(slot: number, next: string, opts?: { silent?: boolean }) {
+    const previous = overrideAccents[slot] ?? theme.accents[slot] ?? "";
+
+    // 1. Optimistic local update
+    setOverrideAccents((curr) => {
+      const a = [...curr];
+      while (a.length <= slot) a.push(undefined);
+      a[slot] = next;
+      return a;
+    });
+
+    // 2. Persist
+    const persisted = [...(theme.accents ?? [])];
+    while (persisted.length <= slot) persisted.push("#888888");
+    persisted[slot] = next;
     await getSupabase()
       .from("studio_themes")
-      .update({ accents: nextAccents })
+      .update({ accents: persisted })
       .eq("route", "/sleep");
+
+    // 3. Toast with Undo (skipped when triggered BY undo, to avoid recursion)
+    if (!opts?.silent) {
+      edit?.showToast({
+        label: ROLE_LABEL[`accent-${slot}`] ?? `Accent ${slot}`,
+        message: "Saved",
+        onUndo: previous ? () => saveAccent(slot, previous, { silent: true }) : undefined,
+      });
+    }
+  }
+
+  async function saveCanvas(next: string, opts?: { silent?: boolean }) {
+    const previous = overrideCanvas ?? theme.canvas ?? "";
+
+    setOverrideCanvas(next);
+
+    await getSupabase()
+      .from("studio_themes")
+      .update({ canvas: next })
+      .eq("route", "/sleep");
+
+    if (!opts?.silent) {
+      edit?.showToast({
+        label: ROLE_LABEL.canvas,
+        message: "Saved",
+        onUndo: previous ? () => saveCanvas(previous, { silent: true }) : undefined,
+      });
+    }
   }
 
   if (loading) {
     return (
-      <div style={{ background: theme.canvas, minHeight: "100vh" }}>
+      <div style={{ background: canvas, minHeight: "100vh" }}>
         <SavySiteHeader />
         <div className="content-width" style={{ padding: "80px 24px", textAlign: "center" }}>
           <span
@@ -328,10 +394,9 @@ export default function SleepDashboard() {
   });
 
   return (
-    <EditModeProvider>
     <div
       style={{
-        backgroundColor: theme.canvas,
+        backgroundColor: canvas,
         backgroundImage: `radial-gradient(circle, ${ring} 0 3px, transparent 3px), radial-gradient(circle, ${atmosphere}40 0 88px, transparent 88px)`,
         backgroundSize: "18px 18px, 320px 320px",
         backgroundPosition: "0 0, 50% 120px",
@@ -339,6 +404,31 @@ export default function SleepDashboard() {
       }}
     >
       <SavySiteHeader />
+      <PageColorsToolbar
+        enabled={edit?.enabled ?? false}
+        canvas={canvas}
+        atmosphere={atmosphere}
+        onEditCanvas={() =>
+          edit?.setActive({
+            kind: { type: "canvas" },
+            label: ROLE_LABEL.canvas,
+            description:
+              "The color filling the page behind everything — the warm orange you see around the edges of every card, outside the dot pattern.",
+            currentValue: canvas,
+            onChange: (v) => saveCanvas(v),
+          })
+        }
+        onEditAtmosphere={() =>
+          edit?.setActive({
+            kind: { type: "accent", slot: 3 },
+            label: ROLE_LABEL["accent-3"],
+            description:
+              "The soft halo behind the donut card and the gentle fill color under the TREND chart line. This sits between the page background and the cards — the quiet atmospheric layer.",
+            currentValue: atmosphere,
+            onChange: (v) => saveAccent(3, v),
+          })
+        }
+      />
 
       <div className="content-width" style={{ padding: "38px 24px 24px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -612,7 +702,85 @@ export default function SleepDashboard() {
         </div>
       </div>
     </div>
-    <EditColorSheet />
-    </EditModeProvider>
+  );
+}
+
+/**
+ * Small floating pill bar that appears below the header when edit mode is on.
+ * Exposes editable page-level roles (canvas, atmosphere) that don't wrap a
+ * specific region of the page content.
+ */
+function PageColorsToolbar({
+  enabled,
+  canvas,
+  atmosphere,
+  onEditCanvas,
+  onEditAtmosphere,
+}: {
+  enabled: boolean;
+  canvas: string;
+  atmosphere: string;
+  onEditCanvas: () => void;
+  onEditAtmosphere: () => void;
+}) {
+  if (!enabled) return null;
+  const chipBtn = (bg: string, label: string, onClick: () => void) => (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "6px 12px 6px 6px",
+        background: "rgba(0,0,0,0.55)",
+        color: "#FFFFFF",
+        border: "1px solid rgba(255,255,255,0.15)",
+        borderRadius: 999,
+        fontFamily: "'Inter', -apple-system, sans-serif",
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: "0.1em",
+        textTransform: "uppercase",
+        cursor: "pointer",
+      }}
+    >
+      <span
+        aria-hidden
+        style={{
+          width: 22,
+          height: 22,
+          borderRadius: "50%",
+          background: bg,
+          border: "1px solid rgba(255,255,255,0.22)",
+          display: "inline-block",
+        }}
+      />
+      {label}
+    </button>
+  );
+  return (
+    <div
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 40,
+        display: "flex",
+        justifyContent: "center",
+        padding: "10px 16px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
+        {chipBtn(canvas, "Page Background", onEditCanvas)}
+        {chipBtn(atmosphere, "Page Dots & Fill", onEditAtmosphere)}
+      </div>
+    </div>
   );
 }

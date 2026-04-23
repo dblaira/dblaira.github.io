@@ -13,6 +13,7 @@ const NAV_ITEMS: { href: string; label: string; hint?: string }[] = [
   { href: "/mood", label: "Mood", hint: "Emotion Check-in" },
   { href: "/ontology", label: "Ontology", hint: "Adam's Ontology" },
   { href: "/beliefs", label: "Beliefs", hint: "Belief Library" },
+  { href: "/parables", label: "Parables", hint: "Field Essays" },
   { href: "/studio", label: "Studio", hint: "Theme Editor" },
 ];
 

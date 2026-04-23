@@ -49,6 +49,13 @@ const EXPERIMENTS: ExperimentCard[] = [
     href: "/beliefs",
   },
   {
+    label: "PARABLES",
+    title: "Field Essays",
+    desc: "Patterns that trace back before modern society\nand still apply today.",
+    status: "live",
+    href: "/parables",
+  },
+  {
     label: "STUDIO",
     title: "Design Studio",
     desc: "Live theme editor for every room. Canvas, accents, fonts, component kind. Add, delete, rearrange features.",
@@ -233,6 +240,7 @@ export default function SandboxHome() {
                   color: "rgba(0,0,0,0.5)",
                   lineHeight: 1.6,
                   margin: 0,
+                  whiteSpace: "pre-line",
                 }}
               >
                 {card.desc}

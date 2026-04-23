@@ -9,6 +9,7 @@ import { EditModeProvider, useEditMode } from "@/lib/useEditMode";
 import { Editable } from "@/components/Editable";
 import { EditColorSheet } from "@/components/EditColorSheet";
 import { EditToast } from "@/components/EditToast";
+import { fillStyle, fillColor, type Fill } from "@/lib/fills";
 
 // Tier colors encode data meaning (quality of score), not branding.
 // These stay fixed so "red = bad, purple = great" never changes.
@@ -235,7 +236,7 @@ function SleepDashboardBody() {
   // to Supabase in the background. Realtime push from Supabase reconciles.
   const [overrideCanvas, setOverrideCanvas] = useState<string | null>(null);
   const [overrideAccents, setOverrideAccents] = useState<(string | undefined)[]>([]);
-  const [localOverrides, setLocalOverrides] = useState<Record<string, string>>({});
+  const [localOverrides, setLocalOverrides] = useState<Record<string, Fill>>({});
 
   const canvas     = overrideCanvas    ?? theme.canvas;
   const ink        = overrideAccents[0] ?? theme.accents[0] ?? DEFAULT_INK;
@@ -244,26 +245,30 @@ function SleepDashboardBody() {
   const atmosphere = overrideAccents[3] ?? theme.accents[3] ?? DEFAULT_ATMOSPHERE;
   const cta        = overrideAccents[4] ?? theme.accents[4] ?? DEFAULT_CTA;
 
-  // Per-element color lookup: local optimistic override → stored override → role fallback.
-  const colorFor = (elementId: string, fallback: string): string =>
-    localOverrides[elementId] ?? theme.overrides?.[elementId] ?? fallback;
+  // Per-element fill lookup: local optimistic override → stored override → role fallback.
+  const fillFor = (elementId: string, fallbackColor: string): Fill =>
+    localOverrides[elementId] ?? theme.overrides?.[elementId] ?? fallbackColor;
 
-  // Writes a per-element color override to the studio_themes.overrides JSONB
-  // column. Optimistic: local state updates instantly, Supabase write happens
-  // in background, realtime subscription reconciles.
+  // Strict color lookup (used where only a hex string makes sense, e.g.
+  // text color, borders, donut stroke). If the override is a pattern or
+  // image, the role fallback color wins.
+  const colorFor = (elementId: string, fallback: string): string =>
+    fillColor(fillFor(elementId, fallback), fallback);
+
+  // Writes a per-element fill to the studio_themes.overrides JSONB column.
+  // Optimistic: local state updates instantly, Supabase write happens in
+  // background, realtime subscription reconciles.
   async function saveOverride(
     elementId: string,
     label: string,
-    next: string,
+    next: Fill,
     opts?: { silent?: boolean }
   ) {
     const previous = localOverrides[elementId] ?? theme.overrides?.[elementId];
 
-    // Optimistic local update
     setLocalOverrides((curr) => ({ ...curr, [elementId]: next }));
 
-    // Persist: merge into the stored overrides map
-    const merged = { ...(theme.overrides ?? {}), ...localOverrides, [elementId]: next };
+    const merged: Record<string, Fill> = { ...(theme.overrides ?? {}), ...localOverrides, [elementId]: next };
     await getSupabase()
       .from("studio_themes")
       .update({ overrides: merged })
@@ -275,13 +280,12 @@ function SleepDashboardBody() {
         message: "Saved",
         onUndo: async () => {
           if (previous === undefined) {
-            // Remove from both local state and stored map
             setLocalOverrides((curr) => {
               const next = { ...curr };
               delete next[elementId];
               return next;
             });
-            const cleared = { ...(theme.overrides ?? {}), ...localOverrides };
+            const cleared: Record<string, Fill> = { ...(theme.overrides ?? {}), ...localOverrides };
             delete cleared[elementId];
             await getSupabase().from("studio_themes").update({ overrides: cleared }).eq("route", "/sleep");
           } else {
@@ -441,13 +445,24 @@ function SleepDashboardBody() {
     rollingColorById[entry.id] = getAverageColor(rollingAverage);
   });
 
-  return (
-    <div
-      style={{
+  const canvasFill = localOverrides["canvas"] ?? theme.overrides?.["canvas"] ?? canvas;
+  const canvasIsImageOrPattern = typeof canvasFill === "object" && canvasFill !== null;
+
+  // When the page background is an image or pattern override, skip the dot
+  // overlay so the image/pattern shows cleanly.
+  const pageBgStyle: React.CSSProperties = canvasIsImageOrPattern
+    ? fillStyle(canvasFill, canvas)
+    : {
         backgroundColor: canvas,
         backgroundImage: `radial-gradient(circle, ${ring} 0 3px, transparent 3px), radial-gradient(circle, ${atmosphere}40 0 88px, transparent 88px)`,
         backgroundSize: "18px 18px, 320px 320px",
         backgroundPosition: "0 0, 50% 120px",
+      };
+
+  return (
+    <div
+      style={{
+        ...pageBgStyle,
         minHeight: "100vh",
       }}
     >
@@ -461,9 +476,10 @@ function SleepDashboardBody() {
             id: "canvas",
             label: ROLE_LABEL.canvas,
             description:
-              "The color filling the page behind everything — the warm orange you see around the edges of every card, outside the dot pattern.",
-            currentValue: canvas,
-            onChange: (v) => saveCanvas(v),
+              "The background filling the whole page behind everything. Solid color, a pattern, or a full-screen image (picking an image hides the dot overlay).",
+            currentValue: canvasFill,
+            onChange: (v) => saveOverride("canvas", ROLE_LABEL.canvas, v),
+            allowFills: true,
           })
         }
         onEditAtmosphere={() =>
@@ -471,9 +487,10 @@ function SleepDashboardBody() {
             id: "accent-3",
             label: ROLE_LABEL["accent-3"],
             description:
-              "The soft halo behind the donut card and the gentle fill color under the TREND chart line. This sits between the page background and the cards — the quiet atmospheric layer.",
+              "The soft halo behind the donut card and the gentle fill color under the TREND chart line. Color-only — this layer sits behind other things, so patterns/images wouldn't read.",
             currentValue: atmosphere,
-            onChange: (v) => saveAccent(3, v),
+            onChange: (v) => { if (typeof v === "string") saveAccent(3, v); },
+            allowFills: false,
           })
         }
       />
@@ -486,6 +503,7 @@ function SleepDashboardBody() {
             description="The big 'How You Slept' title at the top of the page. Just this headline — nothing else."
             value={colorFor("headline", ink)}
             onChange={(v) => saveOverride("headline", "Headline", v)}
+            allowFills={false}
           >
             <h1
               style={{
@@ -528,13 +546,13 @@ function SleepDashboardBody() {
           <Editable
             id="donut-card-bg"
             label="Donut Card Background"
-            description="Just the background of the card containing the big score donut. Changing this only affects this one card."
-            value={colorFor("donut-card-bg", surface)}
+            description="Just the background of the card containing the big score donut. Solid color, pattern, or image."
+            value={fillFor("donut-card-bg", surface)}
             onChange={(v) => saveOverride("donut-card-bg", "Donut Card Background", v)}
           >
             <div
               style={{
-                background: colorFor("donut-card-bg", surface),
+                ...fillStyle(fillFor("donut-card-bg", surface), surface),
                 border: `1px solid ${colorFor("donut-card-bg", surface)}`,
                 borderRadius: 28,
                 padding: "28px 24px 24px",
@@ -551,6 +569,7 @@ function SleepDashboardBody() {
                 description="Just the colored ring around the sleep score number in the middle of the card."
                 value={colorFor("donut-ring", ring)}
                 onChange={(v) => saveOverride("donut-ring", "Donut Ring", v)}
+                allowFills={false}
               >
                 <DonutChart
                   score={latest.score}
@@ -569,17 +588,18 @@ function SleepDashboardBody() {
         <Editable
           id="log-card-bg"
           label="Log Night Card Background"
-          description="Just the background of the 'LOG A NIGHT' card. Only this card is recolored."
-          value={colorFor("log-card-bg", surface)}
+          description="The background of the 'LOG A NIGHT' card. Solid color, pattern, or image."
+          value={fillFor("log-card-bg", surface)}
           onChange={(v) => saveOverride("log-card-bg", "Log Night Card Background", v)}
         >
-        <div style={{ background: colorFor("log-card-bg", surface), border: `1px solid ${colorFor("log-card-bg", surface)}`, borderRadius: 28, padding: "24px" }}>
+        <div style={{ ...fillStyle(fillFor("log-card-bg", surface), surface), border: `1px solid ${colorFor("log-card-bg", surface)}`, borderRadius: 28, padding: "24px" }}>
           <Editable
             id="log-heading"
             label="LOG A NIGHT Heading"
             description="Just the big 'LOG A NIGHT' text above the date and score inputs."
             value={colorFor("log-heading", ring)}
             onChange={(v) => saveOverride("log-heading", "LOG A NIGHT Heading", v)}
+            allowFills={false}
           >
             <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: colorFor("log-heading", ring), display: "block" }}>
               LOG A NIGHT
@@ -614,6 +634,7 @@ function SleepDashboardBody() {
               value={colorFor("add-button", cta)}
               onChange={(v) => saveOverride("add-button", "Add Button", v)}
               inline
+              allowFills={false}
             >
               <button
                 onClick={addEntry}
@@ -634,13 +655,13 @@ function SleepDashboardBody() {
           <Editable
             id="trend-card-bg"
             label="Trend Card Background"
-            description="Just the background of the TREND card (the area chart showing your recent scores)."
-            value={colorFor("trend-card-bg", surface)}
+            description="The background of the TREND card. Solid color, pattern, or image."
+            value={fillFor("trend-card-bg", surface)}
             onChange={(v) => saveOverride("trend-card-bg", "Trend Card Background", v)}
           >
           <div
             style={{
-              background: colorFor("trend-card-bg", surface),
+              ...fillStyle(fillFor("trend-card-bg", surface), surface),
               border: `1px solid ${colorFor("trend-card-bg", surface)}`,
               borderRadius: 28,
               padding: "24px 20px",
@@ -653,6 +674,7 @@ function SleepDashboardBody() {
               value={colorFor("trend-label", ink)}
               onChange={(v) => saveOverride("trend-label", "TREND Label", v)}
               inline
+              allowFills={false}
             >
               <span
                 style={{
@@ -682,11 +704,11 @@ function SleepDashboardBody() {
           <Editable
             id="entries-card-bg"
             label="Your Entries Card Background"
-            description="Just the background of the 'YOUR ENTRIES' card (the list of logged nights with edit/delete buttons)."
-            value={colorFor("entries-card-bg", surface)}
+            description="The background of the 'YOUR ENTRIES' card. Solid color, pattern, or image."
+            value={fillFor("entries-card-bg", surface)}
             onChange={(v) => saveOverride("entries-card-bg", "Your Entries Card Background", v)}
           >
-          <div style={{ background: colorFor("entries-card-bg", surface), border: `1px solid ${colorFor("entries-card-bg", surface)}`, borderRadius: 28, padding: "24px" }}>
+          <div style={{ ...fillStyle(fillFor("entries-card-bg", surface), surface), border: `1px solid ${colorFor("entries-card-bg", surface)}`, borderRadius: 28, padding: "24px" }}>
             <Editable
               id="entries-label"
               label="YOUR ENTRIES Label"
@@ -694,6 +716,7 @@ function SleepDashboardBody() {
               value={colorFor("entries-label", ink)}
               onChange={(v) => saveOverride("entries-label", "YOUR ENTRIES Label", v)}
               inline
+              allowFills={false}
             >
               <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: colorFor("entries-label", ink) }}>
                 YOUR ENTRIES
@@ -739,11 +762,11 @@ function SleepDashboardBody() {
         <Editable
           id="rating-card-bg"
           label="Rating Scale Card Background"
-          description="Just the background of the 'RATING SCALE' card at the bottom that explains what each score means."
-          value={colorFor("rating-card-bg", surface)}
+          description="The background of the 'RATING SCALE' card at the bottom. Solid color, pattern, or image."
+          value={fillFor("rating-card-bg", surface)}
           onChange={(v) => saveOverride("rating-card-bg", "Rating Scale Card Background", v)}
         >
-        <div style={{ background: colorFor("rating-card-bg", surface), border: `1px solid ${colorFor("rating-card-bg", surface)}`, borderRadius: 28, padding: "24px" }}>
+        <div style={{ ...fillStyle(fillFor("rating-card-bg", surface), surface), border: `1px solid ${colorFor("rating-card-bg", surface)}`, borderRadius: 28, padding: "24px" }}>
           <Editable
             id="rating-label"
             label="RATING SCALE Label"
@@ -751,6 +774,7 @@ function SleepDashboardBody() {
             value={colorFor("rating-label", ink)}
             onChange={(v) => saveOverride("rating-label", "RATING SCALE Label", v)}
             inline
+            allowFills={false}
           >
             <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: colorFor("rating-label", ink) }}>
               RATING SCALE
@@ -781,13 +805,13 @@ function SleepDashboardBody() {
         <Editable
           id="quote-card-bg"
           label="Research Quote Card Background"
-          description="Just the background of the italic research-quote card at the very bottom of the page."
-          value={colorFor("quote-card-bg", surface)}
+          description="The background of the italic research-quote card at the very bottom. Solid color, pattern, or image."
+          value={fillFor("quote-card-bg", surface)}
           onChange={(v) => saveOverride("quote-card-bg", "Research Quote Card Background", v)}
         >
         <div
           style={{
-            background: colorFor("quote-card-bg", surface),
+            ...fillStyle(fillFor("quote-card-bg", surface), surface),
             border: `1px solid ${colorFor("quote-card-bg", surface)}`,
             borderRadius: 28,
             padding: "24px",
@@ -801,6 +825,7 @@ function SleepDashboardBody() {
             description="Just the thin vertical colored bar to the left of the italic research quote."
             value={colorFor("quote-bar", cta)}
             onChange={(v) => saveOverride("quote-bar", "Research Quote Accent Bar", v)}
+            allowFills={false}
           >
             <div
               style={{

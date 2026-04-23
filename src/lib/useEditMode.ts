@@ -10,16 +10,22 @@ import {
   createElement,
 } from "react";
 
+import type { Fill } from "./fills";
+
 // A single editable thing identified by a unique string id (e.g. "headline",
 // "trend-label", "accent-3", "canvas"). The onChange is provided by whoever
-// wrapped the region; it decides where the new color gets stored (localStorage
-// for per-element overrides, Supabase for the shared palette chips).
+// wrapped the region; it decides where the new fill gets stored.
+//
+// allowFills controls whether the sheet shows only the Color tab (false —
+// text elements) or all three tabs Color/Pattern/Image (true — cards, page
+// background).
 export type ActiveEdit = {
   id: string;
   label: string;
   description: string;
-  currentValue: string;
-  onChange: (next: string) => void;
+  currentValue: Fill;
+  onChange: (next: Fill) => void;
+  allowFills?: boolean;
 };
 
 export type EditToast = {

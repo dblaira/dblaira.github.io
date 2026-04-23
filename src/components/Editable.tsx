@@ -2,13 +2,18 @@
 
 import { ReactNode } from "react";
 import { useEditMode } from "@/lib/useEditMode";
+import type { Fill } from "@/lib/fills";
 
 /**
  * Wraps a region of the page so it becomes interactive in edit mode.
  *
  * Each Editable has a unique string id. In edit mode, the region gets a thin
- * dashed outline plus a floating label; tapping it opens the color sheet
- * bound to that id. Off: renders children untouched.
+ * dashed outline plus a floating label; tapping it opens the color/pattern/
+ * image sheet bound to that id. Off: renders children untouched.
+ *
+ * allowFills (default true) controls whether the sheet exposes Pattern and
+ * Image tabs, or only plain Color. Text elements should pass allowFills=false
+ * since patterns and images don't make sense as text color.
  */
 export function Editable({
   id,
@@ -18,15 +23,18 @@ export function Editable({
   onChange,
   children,
   inline = false,
+  allowFills = true,
 }: {
   id: string;
   label: string;
   description: string;
-  value: string;
-  onChange: (next: string) => void;
+  value: Fill;
+  onChange: (next: Fill) => void;
   children: ReactNode;
   /** If true, render as an inline-block so it doesn't break inline flow. */
   inline?: boolean;
+  /** If false, the sheet shows only the Color tab (good for text elements). */
+  allowFills?: boolean;
 }) {
   const ctx = useEditMode();
   if (!ctx || !ctx.enabled) return <>{children}</>;
@@ -38,7 +46,7 @@ export function Editable({
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();
-        ctx.setActive({ id, label, description, currentValue: value, onChange });
+        ctx.setActive({ id, label, description, currentValue: value, onChange, allowFills });
       }}
       style={{
         position: "relative",

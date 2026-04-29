@@ -127,7 +127,7 @@ function NutritionDashboardBody() {
     <div style={{ ...fillStyle(fillFor("canvas", SUN), SUN), minHeight: "100vh" }}>
       <SavySiteHeader />
 
-      <div style={{ maxWidth: 480, margin: "0 auto", padding: "20px 16px 100px" }}>
+      <div className="responsive-page-shell" style={{ padding: "20px 16px 100px" }}>
         {/* Page title */}
         <Editable
           id="nutrition-title"
@@ -193,60 +193,61 @@ function NutritionDashboardBody() {
 
         {/* TODAY TAB */}
         {tab === "today" && (
-          <>
-            {/* Date navigator */}
-            <div style={{
-              display: "flex", justifyContent: "space-between", alignItems: "center",
-              marginBottom: 16,
-            }}>
-              <button onClick={() => shiftDate(-1)} style={{
-                background: "none", border: "none", fontSize: 20,
-                color: CHARCOAL, cursor: "pointer", padding: "8px 12px", fontWeight: 700,
+          <div className="nutrition-today-grid">
+            <div>
+              {/* Date navigator */}
+              <div style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                marginBottom: 16,
               }}>
-                ‹
-              </button>
-              <span style={{
-                fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700, color: CHARCOAL,
-              }}>
-                {dateLabel}
-              </span>
-              <button onClick={() => shiftDate(1)} disabled={isToday} style={{
-                background: "none", border: "none", fontSize: 20,
-                color: isToday ? "rgba(44,44,44,0.2)" : CHARCOAL,
-                cursor: isToday ? "not-allowed" : "pointer", padding: "8px 12px", fontWeight: 700,
-              }}>
-                ›
-              </button>
+                <button onClick={() => shiftDate(-1)} style={{
+                  background: "none", border: "none", fontSize: 20,
+                  color: CHARCOAL, cursor: "pointer", padding: "8px 12px", fontWeight: 700,
+                }}>
+                  ‹
+                </button>
+                <span style={{
+                  fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700, color: CHARCOAL,
+                }}>
+                  {dateLabel}
+                </span>
+                <button onClick={() => shiftDate(1)} disabled={isToday} style={{
+                  background: "none", border: "none", fontSize: 20,
+                  color: isToday ? "rgba(44,44,44,0.2)" : CHARCOAL,
+                  cursor: isToday ? "not-allowed" : "pointer", padding: "8px 12px", fontWeight: 700,
+                }}>
+                  ›
+                </button>
+              </div>
+
+              {/* Macro rings */}
+              {!loading && (
+                <div style={{
+                  background: GLASS, borderRadius: 16, padding: 16, marginBottom: 16,
+                  border: `1px solid ${GLASS_BORDER}`,
+                  backdropFilter: "blur(16px)",
+                }}>
+                  <MacroRings
+                    calories={totals.calories}
+                    protein={totals.protein}
+                    carbs={totals.carbs}
+                    fat={totals.fat}
+                    goals={goals}
+                  />
+                  {totals.fiber > 0 && (
+                    <div style={{
+                      textAlign: "center", fontFamily: "'Inter', sans-serif",
+                      fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4,
+                    }}>
+                      Fiber: {totals.fiber}g
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Macro rings */}
-            {!loading && (
-              <div style={{
-                background: GLASS, borderRadius: 16, padding: 16, marginBottom: 16,
-                border: `1px solid ${GLASS_BORDER}`,
-                backdropFilter: "blur(16px)",
-              }}>
-                <MacroRings
-                  calories={totals.calories}
-                  protein={totals.protein}
-                  carbs={totals.carbs}
-                  fat={totals.fat}
-                  goals={goals}
-                />
-                {totals.fiber > 0 && (
-                  <div style={{
-                    textAlign: "center", fontFamily: "'Inter', sans-serif",
-                    fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4,
-                  }}>
-                    Fiber: {totals.fiber}g
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Meal logger */}
             <MealLogger meals={meals} date={date} onUpdate={loadData} />
-          </>
+          </div>
         )}
 
         {/* HISTORY TAB */}

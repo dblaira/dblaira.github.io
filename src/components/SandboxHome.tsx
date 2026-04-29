@@ -235,12 +235,9 @@ export default function SandboxHome() {
 
       {/* Experiment cards */}
       <div
-        className="content-width"
+        className="content-width responsive-card-grid"
         style={{
           padding: "12px 24px 80px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
         }}
       >
         {EXPERIMENTS.map((card, idx) => {

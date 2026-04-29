@@ -207,7 +207,7 @@ function MoodCheckinBody() {
         </div>
 
         {view === "checkin" && (
-          <div style={{ maxWidth: 480, margin: "0 auto", padding: "24px 24px 40px" }}>
+          <div className="responsive-page-shell" style={{ padding: "24px 24px 40px" }}>
             {step === 1 && (
               <>
                 <EmotionGrid selected={emotion} onSelect={setEmotion} getLabel={getEmotionLabel} />
@@ -351,13 +351,13 @@ function MoodCheckinBody() {
         )}
 
         {view === "history" && (
-          <div style={{ maxWidth: 480, margin: "0 auto", padding: "24px 24px 40px" }}>
+          <div className="responsive-page-shell" style={{ padding: "24px 24px 40px" }}>
             <EmotionHistory key={refreshKey} />
           </div>
         )}
 
         {view === "customize" && (
-          <div style={{ maxWidth: 480, margin: "0 auto", padding: "24px 24px 40px" }}>
+          <div className="responsive-page-shell" style={{ padding: "24px 24px 40px" }}>
             <EmotionCustomize config={emotionConfig} />
           </div>
         )}

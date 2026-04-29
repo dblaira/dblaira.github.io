@@ -33,13 +33,6 @@ const EXPERIMENTS: ExperimentCard[] = [
     href: "/nutrition",
   },
   {
-    label: "SLEEP",
-    title: "Sleep Dashboard",
-    desc: "Daily score tracking with donut + area chart visualizations. ACM CHI research-backed design.",
-    status: "live",
-    href: "/sleep",
-  },
-  {
     label: "MOOD",
     title: "Emotion Check-in",
     desc: "Tap the wheel. Tag the trigger. Track how you feel over time.",

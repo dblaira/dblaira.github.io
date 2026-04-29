@@ -9,7 +9,6 @@ const CRIMSON = "#DC143C";
 
 const NAV_ITEMS: { href: string; label: string; hint?: string }[] = [
   { href: "/nutrition", label: "Nutrition", hint: "Macro Tracker" },
-  { href: "/sleep", label: "Sleep", hint: "Dashboard" },
   { href: "/mood", label: "Mood", hint: "Emotion Check-in" },
   { href: "/ontology", label: "Ontology", hint: "Adam's Ontology" },
   { href: "/beliefs", label: "Beliefs", hint: "Belief Library" },

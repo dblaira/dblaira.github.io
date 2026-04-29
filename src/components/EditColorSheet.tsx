@@ -2,7 +2,7 @@
 
 import { useEffect, useState, CSSProperties } from "react";
 import { useEditMode } from "@/lib/useEditMode";
-import { fillStyle, fillColor, IMAGE_PRESETS, type Fill } from "@/lib/fills";
+import { fillStyle, IMAGE_PRESETS, type Fill } from "@/lib/fills";
 
 type Mode = "color" | "pattern" | "image";
 
@@ -527,6 +527,3 @@ const saveBtnStyle: CSSProperties = {
   cursor: "pointer",
 };
 
-// Suppress unused-warning for fillColor helper re-export (used by SleepDashboard
-// importing from the same module — kept here to avoid a dangling export).
-void fillColor;

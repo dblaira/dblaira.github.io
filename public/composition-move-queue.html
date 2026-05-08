@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Move Queue — Composition Board</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0A0A0A;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      padding: 48px 24px 80px;
+    }
+
+    /* ── Board header ── */
+    .board-header {
+      max-width: 1200px;
+      margin: 0 auto 52px;
+    }
+    .board-eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #DC143C;
+      margin-bottom: 10px;
+    }
+    .board-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 400;
+      font-style: italic;
+      color: #fff;
+      line-height: 1.15;
+    }
+    .board-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.32);
+      margin-top: 14px;
+      line-height: 1.7;
+      max-width: 540px;
+    }
+
+    /* ── Variant grid ── */
+    .variants {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .variants { grid-template-columns: 1fr; }
+    }
+
+    .variant { display: flex; flex-direction: column; gap: 14px; }
+    .variant-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.2);
+    }
+    .variant-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.85);
+      margin-top: -4px;
+    }
+    .variant-q {
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      font-style: italic;
+      line-height: 1.55;
+      border-left: 2px solid rgba(220,20,60,0.35);
+      padding-left: 9px;
+    }
+
+    /* ── Capacity rail ── */
+    .cap-rail {
+      background: #1a1a1a;
+      border-radius: 999px;
+      display: flex;
+      gap: 2px;
+      padding: 4px;
+    }
+    .cap-pill {
+      flex: 1;
+      padding: 7px 0;
+      border-radius: 999px;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      cursor: default;
+    }
+    .cap-pill.d { background: #7F1D1D; color: #FCA5A5; }
+    .cap-pill.s { background: #78350F; color: #FCD34D; }
+    .cap-pill.e { background: #14532D; color: #86EFAC; }
+    .cap-pill:not(.d):not(.s):not(.e) { color: rgba(255,255,255,0.2); }
+
+    /* ── Category colors ── */
+    .cat-affect      { --cat: #8B5CF6; }
+    .cat-ambition    { --cat: #3B82F6; }
+    .cat-belief      { --cat: #7C3AED; }
+    .cat-exercise    { --cat: #10B981; }
+    .cat-health      { --cat: #F43F5E; }
+    .cat-insight     { --cat: #F59E0B; }
+    .cat-nutrition   { --cat: #14B8A6; }
+    .cat-purchase    { --cat: #EC4899; }
+    .cat-sleep       { --cat: #6366F1; }
+    .cat-social      { --cat: #F97316; }
+    .cat-work        { --cat: #0EA5E9; }
+    .cat-entertainment { --cat: #D946EF; }
+    .cat-learning    { --cat: #06B6D4; }
+
+    /* ── Move card base ── */
+    .move-card {
+      background: #161616;
+      border-radius: 12px;
+      padding: 18px;
+      border-left: 3px solid var(--cat, #333);
+    }
+    .cat-badge {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--cat, #666);
+      margin-bottom: 7px;
+    }
+    .move-text {
+      font-size: 15px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.88);
+      line-height: 1.4;
+    }
+    .why-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.38);
+      margin-top: 11px;
+    }
+    .why-chip .coeff { color: rgba(255,255,255,0.62); font-weight: 600; }
+    .effort {
+      display: flex;
+      gap: 3px;
+      margin-top: 11px;
+    }
+    .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--cat, #555);
+    }
+    .dot.empty { background: rgba(255,255,255,0.08); }
+
+    /* ── VARIANT A: Stack ── */
+    .stack-wrap { position: relative; padding-top: 10px; }
+    .stack-shadow-2 {
+      position: absolute; top: 2px; left: 8px; right: 8px;
+      height: 28px; background: #0f0f0f; border-radius: 12px; z-index: 0;
+    }
+    .stack-shadow-1 {
+      position: absolute; top: 6px; left: 4px; right: 4px;
+      height: 28px; background: #141414; border-radius: 12px; z-index: 1;
+    }
+    .stack-hero {
+      position: relative; z-index: 2;
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 26px 22px;
+      border-left: 4px solid var(--cat, #333);
+    }
+    .stack-hero .move-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 21px;
+      font-weight: 400;
+      font-style: italic;
+    }
+    .stack-hint {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.17);
+      text-transform: uppercase;
+    }
+
+    /* ── VARIANT B: Queue list ── */
+    .queue-list { display: flex; flex-direction: column; gap: 6px; }
+    .move-card.compact { padding: 12px 14px; border-radius: 8px; }
+    .move-card.compact .move-text { font-size: 13px; }
+    .move-card.dimmed { opacity: 0.35; }
+    .expand-hint {
+      text-align: center;
+      padding: 8px 0 2px;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.18);
+      text-transform: uppercase;
+    }
+
+    /* ── VARIANT C: Grid ── */
+    .move-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .move-grid .hero-cell { grid-column: 1 / -1; }
+    .move-grid .hero-cell .move-text { font-size: 16px; font-weight: 500; }
+    .move-grid .sm-cell { padding: 12px 13px; border-radius: 9px; }
+    .move-grid .sm-cell .move-text { font-size: 12px; }
+    .move-grid .sm-cell .cat-badge { margin-bottom: 5px; }
+
+    /* ── Divider ── */
+    .board-divider {
+      max-width: 1200px;
+      margin: 52px auto 0;
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.055);
+    }
+
+    /* ── Reverse-spec notes ── */
+    .notes {
+      max-width: 1200px;
+      margin: 36px auto 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 860px) { .notes { grid-template-columns: 1fr; } }
+    .note {
+      background: #111;
+      border-radius: 10px;
+      padding: 18px;
+    }
+    .note-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.22);
+      margin-bottom: 9px;
+    }
+    .note-body {
+      font-size: 12px;
+      color: rgba(255,255,255,0.44);
+      line-height: 1.75;
+    }
+
+    /* ── Open questions row ── */
+    .questions {
+      max-width: 1200px;
+      margin: 24px auto 0;
+      background: #0f0f0f;
+      border: 1px solid rgba(220,20,60,0.2);
+      border-radius: 10px;
+      padding: 20px 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 32px;
+    }
+    .q-item {
+      font-size: 12px;
+      color: rgba(255,255,255,0.38);
+      line-height: 1.6;
+    }
+    .q-item strong {
+      color: rgba(255,255,255,0.6);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Board header -->
+<div class="board-header">
+  <div class="board-eyebrow">Material Health · Composition Board · May 2026</div>
+  <h1 class="board-title">Capacity-Filtered Move Queue</h1>
+  <p class="board-sub">
+    The ontology network shows the map — 13 categories, live correlations.
+    The missing surface is the turn-by-turn: a ranked queue of behavioral moves
+    filtered by how much energy you actually have right now.
+    Three layout variants. Pick the one that feels right.
+  </p>
+</div>
+
+<!-- Variant grid -->
+<div class="variants">
+
+  <!-- ── VARIANT A: THE STACK ── -->
+  <div class="variant">
+    <div class="variant-label">Variant A</div>
+    <div class="variant-name">The Stack</div>
+    <div class="variant-q">One obvious move. Swipe or dismiss to see the next. The card makes the decision for you.</div>
+
+    <div class="cap-rail">
+      <div class="cap-pill d">Drained</div>
+      <div class="cap-pill">Steady</div>
+      <div class="cap-pill">Energized</div>
+    </div>
+
+    <div class="stack-wrap">
+      <div class="stack-shadow-2"></div>
+      <div class="stack-shadow-1"></div>
+      <div class="stack-hero cat-social">
+        <div class="cat-badge">Social</div>
+        <div class="move-text">Text one person, no agenda</div>
+        <div class="why-chip">Sleep → Social <span class="coeff">+0.58</span></div>
+        <div class="effort">
+          <div class="dot"></div>
+          <div class="dot empty"></div>
+          <div class="dot empty"></div>
+        </div>
+      </div>
+    </div>
+    <div class="stack-hint">2 more moves queued · swipe up</div>
+  </div>
+
+  <!-- ── VARIANT B: THE QUEUE ── -->
+  <div class="variant">
+    <div class="variant-label">Variant B</div>
+    <div class="variant-name">The Queue</div>
+    <div class="variant-q">Top move is dominant. The rest are visible but dimmed. Tap to complete; the list shrinks.</div>
+
+    <div class="cap-rail">
+      <div class="cap-pill">Drained</div>
+      <div class="cap-pill s">Steady</div>
+      <div class="cap-pill">Energized</div>
+    </div>
+
+    <div class="queue-list">
+      <div class="move-card cat-exercise">
+        <div class="cat-badge">Exercise</div>
+        <div class="move-text">10 min walk — any pace</div>
+        <div class="why-chip">Exercise → Sleep <span class="coeff">+0.63</span></div>
+        <div class="effort">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot empty"></div>
+        </div>
+      </div>
+
+      <div class="move-card compact cat-nutrition">
+        <div class="cat-badge">Nutrition</div>
+        <div class="move-text">Eat breakfast before noon</div>
+      </div>
+
+      <div class="move-card compact cat-affect dimmed">
+        <div class="cat-badge">Affect</div>
+        <div class="move-text">Write 3 things that happened today</div>
+      </div>
+
+      <div class="move-card compact cat-sleep dimmed">
+        <div class="cat-badge">Sleep</div>
+        <div class="move-text">No screens after 10pm</div>
+      </div>
+
+      <div class="expand-hint">+3 moves · tap to expand</div>
+    </div>
+  </div>
+
+  <!-- ── VARIANT C: THE GRID ── -->
+  <div class="variant">
+    <div class="variant-label">Variant C</div>
+    <div class="variant-name">The Grid</div>
+    <div class="variant-q">Size encodes priority. Full-width hero, half-width supporting moves. Browsable, not decisional.</div>
+
+    <div class="cap-rail">
+      <div class="cap-pill">Drained</div>
+      <div class="cap-pill">Steady</div>
+      <div class="cap-pill e">Energized</div>
+    </div>
+
+    <div class="move-grid">
+      <div class="move-card hero-cell cat-ambition">
+        <div class="cat-badge">Ambition</div>
+        <div class="move-text">Write one paragraph toward the project</div>
+        <div class="why-chip">Ambition → Insight <span class="coeff">+0.74</span></div>
+        <div class="effort">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+
+      <div class="move-card sm-cell cat-learning">
+        <div class="cat-badge">Learning</div>
+        <div class="move-text">Read 20 pages</div>
+        <div class="effort">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot empty"></div>
+        </div>
+      </div>
+
+      <div class="move-card sm-cell cat-insight">
+        <div class="cat-badge">Insight</div>
+        <div class="move-text">Write the one thing you figured out</div>
+        <div class="effort">
+          <div class="dot"></div>
+          <div class="dot empty"></div>
+          <div class="dot empty"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<hr class="board-divider">
+
+<!-- Reverse-spec notes -->
+<div class="notes">
+  <div class="note">
+    <div class="note-label">Pattern · Foreground / Background</div>
+    <div class="note-body">
+      Capacity is always foreground — it controls what renders. Move text is the signal.
+      Category label and correlation chip are background support: they answer "why"
+      after the move already made sense visually.
+    </div>
+  </div>
+  <div class="note">
+    <div class="note-label">Center of Gravity</div>
+    <div class="note-body">
+      Stack: single card owns the frame — maximum decisional gravity.
+      Queue: top item anchors, rest recede in opacity.
+      Grid: 2-col-span hero pulls the eye; small cards are supporting context.
+      All three resolve to "one top move" with different browse affordances.
+    </div>
+  </div>
+  <div class="note">
+    <div class="note-label">Implied Interaction</div>
+    <div class="note-body">
+      Stack → swipe-to-dismiss, Tinder-style decisioning.
+      Queue → tap to mark done, list collapses upward.
+      Grid → tap to expand detail card, Pinterest-style.
+      Capacity rail is shared across all three — same input, different output shape.
+    </div>
+  </div>
+</div>
+
+<!-- Open questions -->
+<div class="questions">
+  <div class="q-item"><strong>Capacity input:</strong> 3-state rail (Drained/Steady/Energized) or a continuous dial?</div>
+  <div class="q-item"><strong>Move data:</strong> hardcoded set per category or AI-generated from Understood journal entries?</div>
+  <div class="q-item"><strong>Ranking signal:</strong> pure correlation coefficient or also weighted by recent category gaps?</div>
+  <div class="q-item"><strong>Completion:</strong> does finishing a move log to Supabase and feed back into the ontology?</div>
+  <div class="q-item"><strong>Friction:</strong> should you need to declare capacity every session, or can it infer from recent check-ins?</div>
+</div>
+
+</body>
+</html>

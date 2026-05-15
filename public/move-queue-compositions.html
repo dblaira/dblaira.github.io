@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Move Queue — Composition Directions</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0C0C0C;
+    color: #E8E4DC;
+    font-family: 'Inter', sans-serif;
+    padding: 40px 24px 80px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  .header {
+    margin-bottom: 64px;
+  }
+  .header-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #DC143C;
+    margin-bottom: 10px;
+  }
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 400;
+    font-style: italic;
+    color: #E8E4DC;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  .header-sub {
+    font-size: 14px;
+    color: rgba(232,228,220,0.45);
+    line-height: 1.6;
+    max-width: 540px;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 32px;
+    align-items: start;
+  }
+
+  .direction-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(232,228,220,0.3);
+    margin-bottom: 14px;
+  }
+  .direction-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: #E8E4DC;
+    margin-bottom: 6px;
+  }
+  .direction-note {
+    font-size: 12px;
+    color: rgba(232,228,220,0.4);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .direction-question {
+    font-size: 11px;
+    font-weight: 600;
+    color: #DC143C;
+    margin-top: 16px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ───── Direction A: The Now Card ───── */
+  .now-card-shell {
+    background: #111;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .now-card-bar {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .now-card-bar-label {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(232,228,220,0.35);
+    font-weight: 600;
+  }
+  .capacity-pills {
+    display: flex;
+    gap: 5px;
+  }
+  .capacity-pip {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3B82F6;
+  }
+  .capacity-pip.empty {
+    background: rgba(255,255,255,0.12);
+  }
+  .now-card-body {
+    padding: 28px 22px 24px;
+  }
+  .now-category-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .now-category-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+  .now-card-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1.25;
+    color: #F5F0E8;
+    margin-bottom: 10px;
+  }
+  .now-card-reason {
+    font-size: 12px;
+    color: rgba(232,228,220,0.45);
+    line-height: 1.55;
+    border-left: 2px solid rgba(232,228,220,0.12);
+    padding-left: 10px;
+    margin-bottom: 20px;
+  }
+  .now-card-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .effort-dots {
+    display: flex;
+    gap: 3px;
+  }
+  .effort-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10B981;
+  }
+  .effort-dot.empty {
+    background: rgba(255,255,255,0.1);
+  }
+  .effort-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: rgba(232,228,220,0.35);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .time-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(232,228,220,0.4);
+    letter-spacing: 0.05em;
+  }
+  .now-card-footer {
+    padding: 0 22px 20px;
+    display: flex;
+    gap: 8px;
+  }
+  .btn-primary {
+    flex: 1;
+    padding: 11px 16px;
+    background: #DC143C;
+    color: #FFF;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .btn-skip {
+    padding: 11px 14px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(232,228,220,0.4);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .now-queue-dots {
+    padding: 0 22px 18px;
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+  }
+  .queue-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+  }
+  .queue-dot.active {
+    background: #DC143C;
+    width: 16px;
+  }
+
+  /* ───── Direction B: The Queue ───── */
+  .queue-shell {
+    background: #111;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .capacity-bar {
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .capacity-bar-label {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: rgba(232,228,220,0.3);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .capacity-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .capacity-chip {
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .capacity-chip.selected {
+    background: #DC143C;
+    color: #FFF;
+    border-color: #DC143C;
+  }
+  .capacity-chip.unselected {
+    background: rgba(255,255,255,0.06);
+    color: rgba(232,228,220,0.45);
+    border-color: rgba(255,255,255,0.08);
+  }
+  .capacity-divider {
+    width: 1px;
+    height: 18px;
+    background: rgba(255,255,255,0.1);
+  }
+  .queue-list {
+    padding: 8px 0;
+  }
+  .queue-item {
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 12px;
+    align-items: start;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+  }
+  .queue-item:last-child {
+    border-bottom: none;
+  }
+  .queue-item:hover {
+    background: rgba(255,255,255,0.03);
+  }
+  .queue-rank {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-style: italic;
+    color: rgba(232,228,220,0.18);
+    text-align: center;
+    padding-top: 2px;
+  }
+  .queue-item-body {}
+  .queue-item-cat {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .queue-item-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: #E8E4DC;
+    line-height: 1.3;
+    margin-bottom: 5px;
+  }
+  .queue-item-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(232,228,220,0.4);
+  }
+  .queue-item-effort {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    padding-top: 4px;
+  }
+  .effort-row {
+    display: flex;
+    gap: 2px;
+  }
+  .effort-pip {
+    width: 5px;
+    height: 5px;
+    border-radius: 1px;
+  }
+  .queue-item-time {
+    font-size: 10px;
+    color: rgba(232,228,220,0.3);
+    font-weight: 500;
+  }
+
+  /* ───── Direction C: Context Web ───── */
+  .context-shell {
+    background: #111;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 22px;
+  }
+  .context-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .context-header-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(232,228,220,0.3);
+  }
+  .context-insight {
+    font-size: 11px;
+    color: rgba(232,228,220,0.45);
+    font-weight: 500;
+  }
+  .context-web {
+    position: relative;
+    height: 280px;
+    margin-bottom: 16px;
+  }
+  .context-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 1px rgba(99,102,241,0.3), 0 0 32px rgba(99,102,241,0.2);
+    z-index: 10;
+  }
+  .context-center-label {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 2px;
+  }
+  .context-center-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    color: #FFF;
+    font-style: italic;
+  }
+
+  /* SVG connectors drawn in JS below; move cards positioned absolutely */
+  .move-satellite {
+    position: absolute;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 10px 12px;
+    width: 110px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    z-index: 5;
+  }
+  .move-satellite:hover {
+    background: rgba(255,255,255,0.09);
+    border-color: rgba(255,255,255,0.16);
+  }
+  .satellite-cat {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .satellite-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 11px;
+    font-weight: 400;
+    color: #E8E4DC;
+    line-height: 1.3;
+  }
+  .satellite-coeff {
+    font-size: 9px;
+    color: rgba(232,228,220,0.35);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+  .connector-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .context-legend {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .context-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: rgba(232,228,220,0.35);
+  }
+  .legend-line {
+    width: 18px;
+    height: 2px;
+  }
+
+  /* Divider between compositions */
+  .section-divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    margin: 56px 0;
+  }
+
+  .reverse-spec-block {
+    background: rgba(220,20,60,0.06);
+    border: 1px solid rgba(220,20,60,0.15);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-top: 48px;
+  }
+  .rsb-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #DC143C;
+    margin-bottom: 12px;
+  }
+  .rsb-row {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .rsb-col {
+    flex: 1;
+    min-width: 180px;
+  }
+  .rsb-col-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(232,228,220,0.4);
+    margin-bottom: 6px;
+  }
+  .rsb-col-value {
+    font-size: 13px;
+    color: rgba(232,228,220,0.75);
+    line-height: 1.55;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <p class="header-eyebrow">Material Health — Move Queue</p>
+  <h1 class="header-title">Three directions for the action surface</h1>
+  <p class="header-sub">The ontology network exists. The correlation engine runs. What's missing is the behavioral output — the ranked queue that translates all that signal into what to do <em>right now</em>.</p>
+</div>
+
+<div class="board">
+
+  <!-- ── DIRECTION A ── -->
+  <div>
+    <p class="direction-label">Direction A</p>
+    <h2 class="direction-name">The Now Card</h2>
+    <p class="direction-note">Single-focus. One move fills the screen. Swipe-to-skip. Capacity expressed as energy pips. The ontology reason is a quiet whisper below the headline.</p>
+
+    <div class="now-card-shell">
+      <!-- Status bar -->
+      <div class="now-card-bar">
+        <span class="now-card-bar-label">Right now · 3 queued</span>
+        <div class="capacity-pills">
+          <div class="capacity-pip"></div>
+          <div class="capacity-pip"></div>
+          <div class="capacity-pip"></div>
+          <div class="capacity-pip empty"></div>
+          <div class="capacity-pip empty"></div>
+        </div>
+      </div>
+      <!-- Card body -->
+      <div class="now-card-body">
+        <div>
+          <span class="now-category-tag" style="background: rgba(99,102,241,0.12); color: #818CF8;">
+            <span class="now-category-dot" style="background:#818CF8;"></span>
+            Sleep
+          </span>
+        </div>
+        <h3 class="now-card-headline">Go to bed 45 min<br/>earlier tonight</h3>
+        <p class="now-card-reason">
+          Your affect score tends to recover when sleep hours increase. Sleep → affect correlation: +0.68.
+        </p>
+        <div class="now-card-meta">
+          <div class="effort-dots">
+            <div class="effort-dot"></div>
+            <div class="effort-dot"></div>
+            <div class="effort-dot empty"></div>
+            <div class="effort-dot empty"></div>
+            <div class="effort-dot empty"></div>
+          </div>
+          <span class="effort-label">Low effort</span>
+          <span class="time-badge">·&nbsp;&nbsp;2 min to set</span>
+        </div>
+      </div>
+      <!-- Actions -->
+      <div class="now-card-footer">
+        <button class="btn-primary">Do this</button>
+        <button class="btn-skip">Skip →</button>
+      </div>
+      <!-- Queue depth indicator -->
+      <div class="now-queue-dots">
+        <div class="queue-dot active"></div>
+        <div class="queue-dot"></div>
+        <div class="queue-dot"></div>
+      </div>
+    </div>
+
+    <p class="direction-question">↑ Does one-at-a-time feel right, or does Adam want to see the full ranked list?</p>
+  </div>
+
+  <!-- ── DIRECTION B ── -->
+  <div>
+    <p class="direction-label">Direction B</p>
+    <h2 class="direction-name">The Queue</h2>
+    <p class="direction-note">Capacity filter at top (energy × time). The ranked list below re-sorts live. Good for review mode: scan all 5 before picking one.</p>
+
+    <div class="queue-shell">
+      <!-- Capacity filter bar -->
+      <div class="capacity-bar">
+        <p class="capacity-bar-label">Current capacity</p>
+        <div class="capacity-row">
+          <span class="capacity-chip selected">Medium energy</span>
+          <span class="capacity-chip unselected">Low</span>
+          <span class="capacity-chip unselected">High</span>
+          <div class="capacity-divider"></div>
+          <span class="capacity-chip selected">15 min</span>
+          <span class="capacity-chip unselected">30 min</span>
+        </div>
+      </div>
+      <!-- Queue items -->
+      <div class="queue-list">
+
+        <div class="queue-item">
+          <div class="queue-rank">1</div>
+          <div class="queue-item-body">
+            <p class="queue-item-cat" style="color:#818CF8;">Sleep</p>
+            <p class="queue-item-title">Go to bed 45 min earlier</p>
+            <span class="queue-item-tag">Sleep → Affect +0.68</span>
+          </div>
+          <div class="queue-item-effort">
+            <div class="effort-row">
+              <div class="effort-pip" style="background:#10B981;"></div>
+              <div class="effort-pip" style="background:#10B981;"></div>
+              <div class="effort-pip" style="background:rgba(255,255,255,0.1);"></div>
+              <div class="effort-pip" style="background:rgba(255,255,255,0.1);"></div>
+            </div>
+            <span class="queue-item-time">2 min</span>
+          </div>
+        </div>
+
+        <div class="queue-item">
+          <div class="queue-rank">2</div>
+          <div class="queue-item-body">
+            <p class="queue-item-cat" style="color:#F97316;">Social</p>
+            <p class="queue-item-title">Send one message you've been delaying</p>
+            <span class="queue-item-tag">Social → Affect +0.51</span>
+          </div>
+          <div class="queue-item-effort">
+            <div class="effort-row">
+              <div class="effort-pip" style="background:#10B981;"></div>
+              <div class="effort-pip" style="background:rgba(255,255,255,0.1);"></div>
+              <div class="effort-pip" style="background:rgba(255,255,255,0.1);"></div>
+              <div class="effort-pip" style="background:rgba(255,255,255,0.1);"></div>
+            </div>
+            <span class="queue-item-time">5 min</span>
+          </div>
+        </div>
+
+        <div class="queue-item">
+          <div class="queue-rank">3</div>
+          <div class="queue-item-body">
+            <p class="queue-item-cat" style="color:#10B981;">Exercise</p>
+            <p class="queue-item-title">10 min walk, no destination</p>
+            <span class="queue-item-tag">Predicts work +0.44 (lag 1d)</span>
+          </div>
+          <div class="queue-item-effort">
+            <div class="effort-row">
+              <div class="effort-pip" style="background:#10B981;"></div>
+              <div class="effort-pip" style="background:#10B981;"></div>
+              <div class="effort-pip" style="background:#10B981;"></div>
+              <div class="effort-pip" style="background:rgba(255,255,255,0.1);"></div>
+            </div>
+            <span class="queue-item-time">10 min</span>
+          </div>
+        </div>
+
+        <div class="queue-item" style="opacity:0.45;">
+          <div class="queue-rank">4</div>
+          <div class="queue-item-body">
+            <p class="queue-item-cat" style="color:#14B8A6;">Nutrition</p>
+            <p class="queue-item-title">Log dinner before 8pm</p>
+            <span class="queue-item-tag">Needs 30 min — filtered</span>
+          </div>
+          <div class="queue-item-effort">
+            <div class="effort-row">
+              <div class="effort-pip" style="background:rgba(255,255,255,0.15);"></div>
+              <div class="effort-pip" style="background:rgba(255,255,255,0.15);"></div>
+              <div class="effort-pip" style="background:rgba(255,255,255,0.15);"></div>
+              <div class="effort-pip" style="background:rgba(255,255,255,0.15);"></div>
+            </div>
+            <span class="queue-item-time">30 min</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <p class="direction-question">↑ Does capacity filtering feel like the right primary axis, or is it noise?</p>
+  </div>
+
+  <!-- ── DIRECTION C ── -->
+  <div>
+    <p class="direction-label">Direction C</p>
+    <h2 class="direction-name">The Context Web</h2>
+    <p class="direction-note">Your current weakest category in the center. Move suggestions float around it, each connected by the correlation that makes them relevant. Spatial, relational, ontology-first.</p>
+
+    <div class="context-shell">
+      <div class="context-header">
+        <span class="context-header-label">Weakest signal: Affect</span>
+        <span class="context-insight">3 categories predict recovery</span>
+      </div>
+
+      <div class="context-web" id="contextWeb">
+        <!-- Center node -->
+        <div class="context-center" id="ccenter">
+          <span class="context-center-label">Now</span>
+          <span class="context-center-value">Affect</span>
+        </div>
+
+        <!-- Satellites -->
+        <div class="move-satellite" id="sat1" style="top:12px; left:20px;">
+          <p class="satellite-cat" style="color:#818CF8;">Sleep</p>
+          <p class="satellite-title">Bed 45 min earlier</p>
+          <p class="satellite-coeff">+0.68 correlation</p>
+        </div>
+        <div class="move-satellite" id="sat2" style="top:12px; right:20px;">
+          <p class="satellite-cat" style="color:#F97316;">Social</p>
+          <p class="satellite-title">Send that delayed message</p>
+          <p class="satellite-coeff">+0.51 correlation</p>
+        </div>
+        <div class="move-satellite" id="sat3" style="bottom:20px; left:50%; transform:translateX(-50%);">
+          <p class="satellite-cat" style="color:#10B981;">Exercise</p>
+          <p class="satellite-title">10 min walk</p>
+          <p class="satellite-coeff">predicts +0.44 (1d lag)</p>
+        </div>
+
+        <!-- SVG connectors -->
+        <svg class="connector-svg" id="connectorSvg"></svg>
+      </div>
+
+      <div class="context-legend">
+        <div class="context-legend-item">
+          <div class="legend-line" style="background:#4F7F63;"></div>
+          <span>Instant</span>
+        </div>
+        <div class="context-legend-item">
+          <div class="legend-line" style="border-top: 2px dashed #A74D4D;"></div>
+          <span>Lagged (predictive)</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="direction-question">↑ Too much like the existing ontology graph, or a useful drill-down?</p>
+  </div>
+
+</div>
+
+<!-- Reverse-spec block -->
+<div class="reverse-spec-block">
+  <p class="rsb-title">Reverse-spec notes — what all three share</p>
+  <div class="rsb-row">
+    <div class="rsb-col">
+      <p class="rsb-col-label">Center of gravity</p>
+      <p class="rsb-col-value">The <em>current move</em>, not the category map. The ontology recedes to a "why" whisper.</p>
+    </div>
+    <div class="rsb-col">
+      <p class="rsb-col-label">Foreground signal</p>
+      <p class="rsb-col-value">Title of the move. Everything else (effort, time, correlation) is subordinate.</p>
+    </div>
+    <div class="rsb-col">
+      <p class="rsb-col-label">Implied data model</p>
+      <p class="rsb-col-value"><code>BehavioralMove { category, title, effortLevel, estimatedMinutes, correlationTag }</code></p>
+    </div>
+    <div class="rsb-col">
+      <p class="rsb-col-label">Implied ranking logic</p>
+      <p class="rsb-col-value">Score = correlation strength × capacity fit × recency. Filtered by time available first.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Draw SVG connectors for Direction C
+  function drawConnectors() {
+    const web = document.getElementById('contextWeb');
+    const svg = document.getElementById('connectorSvg');
+    const center = document.getElementById('ccenter');
+    if (!web || !svg || !center) return;
+
+    const webRect = web.getBoundingClientRect();
+    const cRect = center.getBoundingClientRect();
+    const cx = cRect.left + cRect.width / 2 - webRect.left;
+    const cy = cRect.top + cRect.height / 2 - webRect.top;
+
+    const sats = [
+      { id: 'sat1', lag: false },
+      { id: 'sat2', lag: false },
+      { id: 'sat3', lag: true },
+    ];
+
+    svg.innerHTML = '';
+    for (const s of sats) {
+      const el = document.getElementById(s.id);
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      const ex = r.left + r.width / 2 - webRect.left;
+      const ey = r.top + r.height / 2 - webRect.top;
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', cx);
+      line.setAttribute('y1', cy);
+      line.setAttribute('x2', ex);
+      line.setAttribute('y2', ey);
+      line.setAttribute('stroke', s.lag ? '#A74D4D' : '#4F7F63');
+      line.setAttribute('stroke-width', s.lag ? '1.5' : '1.8');
+      line.setAttribute('stroke-dasharray', s.lag ? '4 6' : 'none');
+      line.setAttribute('opacity', '0.5');
+      svg.appendChild(line);
+    }
+  }
+
+  requestAnimationFrame(() => {
+    setTimeout(drawConnectors, 100);
+  });
+  window.addEventListener('resize', drawConnectors);
+</script>
+
+</body>
+</html>

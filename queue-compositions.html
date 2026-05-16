@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Queue — Composition Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    padding: 40px 24px 80px;
+  }
+  .board-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .board-header h1 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 8px;
+  }
+  .board-header p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.6;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .variant-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    margin-bottom: 12px;
+  }
+  .variant-caption {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 14px;
+    line-height: 1.6;
+    max-width: 360px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 48px 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .variant { }
+
+  /* ── Variant A: Dark / Surgical ── */
+  .va {
+    background: #0A0A0A;
+    border-radius: 20px;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+  }
+  .va-header {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .va-eyebrow {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #DC143C;
+    margin-bottom: 4px;
+  }
+  .va-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 26px;
+    font-weight: 400;
+    font-style: italic;
+    color: #F0EBE0;
+  }
+  .va-capacity {
+    display: flex;
+    gap: 8px;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .va-cap-chip {
+    flex: 1;
+    padding: 7px 0;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.3);
+    background: transparent;
+  }
+  .va-cap-chip.active {
+    background: rgba(220,20,60,0.15);
+    border-color: rgba(220,20,60,0.4);
+    color: #DC143C;
+  }
+  .va-insight {
+    margin: 12px 20px;
+    padding: 9px 12px;
+    background: rgba(255,255,255,0.03);
+    border-left: 2px solid #3B82F6;
+    border-radius: 0 6px 6px 0;
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.5;
+  }
+  .va-insight strong { color: #60A5FA; font-weight: 600; }
+  .va-moves { padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 8px; }
+  .va-move {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .va-move:hover { background: rgba(255,255,255,0.06); }
+  .va-move-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+  .va-move-body { flex: 1; }
+  .va-move-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: #F0EBE0;
+    line-height: 1.3;
+    margin-bottom: 3px;
+  }
+  .va-move-meta {
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .va-move-cost {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 7px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.35);
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+  .va-move.ranked-1 { border-color: rgba(220,20,60,0.2); background: rgba(220,20,60,0.05); }
+  .va-move.ranked-1 .va-move-name { color: #fff; }
+
+  /* ── Variant B: Warm Cream / Index Card ── */
+  .vb {
+    background: #F5F0E8;
+    border-radius: 20px;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+  }
+  .vb-header {
+    padding: 20px 20px 0;
+  }
+  .vb-eyebrow {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #DC143C;
+    margin-bottom: 4px;
+  }
+  .vb-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 26px;
+    font-weight: 400;
+    font-style: italic;
+    color: #1A1A1A;
+  }
+  .vb-capacity-bar {
+    margin: 16px 20px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 8px;
+    height: 6px;
+    position: relative;
+  }
+  .vb-capacity-fill {
+    height: 100%;
+    width: 55%;
+    background: linear-gradient(90deg, #DC143C, #F97316);
+    border-radius: 8px;
+  }
+  .vb-capacity-labels {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 20px 0;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.3);
+  }
+  .vb-insight {
+    margin: 0 20px 14px;
+    padding: 8px 11px;
+    background: rgba(255,255,255,0.7);
+    border-left: 2px solid #10B981;
+    border-radius: 0 6px 6px 0;
+    font-size: 11px;
+    color: rgba(0,0,0,0.5);
+    line-height: 1.5;
+  }
+  .vb-insight strong { color: #059669; font-weight: 600; }
+  .vb-moves { padding: 0 16px 20px; display: flex; flex-direction: column; gap: 8px; }
+  .vb-move {
+    background: #fff;
+    border-radius: 12px;
+    padding: 13px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    cursor: pointer;
+  }
+  .vb-move-accent {
+    width: 3px;
+    border-radius: 2px;
+    align-self: stretch;
+    flex-shrink: 0;
+  }
+  .vb-move-body { flex: 1; }
+  .vb-move-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 15px;
+    color: #1A1A1A;
+    line-height: 1.3;
+    margin-bottom: 3px;
+  }
+  .vb-move-meta {
+    font-size: 10px;
+    color: rgba(0,0,0,0.35);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .vb-move-dots {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+  }
+  .vb-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .vb-dot.filled { background: rgba(0,0,0,0.35); }
+  .vb-dot.empty { background: rgba(0,0,0,0.1); }
+  .vb-move.top { box-shadow: 0 2px 12px rgba(220,20,60,0.1); border: 1px solid rgba(220,20,60,0.12); }
+
+  /* ── Variant C: Split / Ontology Pulse ── */
+  .vc {
+    background: #0F0F0F;
+    border-radius: 20px;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+  .vc-top {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .vc-eyebrow {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #DC143C;
+    margin-bottom: 3px;
+  }
+  .vc-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px;
+    font-weight: 400;
+    font-style: italic;
+    color: #F0EBE0;
+  }
+  .vc-pulse-ring {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(220,20,60,0.1);
+    border: 2px solid rgba(220,20,60,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #DC143C;
+  }
+  .vc-split {
+    display: flex;
+    flex: 1;
+  }
+  .vc-ontology-rail {
+    width: 100px;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .vc-rail-label {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.2);
+    margin-bottom: 4px;
+  }
+  .vc-rail-cat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .vc-rail-pip {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .vc-rail-name {
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.04em;
+  }
+  .vc-rail-bar {
+    height: 2px;
+    border-radius: 1px;
+    margin-top: 2px;
+    background: rgba(255,255,255,0.08);
+    position: relative;
+  }
+  .vc-rail-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    border-radius: 1px;
+  }
+  .vc-queue {
+    flex: 1;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .vc-queue-label {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.2);
+    margin-bottom: 4px;
+  }
+  .vc-move {
+    padding: 10px 11px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer;
+  }
+  .vc-move-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 2px;
+  }
+  .vc-move-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .vc-move-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    color: #E5E0D5;
+    flex: 1;
+  }
+  .vc-move-effort {
+    font-size: 9px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 0.05em;
+  }
+  .vc-move-cat {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.2);
+    padding-left: 14px;
+  }
+  .vc-move.top-move {
+    background: rgba(220,20,60,0.07);
+    border-color: rgba(220,20,60,0.2);
+  }
+  .vc-move.top-move .vc-move-name { color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="board-header">
+  <h1>Material Health — Queue Compositions</h1>
+  <p>Three directions for the behavioral move surface. Each renders the same core loop: capacity → ranked moves → ontology insight. Select a direction, crop a section, or annotate before any code ships.</p>
+</div>
+
+<div class="grid">
+
+  <!-- ── VARIANT A ── Dark / Surgical -->
+  <div class="variant">
+    <div class="variant-label">A — Dark / Surgical</div>
+    <div class="va">
+      <div class="va-header">
+        <div class="va-eyebrow">Queue</div>
+        <div class="va-title">Your moves, ranked</div>
+      </div>
+
+      <!-- Capacity -->
+      <div class="va-capacity">
+        <div class="va-cap-chip">Depleted</div>
+        <div class="va-cap-chip active">Low</div>
+        <div class="va-cap-chip">Moderate</div>
+        <div class="va-cap-chip">Full</div>
+      </div>
+
+      <!-- Ontology insight -->
+      <div class="va-insight">
+        <strong>Sleep → Affect</strong> correlation: 0.73. Your last two nights averaged 5.4h — affect moves are surfacing first.
+      </div>
+
+      <!-- Moves -->
+      <div class="va-moves">
+        <div class="va-move ranked-1">
+          <div class="va-move-dot" style="background:#6366F1;"></div>
+          <div class="va-move-body">
+            <div class="va-move-name">20-min nap, no alarm</div>
+            <div class="va-move-meta">Sleep · 0 effort</div>
+          </div>
+          <div class="va-move-cost">0 min</div>
+        </div>
+        <div class="va-move">
+          <div class="va-move-dot" style="background:#10B981;"></div>
+          <div class="va-move-body">
+            <div class="va-move-name">Walk outside, no destination</div>
+            <div class="va-move-meta">Exercise · Low</div>
+          </div>
+          <div class="va-move-cost">20 min</div>
+        </div>
+        <div class="va-move">
+          <div class="va-move-dot" style="background:#8B5CF6;"></div>
+          <div class="va-move-body">
+            <div class="va-move-name">Name what you're feeling</div>
+            <div class="va-move-meta">Affect · Low</div>
+          </div>
+          <div class="va-move-cost">3 min</div>
+        </div>
+        <div class="va-move">
+          <div class="va-move-dot" style="background:#14B8A6;"></div>
+          <div class="va-move-body">
+            <div class="va-move-name">Log yesterday's meals</div>
+            <div class="va-move-meta">Nutrition · Medium</div>
+          </div>
+          <div class="va-move-cost">8 min</div>
+        </div>
+        <div class="va-move" style="opacity:0.4;">
+          <div class="va-move-dot" style="background:#3B82F6;"></div>
+          <div class="va-move-body">
+            <div class="va-move-name">Draft the project brief</div>
+            <div class="va-move-meta">Work · High — above your current capacity</div>
+          </div>
+          <div class="va-move-cost">60 min</div>
+        </div>
+      </div>
+    </div>
+    <div class="variant-caption">
+      Capacity is a 4-state toggle. Correlation insight floats above the queue as ambient context. High-cost moves ghost out — still visible, not selectable. Matches the existing dark theme of /ontology and /agents.
+    </div>
+  </div>
+
+  <!-- ── VARIANT B ── Warm Cream / Index Cards -->
+  <div class="variant">
+    <div class="variant-label">B — Cream / Index Cards</div>
+    <div class="vb">
+      <div class="vb-header">
+        <div class="vb-eyebrow">Queue</div>
+        <div class="vb-title">Your moves, ranked</div>
+      </div>
+
+      <!-- Capacity bar -->
+      <div style="margin: 14px 20px 4px;">
+        <div class="vb-capacity-bar">
+          <div class="vb-capacity-fill"></div>
+        </div>
+        <div class="vb-capacity-labels">
+          <span>Depleted</span>
+          <span>↑ Moderate</span>
+          <span>Full</span>
+        </div>
+      </div>
+
+      <!-- Insight -->
+      <div class="vb-insight" style="margin-top: 12px;">
+        <strong>Exercise lifts sleep</strong> when lagged by 2 days. You haven't moved in 4 days — two exercise moves are ranked up.
+      </div>
+
+      <!-- Moves -->
+      <div class="vb-moves">
+        <div class="vb-move top">
+          <div class="vb-move-accent" style="background:#10B981;"></div>
+          <div class="vb-move-body">
+            <div class="vb-move-name">Walk outside, no destination</div>
+            <div class="vb-move-meta">
+              <span>Exercise</span>
+              <div class="vb-move-dots">
+                <div class="vb-dot filled"></div>
+                <div class="vb-dot empty"></div>
+                <div class="vb-dot empty"></div>
+              </div>
+              <span>20 min</span>
+            </div>
+          </div>
+        </div>
+        <div class="vb-move">
+          <div class="vb-move-accent" style="background:#6366F1;"></div>
+          <div class="vb-move-body">
+            <div class="vb-move-name">Wind-down 30 min before bed</div>
+            <div class="vb-move-meta">
+              <span>Sleep</span>
+              <div class="vb-move-dots">
+                <div class="vb-dot filled"></div>
+                <div class="vb-dot empty"></div>
+                <div class="vb-dot empty"></div>
+              </div>
+              <span>30 min</span>
+            </div>
+          </div>
+        </div>
+        <div class="vb-move">
+          <div class="vb-move-accent" style="background:#8B5CF6;"></div>
+          <div class="vb-move-body">
+            <div class="vb-move-name">Name what you're feeling</div>
+            <div class="vb-move-meta">
+              <span>Affect</span>
+              <div class="vb-move-dots">
+                <div class="vb-dot filled"></div>
+                <div class="vb-dot empty"></div>
+                <div class="vb-dot empty"></div>
+              </div>
+              <span>3 min</span>
+            </div>
+          </div>
+        </div>
+        <div class="vb-move">
+          <div class="vb-move-accent" style="background:#F97316;"></div>
+          <div class="vb-move-body">
+            <div class="vb-move-name">Text one person you've been meaning to reach</div>
+            <div class="vb-move-meta">
+              <span>Social</span>
+              <div class="vb-move-dots">
+                <div class="vb-dot filled"></div>
+                <div class="vb-dot filled"></div>
+                <div class="vb-dot empty"></div>
+              </div>
+              <span>5 min</span>
+            </div>
+          </div>
+        </div>
+        <div class="vb-move" style="opacity:0.35;">
+          <div class="vb-move-accent" style="background:#0EA5E9;"></div>
+          <div class="vb-move-body">
+            <div class="vb-move-name">Deep work block — 90 min</div>
+            <div class="vb-move-meta">
+              <span>Work · above capacity</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="variant-caption">
+      Capacity is a drag-slider (fills from left). Moves are index cards — white on cream. Effort shown as 1–3 filled dots. Matches the SAVY home/beliefs warm tone. Softer, more tactile.
+    </div>
+  </div>
+
+  <!-- ── VARIANT C ── Split / Ontology Pulse -->
+  <div class="variant">
+    <div class="variant-label">C — Split / Ontology Pulse</div>
+    <div class="vc">
+      <div class="vc-top">
+        <div>
+          <div class="vc-eyebrow">Queue</div>
+          <div class="vc-title">Your moves</div>
+        </div>
+        <!-- Capacity ring -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+          <div class="vc-pulse-ring">Low</div>
+          <div style="font-size:8px; color:rgba(255,255,255,0.2); letter-spacing:0.1em;">CAPACITY</div>
+        </div>
+      </div>
+
+      <div class="vc-split">
+        <!-- Left: ontology rail -->
+        <div class="vc-ontology-rail">
+          <div class="vc-rail-label">Live signal</div>
+          <div class="vc-rail-cat">
+            <div class="vc-rail-pip" style="background:#6366F1;"></div>
+            <div>
+              <div class="vc-rail-name">Sleep</div>
+              <div class="vc-rail-bar"><div class="vc-rail-fill" style="width:28%; background:#6366F1;"></div></div>
+            </div>
+          </div>
+          <div class="vc-rail-cat">
+            <div class="vc-rail-pip" style="background:#8B5CF6;"></div>
+            <div>
+              <div class="vc-rail-name">Affect</div>
+              <div class="vc-rail-bar"><div class="vc-rail-fill" style="width:35%; background:#8B5CF6;"></div></div>
+            </div>
+          </div>
+          <div class="vc-rail-cat">
+            <div class="vc-rail-pip" style="background:#10B981;"></div>
+            <div>
+              <div class="vc-rail-name">Exercise</div>
+              <div class="vc-rail-bar"><div class="vc-rail-fill" style="width:15%; background:#10B981;"></div></div>
+            </div>
+          </div>
+          <div class="vc-rail-cat">
+            <div class="vc-rail-pip" style="background:#14B8A6;"></div>
+            <div>
+              <div class="vc-rail-name">Nutrition</div>
+              <div class="vc-rail-bar"><div class="vc-rail-fill" style="width:62%; background:#14B8A6;"></div></div>
+            </div>
+          </div>
+          <div class="vc-rail-cat">
+            <div class="vc-rail-pip" style="background:#F97316;"></div>
+            <div>
+              <div class="vc-rail-name">Social</div>
+              <div class="vc-rail-bar"><div class="vc-rail-fill" style="width:20%; background:#F97316;"></div></div>
+            </div>
+          </div>
+          <div class="vc-rail-cat">
+            <div class="vc-rail-pip" style="background:#F59E0B;"></div>
+            <div>
+              <div class="vc-rail-name">Insight</div>
+              <div class="vc-rail-bar"><div class="vc-rail-fill" style="width:50%; background:#F59E0B;"></div></div>
+            </div>
+          </div>
+          <div class="vc-rail-cat">
+            <div class="vc-rail-pip" style="background:#3B82F6;"></div>
+            <div>
+              <div class="vc-rail-name">Work</div>
+              <div class="vc-rail-bar"><div class="vc-rail-fill" style="width:78%; background:#3B82F6;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: queue -->
+        <div class="vc-queue">
+          <div class="vc-queue-label">Ranked moves</div>
+          <div class="vc-move top-move">
+            <div class="vc-move-row">
+              <div class="vc-move-dot" style="background:#6366F1;"></div>
+              <div class="vc-move-name">20-min nap, no alarm</div>
+              <div class="vc-move-effort">0 min</div>
+            </div>
+            <div class="vc-move-cat">Sleep</div>
+          </div>
+          <div class="vc-move">
+            <div class="vc-move-row">
+              <div class="vc-move-dot" style="background:#8B5CF6;"></div>
+              <div class="vc-move-name">Name what you're feeling</div>
+              <div class="vc-move-effort">3 min</div>
+            </div>
+            <div class="vc-move-cat">Affect</div>
+          </div>
+          <div class="vc-move">
+            <div class="vc-move-row">
+              <div class="vc-move-dot" style="background:#10B981;"></div>
+              <div class="vc-move-name">Walk outside</div>
+              <div class="vc-move-effort">20 min</div>
+            </div>
+            <div class="vc-move-cat">Exercise</div>
+          </div>
+          <div class="vc-move">
+            <div class="vc-move-row">
+              <div class="vc-move-dot" style="background:#7C3AED;"></div>
+              <div class="vc-move-name">Read one belief</div>
+              <div class="vc-move-effort">5 min</div>
+            </div>
+            <div class="vc-move-cat">Belief</div>
+          </div>
+          <div class="vc-move" style="opacity:0.3;">
+            <div class="vc-move-row">
+              <div class="vc-move-dot" style="background:#3B82F6;"></div>
+              <div class="vc-move-name">Deep work block</div>
+              <div class="vc-move-effort">90 min</div>
+            </div>
+            <div class="vc-move-cat">Work · over capacity</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom: correlation signal strip -->
+      <div style="padding:10px 14px; border-top:1px solid rgba(255,255,255,0.05); font-size:10px; color:rgba(255,255,255,0.3); line-height:1.5;">
+        <span style="color:#6366F1; font-weight:600;">Sleep</span> predicts <span style="color:#8B5CF6; font-weight:600;">Affect</span> by 2 days (r=0.73) · <span style="color:#10B981; font-weight:600;">Exercise</span> predicts Sleep by 1 day (r=0.61)
+      </div>
+    </div>
+    <div class="variant-caption">
+      Ontology rail lives left, always visible — category health at a glance. Queue is right. Capacity is a single-word ring (tap to cycle). Bottom strip shows active correlations. Most information-dense of the three.
+    </div>
+  </div>
+
+</div>
+
+<div style="max-width:720px; margin:60px auto 0; padding:0 24px; border-top:1px solid rgba(255,255,255,0.07); padding-top:40px;">
+  <div style="font-size:10px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:rgba(255,255,255,0.2); margin-bottom:20px;">Questions before building</div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+    <div style="padding:14px; background:rgba(255,255,255,0.03); border-radius:10px; font-size:12px; color:rgba(255,255,255,0.45); line-height:1.7;">
+      <strong style="color:rgba(255,255,255,0.7); display:block; margin-bottom:4px;">Capacity input</strong>
+      4-state chip (A), drag slider (B), or single-word ring (C)? Or: does capacity come from the Mood check-in automatically?
+    </div>
+    <div style="padding:14px; background:rgba(255,255,255,0.03); border-radius:10px; font-size:12px; color:rgba(255,255,255,0.45); line-height:1.7;">
+      <strong style="color:rgba(255,255,255,0.7); display:block; margin-bottom:4px;">Move library</strong>
+      Hard-coded seed data first (static JSON), or does each move live in Supabase with category + effort + tags?
+    </div>
+    <div style="padding:14px; background:rgba(255,255,255,0.03); border-radius:10px; font-size:12px; color:rgba(255,255,255,0.45); line-height:1.7;">
+      <strong style="color:rgba(255,255,255,0.7); display:block; margin-bottom:4px;">Ranking signal</strong>
+      Correlation data from /ontology drives ranking order — but what else? Category deficit (last logged N days ago)?
+    </div>
+    <div style="padding:14px; background:rgba(255,255,255,0.03); border-radius:10px; font-size:12px; color:rgba(255,255,255,0.45); line-height:1.7;">
+      <strong style="color:rgba(255,255,255,0.7); display:block; margin-bottom:4px;">Completion</strong>
+      Does checking a move off log it somewhere? Or is the queue purely advisory — no persistence?
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

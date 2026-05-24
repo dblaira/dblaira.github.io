@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Material Health — Moves Queue · Composition</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;1,400&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0A0A0A;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F0F0F0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 80px;
+  }
+
+  /* --- Header --- */
+  .page-header {
+    width: 100%;
+    max-width: 420px;
+    margin-bottom: 28px;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #DC143C;
+    margin-bottom: 6px;
+  }
+
+  .headline {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(28px, 7vw, 36px);
+    font-weight: 400;
+    font-style: italic;
+    color: #F5F0E8;
+    line-height: 1.15;
+  }
+
+  .subline {
+    font-size: 13px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  /* --- Capacity selector --- */
+  .capacity-section {
+    width: 100%;
+    max-width: 420px;
+    margin-bottom: 20px;
+  }
+
+  .capacity-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 10px;
+  }
+
+  .capacity-pills {
+    display: flex;
+    gap: 8px;
+  }
+
+  .pill {
+    flex: 1;
+    padding: 10px 0;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-align: center;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .pill-low {
+    background: rgba(99,102,241,0.12);
+    border-color: rgba(99,102,241,0.3);
+    color: #A5B4FC;
+  }
+
+  .pill-medium {
+    background: rgba(245,158,11,0.15);
+    border-color: rgba(245,158,11,0.35);
+    color: #FCD34D;
+  }
+
+  .pill-high {
+    background: rgba(16,185,129,0.12);
+    border-color: rgba(16,185,129,0.28);
+    color: #6EE7B7;
+    /* active state */
+  }
+
+  .pill-active-high {
+    background: rgba(16,185,129,0.22);
+    border-color: #10B981;
+    color: #10B981;
+    box-shadow: 0 0 0 2px rgba(16,185,129,0.15);
+  }
+
+  /* --- Moves queue --- */
+  .queue {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .queue-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0;
+  }
+
+  .queue-divider-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+  }
+
+  .queue-divider-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.2);
+    white-space: nowrap;
+  }
+
+  /* --- Move card --- */
+  .move-card {
+    background: #161616;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 18px 16px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .move-card:hover {
+    border-color: rgba(255,255,255,0.15);
+    transform: translateY(-1px);
+  }
+
+  .move-card.hero {
+    background: #1A1A1A;
+    border: 1.5px solid rgba(255,255,255,0.11);
+    padding: 22px 18px 18px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  /* accent bar on left edge */
+  .move-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 14px 0 0 14px;
+  }
+
+  .accent-exercise::before  { background: #10B981; }
+  .accent-sleep::before     { background: #6366F1; }
+  .accent-social::before    { background: #F97316; }
+  .accent-nutrition::before { background: #14B8A6; }
+  .accent-insight::before   { background: #F59E0B; }
+  .accent-affect::before    { background: #8B5CF6; }
+
+  .move-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .move-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px 3px 7px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .chip-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  .chip-exercise  { background: rgba(16,185,129,0.15);  color: #6EE7B7; }
+  .chip-sleep     { background: rgba(99,102,241,0.15);  color: #A5B4FC; }
+  .chip-social    { background: rgba(249,115,22,0.15);  color: #FDBA74; }
+  .chip-nutrition { background: rgba(20,184,166,0.15);  color: #5EEAD4; }
+  .chip-insight   { background: rgba(245,158,11,0.15);  color: #FCD34D; }
+  .chip-affect    { background: rgba(139,92,246,0.15);  color: #C4B5FD; }
+
+  .move-time {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.28);
+  }
+
+  .move-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #F0F0F0;
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+
+  .move-card.hero .move-title {
+    font-size: 19px;
+  }
+
+  .move-reason {
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.42);
+    line-height: 1.55;
+    margin-bottom: 12px;
+  }
+
+  /* ripple chain — shows downstream effects */
+  .ripple-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .ripple-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    color: rgba(255,255,255,0.2);
+    text-transform: uppercase;
+    margin-right: 2px;
+  }
+
+  .ripple-node {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .ripple-arrow {
+    color: rgba(255,255,255,0.2);
+    font-size: 10px;
+  }
+
+  /* bottom action row */
+  .move-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .action-btn {
+    flex: 1;
+    padding: 9px 0;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .action-btn:hover { opacity: 0.85; }
+
+  .btn-do {
+    background: #DC143C;
+    color: #fff;
+  }
+
+  .btn-skip {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* hero rank badge */
+  .rank-badge {
+    position: absolute;
+    top: -1px;
+    right: 16px;
+    background: #DC143C;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 0 0 8px 8px;
+  }
+
+  /* legend */
+  .legend {
+    width: 100%;
+    max-width: 420px;
+    margin-top: 28px;
+    padding: 16px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .legend-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    margin-bottom: 10px;
+  }
+
+  .legend-items {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .legend-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .legend-text {
+    font-size: 12px;
+    color: rgba(255,255,255,0.38);
+    line-height: 1.45;
+  }
+
+  /* annotation overlay for composition review */
+  .annotation {
+    background: rgba(220,20,60,0.08);
+    border: 1px dashed rgba(220,20,60,0.3);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: rgba(220,20,60,0.8);
+    font-style: italic;
+    margin-top: 4px;
+    max-width: 420px;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<!-- Page header -->
+<div class="page-header">
+  <div class="eyebrow">Material Health</div>
+  <h1 class="headline">What to do now</h1>
+  <p class="subline">Ranked by downstream leverage · filtered to your current capacity</p>
+</div>
+
+<div class="annotation">↑ "What to do now" — not a dashboard. A decision. The page answers one question.</div>
+
+<!-- Capacity selector -->
+<div class="capacity-section">
+  <div class="capacity-label">Current capacity</div>
+  <div class="capacity-pills">
+    <div class="pill pill-low">Low</div>
+    <div class="pill pill-medium">Medium</div>
+    <div class="pill pill-active-high">High ✓</div>
+  </div>
+</div>
+
+<div class="annotation">↑ Capacity gate. Low = 5-min moves. Medium = 20-min. High = 45-min+. The queue re-ranks on tap.</div>
+
+<!-- Queue -->
+<div class="queue">
+
+  <!-- #1 hero card -->
+  <div class="move-card hero accent-exercise">
+    <div class="rank-badge">#1 today</div>
+    <div class="move-top-row">
+      <div class="move-chip chip-exercise">
+        <div class="chip-dot" style="background:#10B981"></div>
+        Exercise
+      </div>
+      <div class="move-time">35 min</div>
+    </div>
+    <div class="move-title">Zone 2 cardio — 35 min walk or easy bike</div>
+    <div class="move-reason">Sleep was +0.8σ last week. Exercise follows sleep by 1 day (r=0.61). Now is the window to bank an upswing.</div>
+    <div class="ripple-row">
+      <span class="ripple-label">Ripples →</span>
+      <span class="ripple-node" style="background:rgba(16,185,129,0.15);color:#6EE7B7">exercise</span>
+      <span class="ripple-arrow">→</span>
+      <span class="ripple-node" style="background:rgba(139,92,246,0.15);color:#C4B5FD">affect</span>
+      <span class="ripple-arrow">→</span>
+      <span class="ripple-node" style="background:rgba(59,130,246,0.15);color:#93C5FD">ambition</span>
+      <span class="ripple-arrow">→</span>
+      <span class="ripple-node" style="background:rgba(14,165,233,0.15);color:#7DD3FC">work</span>
+    </div>
+    <div class="move-actions">
+      <button class="action-btn btn-do">Do it</button>
+      <button class="action-btn btn-skip">Skip</button>
+    </div>
+  </div>
+
+  <div class="annotation">↑ Hero card. Biggest. Includes the reasoning chain drawn from the correlation graph — not generic advice.</div>
+
+  <!-- Divider -->
+  <div class="queue-divider">
+    <div class="queue-divider-line"></div>
+    <div class="queue-divider-label">Also strong today</div>
+    <div class="queue-divider-line"></div>
+  </div>
+
+  <!-- #2 -->
+  <div class="move-card accent-sleep">
+    <div class="move-top-row">
+      <div class="move-chip chip-sleep">
+        <div class="chip-dot" style="background:#6366F1"></div>
+        Sleep
+      </div>
+      <div class="move-time">5 min</div>
+    </div>
+    <div class="move-title">Set a hard cutoff — screens off at 10 pm tonight</div>
+    <div class="move-reason">Sleep predicts exercise by 1 day (r=0.61). Protecting tonight protects tomorrow's window.</div>
+    <div class="ripple-row">
+      <span class="ripple-label">Ripples →</span>
+      <span class="ripple-node" style="background:rgba(99,102,241,0.15);color:#A5B4FC">sleep</span>
+      <span class="ripple-arrow">→</span>
+      <span class="ripple-node" style="background:rgba(16,185,129,0.15);color:#6EE7B7">exercise</span>
+    </div>
+  </div>
+
+  <!-- #3 -->
+  <div class="move-card accent-social">
+    <div class="move-top-row">
+      <div class="move-chip chip-social">
+        <div class="chip-dot" style="background:#F97316"></div>
+        Social
+      </div>
+      <div class="move-time">20 min</div>
+    </div>
+    <div class="move-title">Send one message you've been putting off</div>
+    <div class="move-reason">Social and affect move together (r=0.48). Affect is below baseline this week — social is a pull-cord.</div>
+    <div class="ripple-row">
+      <span class="ripple-label">Ripples →</span>
+      <span class="ripple-node" style="background:rgba(249,115,22,0.15);color:#FDBA74">social</span>
+      <span class="ripple-arrow">→</span>
+      <span class="ripple-node" style="background:rgba(139,92,246,0.15);color:#C4B5FD">affect</span>
+    </div>
+  </div>
+
+  <!-- #4 smaller -->
+  <div class="move-card accent-nutrition">
+    <div class="move-top-row">
+      <div class="move-chip chip-nutrition">
+        <div class="chip-dot" style="background:#14B8A6"></div>
+        Nutrition
+      </div>
+      <div class="move-time">10 min</div>
+    </div>
+    <div class="move-title">Prep tomorrow's first meal tonight</div>
+    <div class="move-reason">Nutrition–affect co-move (r=0.41). Friction removal pays in the morning window.</div>
+    <div class="ripple-row">
+      <span class="ripple-label">Ripples →</span>
+      <span class="ripple-node" style="background:rgba(20,184,166,0.15);color:#5EEAD4">nutrition</span>
+      <span class="ripple-arrow">→</span>
+      <span class="ripple-node" style="background:rgba(139,92,246,0.15);color:#C4B5FD">affect</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="annotation">↑ Queue depth: 4-6 cards max. Each card is lighter than the one above it — rhythm signals priority without numbers.</div>
+
+<!-- Reverse-spec legend -->
+<div class="legend">
+  <div class="legend-title">Reverse-spec notes</div>
+  <div class="legend-items">
+    <div class="legend-item">
+      <div class="legend-icon" style="background:rgba(220,20,60,0.15);border:1px solid rgba(220,20,60,0.3)"></div>
+      <div class="legend-text"><strong style="color:rgba(255,255,255,0.6)">Center of gravity:</strong> The hero card. Everything else is secondary. One decision surfaces at full scale.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)"></div>
+      <div class="legend-text"><strong style="color:rgba(255,255,255,0.6)">Reasoning chain:</strong> The ripple row is drawn from real correlation data — not rules. Each arrow is an edge in the ontology graph.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25)"></div>
+      <div class="legend-text"><strong style="color:rgba(255,255,255,0.6)">Capacity filter:</strong> High = 35-min moves surfaced. Switch to Low = only 5-min moves remain. Queue re-ranks on tap, no page reload.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25)"></div>
+      <div class="legend-text"><strong style="color:rgba(255,255,255,0.6)">Data source:</strong> Category state from past 7 days of logs + Supabase correlation_analyses. No static rules — ranking is live.</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

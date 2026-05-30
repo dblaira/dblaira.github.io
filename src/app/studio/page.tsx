@@ -1,13 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { SavySiteHeader } from "@/components/SavySiteHeader";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { getSupabase } from "@/lib/supabase";
 
 type ComponentKind =
   | "feed-tiles"
@@ -101,6 +96,7 @@ const SEED_THEMES: Theme[] = [
 ];
 
 async function seedThemes() {
+  const supabase = getSupabase();
   const { error } = await supabase
     .from("studio_themes")
     .upsert(SEED_THEMES, { onConflict: "route" });
@@ -126,6 +122,7 @@ export default function StudioPage() {
 
   useEffect(() => {
     (async () => {
+      const supabase = getSupabase();
       const { data } = await supabase
         .from("studio_themes")
         .select("*")
@@ -151,6 +148,7 @@ export default function StudioPage() {
       if (!active) return;
       const merged = { ...active, ...updates };
       setThemes((prev) => prev.map((t) => (t.route === active.route ? merged : t)));
+      const supabase = getSupabase();
       await supabase.from("studio_themes").update(updates).eq("route", active.route);
     },
     [active]
@@ -185,6 +183,7 @@ export default function StudioPage() {
     };
     setThemes((prev) => [...prev, newTheme]);
     setActiveRoute(route);
+    const supabase = getSupabase();
     await supabase.from("studio_themes").insert(newTheme);
   }, [themes]);
 
@@ -196,6 +195,7 @@ export default function StudioPage() {
       if (activeRoute === route && remaining.length > 0) {
         setActiveRoute(remaining[0].route);
       }
+      const supabase = getSupabase();
       await supabase.from("studio_themes").delete().eq("route", route);
     },
     [themes, activeRoute]
@@ -211,6 +211,7 @@ export default function StudioPage() {
       [next[idx], next[swap]] = [next[swap], next[idx]];
       const reindexed = next.map((t, i) => ({ ...t, sort_order: i }));
       setThemes(reindexed);
+      const supabase = getSupabase();
       await Promise.all(
         reindexed.map((t) =>
           supabase.from("studio_themes").update({ sort_order: t.sort_order }).eq("route", t.route)

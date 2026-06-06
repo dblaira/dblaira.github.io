@@ -93,6 +93,17 @@ const SEED_THEMES: Theme[] = [
     component_kind: "card-stack",
     notes: "Field essays. Cream paper, serif body, crimson accent.",
   },
+  {
+    route: "/news-channel",
+    label: "News Channel",
+    canvas: "#F5F0E8",
+    ink: "#1A1A1A",
+    accents: ["#DC143C", "#B01030", "#E8E2D8"],
+    heading_font: "'Playfair Display', serif",
+    body_font: "'Inter', sans-serif",
+    component_kind: "feed-tiles",
+    notes: "Weekly AI briefs. Cream paper, beige bands, crimson signal accents.",
+  },
 ];
 
 async function seedThemes() {

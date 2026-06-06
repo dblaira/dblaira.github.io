@@ -61,6 +61,13 @@ const EXPERIMENTS: ExperimentCard[] = [
     href: "/parables",
   },
   {
+    label: "NEWS CHANNEL",
+    title: "News Channel",
+    desc: "Weekly AI briefings translated into systems, context, and product implications.",
+    status: "live",
+    href: "/news-channel",
+  },
+  {
     label: "STUDIO",
     title: "Design Studio",
     desc: "Live theme editor for every room. Canvas, accents, fonts, component kind. Add, delete, rearrange features.",

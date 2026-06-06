@@ -332,9 +332,10 @@ private struct PinnedStoryCard: View {
                 .frame(width: 214, height: 160)
 
             Text(story.category)
-                .font(LabFonts.label(size: 16))
-                .tracking(4)
-                .foregroundStyle(Color.savyCrimson)
+                .font(LabFonts.body(size: 12))
+                .italic()
+                .tracking(1.8)
+                .foregroundStyle(Color.savyCrimson.opacity(0.74))
         }
         .frame(width: 214, alignment: .leading)
     }
@@ -357,8 +358,10 @@ private struct FeedStoryCard: View {
                 .lineLimit(3)
 
             Text(story.date)
-                .font(LabFonts.ui(size: 16, weight: .semibold))
-                .foregroundStyle(Color.savyMuted)
+                .font(LabFonts.body(size: 13))
+                .italic()
+                .tracking(0.8)
+                .foregroundStyle(Color.savyMuted.opacity(0.78))
         }
         .frame(minHeight: 162, alignment: .topLeading)
     }
@@ -571,58 +574,328 @@ private struct BottomTabButton: View {
 
 private struct LabStoryDetailView: View {
     let story: LabStory
+    @State private var readerMode: EssayReaderMode = .styled
+
+    private var isFieldEssay: Bool {
+        story.sectionID == "field-essays"
+    }
+
+    private var isReaderMode: Bool {
+        readerMode != .styled
+    }
+
+    var body: some View {
+        Group {
+            if isFieldEssay && isReaderMode {
+                EssayReaderView(story: story, isDark: readerMode == .dark)
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(story.category)
+                                .font(LabFonts.label(size: 12))
+                                .tracking(3)
+                                .foregroundStyle(Color.savyCrimson)
+
+                            Text(story.title)
+                                .font(LabFonts.display(size: 30))
+                                .lineSpacing(0)
+                                .foregroundStyle(.white)
+                                .lineLimit(3)
+                                .fixedSize(horizontal: false, vertical: true)
+
+                            Text(story.summary)
+                                .font(LabFonts.body(size: 15))
+                                .lineSpacing(1)
+                                .foregroundStyle(.white.opacity(0.68))
+                                .lineLimit(2)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 44)
+                        .padding(.bottom, 14)
+                        .frame(maxWidth: .infinity, minHeight: 170, alignment: .leading)
+                        .background(Color.black.ignoresSafeArea(edges: .top))
+                        .overlay(alignment: .bottom) {
+                            Rectangle()
+                                .fill(Color.savyCrimson)
+                                .frame(height: 3)
+                        }
+
+                        VStack(alignment: .leading, spacing: 0) {
+                            if isFieldEssay {
+                                EssayBodyView(markdown: story.body, readerMode: false)
+                                    .padding(.horizontal, 22)
+                                    .padding(.top, 26)
+                                    .padding(.bottom, 56)
+                            } else {
+                                Text(story.body.cleanedEssayText)
+                                    .font(LabFonts.body(size: 17))
+                                    .lineSpacing(6)
+                                    .foregroundStyle(Color.black.opacity(0.82))
+                                    .padding(.horizontal, 22)
+                                    .padding(.top, 26)
+                                    .padding(.bottom, 56)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.white)
+                    }
+                }
+                .background(Color.white.ignoresSafeArea())
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(toolbarBackground, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarColorScheme(readerMode == .light ? .light : .dark, for: .navigationBar)
+        .toolbar {
+            if isFieldEssay {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button {
+                            readerMode = .styled
+                        } label: {
+                            Label("Styled", systemImage: readerMode == .styled ? "checkmark" : "doc.richtext")
+                        }
+
+                        Button {
+                            readerMode = .light
+                        } label: {
+                            Label("Light Reader", systemImage: readerMode == .light ? "checkmark" : "sun.max")
+                        }
+
+                        Button {
+                            readerMode = .dark
+                        } label: {
+                            Label("Dark Reader", systemImage: readerMode == .dark ? "checkmark" : "moon")
+                        }
+                    } label: {
+                        ReaderGlyph()
+                    }
+                    .font(LabFonts.ui(size: 13, weight: .bold))
+                    .foregroundStyle(readerMode == .light ? Color.black : Color.white)
+                    .accessibilityLabel("Reader options")
+                }
+            }
+        }
+    }
+
+    private var toolbarBackground: Color {
+        switch readerMode {
+        case .styled, .dark: return .black
+        case .light: return .white
+        }
+    }
+}
+
+private struct ReaderGlyph: View {
+    var body: some View {
+        VStack(spacing: 3) {
+            RoundedRectangle(cornerRadius: 2)
+                .stroke(lineWidth: 2.2)
+                .frame(width: 19, height: 13)
+
+            Rectangle()
+                .frame(width: 22, height: 2)
+
+            Rectangle()
+                .frame(width: 18, height: 2)
+        }
+        .frame(width: 24, height: 24)
+    }
+}
+
+private enum EssayReaderMode {
+    case styled
+    case light
+    case dark
+}
+
+private struct EssayReaderView: View {
+    let story: LabStory
+    let isDark: Bool
+
+    private var background: Color {
+        isDark ? .black : .white
+    }
+
+    private var primary: Color {
+        isDark ? .white : .black
+    }
+
+    private var secondary: Color {
+        isDark ? Color.white.opacity(0.62) : Color.black.opacity(0.58)
+    }
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(story.category)
-                        .font(LabFonts.label(size: 12))
-                        .tracking(3)
-                        .foregroundStyle(Color.savyCrimson)
+            VStack(alignment: .leading, spacing: 18) {
+                Text(story.category.uppercased())
+                    .font(LabFonts.label(size: 11))
+                    .tracking(3)
+                    .foregroundStyle(Color.savyCrimson)
 
-                    Text(story.title)
-                        .font(LabFonts.display(size: 30))
-                        .lineSpacing(0)
-                        .foregroundStyle(.white)
-                        .lineLimit(3)
-                        .fixedSize(horizontal: false, vertical: true)
+                Text(story.title)
+                    .font(LabFonts.display(size: 34))
+                    .lineSpacing(2)
+                    .foregroundStyle(primary.opacity(0.92))
+                    .fixedSize(horizontal: false, vertical: true)
 
-                    Text(story.summary)
-                        .font(LabFonts.body(size: 15))
-                        .lineSpacing(1)
-                        .foregroundStyle(.white.opacity(0.68))
-                        .lineLimit(2)
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 44)
-                .padding(.bottom, 14)
-                .frame(maxWidth: .infinity, minHeight: 170, alignment: .leading)
-                .background(Color.black.ignoresSafeArea(edges: .top))
-                .overlay(alignment: .bottom) {
-                    Rectangle()
-                        .fill(Color.savyCrimson)
-                        .frame(height: 3)
+                if !story.summary.trimmedForEntry.isEmpty {
+                    Text(story.summary.cleanedEssayText)
+                        .font(LabFonts.body(size: 18))
+                        .lineSpacing(5)
+                        .foregroundStyle(secondary)
                 }
 
-                VStack(alignment: .leading, spacing: 0) {
-                    Text(story.body)
-                        .font(LabFonts.body(size: 17))
-                        .lineSpacing(6)
-                        .foregroundStyle(Color.black.opacity(0.82))
-                        .padding(.horizontal, 22)
-                        .padding(.top, 26)
-                        .padding(.bottom, 56)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.white)
+                Rectangle()
+                    .fill(primary.opacity(0.12))
+                    .frame(height: 1)
+                    .padding(.vertical, 4)
+
+                EssayBodyView(markdown: story.body, readerMode: true, darkMode: isDark)
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 24)
+            .padding(.bottom, 72)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .background(background.ignoresSafeArea())
+    }
+}
+
+private struct EssayBodyView: View {
+    let markdown: String
+    let readerMode: Bool
+    var darkMode = false
+
+    private var blocks: [EssayBlock] {
+        EssayBlock.parse(markdown)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: readerMode ? 18 : 15) {
+            ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
+                EssayBlockView(block: block, readerMode: readerMode, darkMode: darkMode)
             }
         }
-        .background(Color.white.ignoresSafeArea())
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.black, for: .navigationBar)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarColorScheme(.dark, for: .navigationBar)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct EssayBlockView: View {
+    let block: EssayBlock
+    let readerMode: Bool
+    let darkMode: Bool
+
+    private var primaryOpacity: Double {
+        darkMode ? 0.86 : (readerMode ? 0.82 : 0.78)
+    }
+
+    private var primaryColor: Color {
+        darkMode ? Color.white : Color.black
+    }
+
+    var body: some View {
+        switch block {
+        case .heading(let text):
+            Text(text.cleanedEssayText)
+                .font(LabFonts.label(size: readerMode ? 18 : 16))
+                .tracking(1.6)
+                .foregroundStyle(primaryColor.opacity(darkMode ? 0.9 : 0.88))
+                .padding(.top, readerMode ? 10 : 8)
+
+        case .paragraph(let text):
+            Text(text.markdownAttributed)
+                .font(LabFonts.body(size: readerMode ? 19 : 17))
+                .lineSpacing(readerMode ? 7 : 6)
+                .foregroundStyle(primaryColor.opacity(primaryOpacity))
+                .fixedSize(horizontal: false, vertical: true)
+
+        case .blockquote(let text):
+            HStack(alignment: .top, spacing: 14) {
+                Rectangle()
+                    .fill(Color.savyCrimson)
+                    .frame(width: 3)
+
+                Text(text.markdownAttributed)
+                    .font(LabFonts.body(size: readerMode ? 19 : 17))
+                    .italic()
+                    .lineSpacing(readerMode ? 7 : 6)
+                    .foregroundStyle(primaryColor.opacity(darkMode ? 0.74 : 0.72))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.vertical, 4)
+
+        case .unorderedItem(let text):
+            HStack(alignment: .top, spacing: 10) {
+                Text("\u{2022}")
+                    .font(LabFonts.body(size: readerMode ? 19 : 17))
+                    .foregroundStyle(Color.savyCrimson)
+                Text(text.markdownAttributed)
+                    .font(LabFonts.body(size: readerMode ? 19 : 17))
+                    .lineSpacing(readerMode ? 7 : 6)
+                    .foregroundStyle(primaryColor.opacity(primaryOpacity))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+        case .orderedItem(let number, let text):
+            HStack(alignment: .top, spacing: 10) {
+                Text("\(number).")
+                    .font(LabFonts.ui(size: readerMode ? 16 : 14, weight: .bold))
+                    .foregroundStyle(Color.savyCrimson)
+                    .frame(width: 24, alignment: .trailing)
+                Text(text.markdownAttributed)
+                    .font(LabFonts.body(size: readerMode ? 19 : 17))
+                    .lineSpacing(readerMode ? 7 : 6)
+                    .foregroundStyle(primaryColor.opacity(primaryOpacity))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+        case .divider:
+            Rectangle()
+                .fill(primaryColor.opacity(0.12))
+                .frame(height: 1)
+                .padding(.vertical, 8)
+        }
+    }
+}
+
+private enum EssayBlock {
+    case heading(String)
+    case paragraph(String)
+    case blockquote(String)
+    case unorderedItem(String)
+    case orderedItem(Int, String)
+    case divider
+
+    static func parse(_ markdown: String) -> [EssayBlock] {
+        markdown
+            .cleanedEssayText
+            .components(separatedBy: "\n\n")
+            .flatMap { chunk -> [EssayBlock] in
+                chunk
+                    .split(separator: "\n", omittingEmptySubsequences: false)
+                    .map(String.init)
+                    .reduce(into: [EssayBlock]()) { blocks, rawLine in
+                        let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
+                        guard !line.isEmpty else { return }
+
+                        if line == "---" {
+                            blocks.append(.divider)
+                        } else if line.hasPrefix("## ") {
+                            blocks.append(.heading(String(line.dropFirst(3))))
+                        } else if line.hasPrefix("> ") {
+                            blocks.append(.blockquote(String(line.dropFirst(2))))
+                        } else if line.hasPrefix("- ") {
+                            blocks.append(.unorderedItem(String(line.dropFirst(2))))
+                        } else if let ordered = line.orderedListItem {
+                            blocks.append(.orderedItem(ordered.number, ordered.text))
+                        } else {
+                            blocks.append(.paragraph(line))
+                        }
+                    }
+            }
     }
 }
 
@@ -957,6 +1230,41 @@ private extension String {
 
     var trimmedForEntry: String {
         trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    var cleanedEssayText: String {
+        replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+            .replacingOccurrences(of: "&nbsp;", with: " ")
+            .replacingOccurrences(of: "&amp;", with: "&")
+            .replacingOccurrences(of: "&quot;", with: "\"")
+            .replacingOccurrences(of: "&#34;", with: "\"")
+            .replacingOccurrences(of: "&#39;", with: "'")
+            .replacingOccurrences(of: "&apos;", with: "'")
+            .replacingOccurrences(of: "&rsquo;", with: "\u{2019}")
+            .replacingOccurrences(of: "&lsquo;", with: "\u{2018}")
+            .replacingOccurrences(of: "&rdquo;", with: "\u{201D}")
+            .replacingOccurrences(of: "&ldquo;", with: "\u{201C}")
+            .replacingOccurrences(of: "&mdash;", with: "\u{2014}")
+            .replacingOccurrences(of: "&ndash;", with: "\u{2013}")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    var markdownAttributed: AttributedString {
+        let cleaned = cleanedEssayText
+        return (try? AttributedString(markdown: cleaned)) ?? AttributedString(cleaned)
+    }
+
+    var orderedListItem: (number: Int, text: String)? {
+        guard let dotIndex = firstIndex(of: ".") else { return nil }
+        let numberText = self[..<dotIndex]
+        guard !numberText.isEmpty, numberText.allSatisfy(\.isNumber), let number = Int(numberText) else {
+            return nil
+        }
+
+        let textStart = index(after: dotIndex)
+        let text = self[textStart...].trimmingCharacters(in: .whitespaces)
+        guard !text.isEmpty else { return nil }
+        return (number, text)
     }
 
     func prefixText(_ count: Int) -> String {

@@ -8,13 +8,10 @@ import type { User } from "@supabase/supabase-js";
 const CRIMSON = "#DC143C";
 
 const NAV_ITEMS: { href: string; label: string; hint?: string }[] = [
-  { href: "/nutrition", label: "Nutrition", hint: "Macro Tracker" },
-  { href: "/mood", label: "Mood", hint: "Emotion Check-in" },
+  { href: "/news-channel", label: "News Channel", hint: "Weekly AI Brief" },
+  { href: "/parables", label: "Field Essays", hint: "Patterns In The World" },
   { href: "/ontology", label: "Ontology", hint: "Adam's Ontology" },
   { href: "/beliefs", label: "Beliefs", hint: "Belief Library" },
-  { href: "/parables", label: "Parables", hint: "Field Essays" },
-  { href: "/news-channel", label: "News Channel", hint: "Weekly AI Brief" },
-  { href: "/studio", label: "Studio", hint: "Theme Editor" },
 ];
 
 export interface SavyMobileMenuProps {

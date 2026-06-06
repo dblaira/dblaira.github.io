@@ -1,0 +1,419 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0BB41069E320BE698577ED78 /* LeverageDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DC0B6D615906D80FDA5E80 /* LeverageDataStore.swift */; };
+		0E21E14C536FC11498B2B5F9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8B57B6601336F0F5542622D3 /* Assets.xcassets */; };
+		19214B7721DC2F78026511BE /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = DA2690AEE3BFD895ADF76812 /* Supabase */; };
+		1E99350465C333FF95B0278D /* SavyColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47733BDC0C6DED497665B3FF /* SavyColors.swift */; };
+		32E7B87688DC5228970FC6AD /* SAVYApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6879CEA08B3B0BA8EE135219 /* SAVYApp.swift */; };
+		3301A67C08E398D08622510B /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0EA66018E05476AEEB65879 /* AppConfiguration.swift */; };
+		3D9D607CB8EB8352A5E96298 /* LeverageContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD87EA119D34D0C5CDEC47E5 /* LeverageContent.swift */; };
+		45A89B8FC9C86D0F64EF5559 /* FieldEssays.json in Resources */ = {isa = PBXBuildFile; fileRef = 96C5489AC5F157F94956974F /* FieldEssays.json */; };
+		70E94C24DB0CD82D7DE6F461 /* SavySupabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE2C59279AAF6CF72E49FD /* SavySupabase.swift */; };
+		C97301EC16CEF5A7A2D82028 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A87BAD49E521D1B1E5EC8103 /* ContentView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		3ACE2C59279AAF6CF72E49FD /* SavySupabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavySupabase.swift; sourceTree = "<group>"; };
+		43DC0B6D615906D80FDA5E80 /* LeverageDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeverageDataStore.swift; sourceTree = "<group>"; };
+		47733BDC0C6DED497665B3FF /* SavyColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavyColors.swift; sourceTree = "<group>"; };
+		6879CEA08B3B0BA8EE135219 /* SAVYApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SAVYApp.swift; sourceTree = "<group>"; };
+		81B8D9162176E51C28F60467 /* SAVY.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SAVY.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8B57B6601336F0F5542622D3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		96C5489AC5F157F94956974F /* FieldEssays.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = FieldEssays.json; sourceTree = "<group>"; };
+		A0EA66018E05476AEEB65879 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
+		A87BAD49E521D1B1E5EC8103 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AE81A55DD759B8CC1C8980B3 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		EC1C609E1CB1F93F62306A36 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		FD87EA119D34D0C5CDEC47E5 /* LeverageContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeverageContent.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E3D228C383E38A09A4888AC0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				19214B7721DC2F78026511BE /* Supabase in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1030ED775CBEE8453A9810E8 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				AE81A55DD759B8CC1C8980B3 /* Debug.xcconfig */,
+				EC1C609E1CB1F93F62306A36 /* Release.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		2B1FBB9014C427ADF4F73315 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				81B8D9162176E51C28F60467 /* SAVY.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4E1C7663B69B585EFDC6C123 = {
+			isa = PBXGroup;
+			children = (
+				98F24F8E60B5F6D6B4417B74 /* SAVY */,
+				2B1FBB9014C427ADF4F73315 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		98F24F8E60B5F6D6B4417B74 /* SAVY */ = {
+			isa = PBXGroup;
+			children = (
+				F380AF9A682A29902B603FD2 /* App */,
+				1030ED775CBEE8453A9810E8 /* Config */,
+				ED4751A86936C48347791FA0 /* Resources */,
+			);
+			path = SAVY;
+			sourceTree = "<group>";
+		};
+		ED4751A86936C48347791FA0 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8B57B6601336F0F5542622D3 /* Assets.xcassets */,
+				96C5489AC5F157F94956974F /* FieldEssays.json */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		F380AF9A682A29902B603FD2 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A0EA66018E05476AEEB65879 /* AppConfiguration.swift */,
+				A87BAD49E521D1B1E5EC8103 /* ContentView.swift */,
+				FD87EA119D34D0C5CDEC47E5 /* LeverageContent.swift */,
+				43DC0B6D615906D80FDA5E80 /* LeverageDataStore.swift */,
+				6879CEA08B3B0BA8EE135219 /* SAVYApp.swift */,
+				47733BDC0C6DED497665B3FF /* SavyColors.swift */,
+				3ACE2C59279AAF6CF72E49FD /* SavySupabase.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F9770833D9C90E9EA5883D75 /* SAVY */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5015091B840EA212AC21733E /* Build configuration list for PBXNativeTarget "SAVY" */;
+			buildPhases = (
+				D55E3BE5696C587E1340EAAF /* Sources */,
+				57FEF98F7A73F4A097EFBCE3 /* Resources */,
+				E3D228C383E38A09A4888AC0 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SAVY;
+			packageProductDependencies = (
+				DA2690AEE3BFD895ADF76812 /* Supabase */,
+			);
+			productName = SAVY;
+			productReference = 81B8D9162176E51C28F60467 /* SAVY.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3DA3A1EAB03B2D0873868AC9 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					F9770833D9C90E9EA5883D75 = {
+						DevelopmentTeam = 7FKUS5M5QS;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 1EFCF4CEB870700C869A72C2 /* Build configuration list for PBXProject "SAVY" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 4E1C7663B69B585EFDC6C123;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				8AF41F8D788E5D130FB2F4A5 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F9770833D9C90E9EA5883D75 /* SAVY */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		57FEF98F7A73F4A097EFBCE3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0E21E14C536FC11498B2B5F9 /* Assets.xcassets in Resources */,
+				45A89B8FC9C86D0F64EF5559 /* FieldEssays.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D55E3BE5696C587E1340EAAF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3301A67C08E398D08622510B /* AppConfiguration.swift in Sources */,
+				C97301EC16CEF5A7A2D82028 /* ContentView.swift in Sources */,
+				3D9D607CB8EB8352A5E96298 /* LeverageContent.swift in Sources */,
+				0BB41069E320BE698577ED78 /* LeverageDataStore.swift in Sources */,
+				32E7B87688DC5228970FC6AD /* SAVYApp.swift in Sources */,
+				1E99350465C333FF95B0278D /* SavyColors.swift in Sources */,
+				70E94C24DB0CD82D7DE6F461 /* SavySupabase.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		377CFB8BE2AD3D588F9A36E1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AE81A55DD759B8CC1C8980B3 /* Debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_APPINTENTS_DEPLOYMENT_AWARE_PROCESSING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = SAVY;
+				INFOPLIST_KEY_SUPABASE_ANON_KEY = "$(SUPABASE_ANON_KEY)";
+				INFOPLIST_KEY_SUPABASE_URL = "$(SUPABASE_URL)";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDarkContent;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adamblair.savy;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		61E8E854BDC7A9E96CC7D5D5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 7FKUS5M5QS;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		EEF21691D2CC21239BA5B2DC /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = EC1C609E1CB1F93F62306A36 /* Release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_APPINTENTS_DEPLOYMENT_AWARE_PROCESSING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = SAVY;
+				INFOPLIST_KEY_SUPABASE_ANON_KEY = "$(SUPABASE_ANON_KEY)";
+				INFOPLIST_KEY_SUPABASE_URL = "$(SUPABASE_URL)";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDarkContent;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adamblair.savy;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		FEA86A4A676C183A7C3CED56 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 7FKUS5M5QS;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1EFCF4CEB870700C869A72C2 /* Build configuration list for PBXProject "SAVY" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				61E8E854BDC7A9E96CC7D5D5 /* Debug */,
+				FEA86A4A676C183A7C3CED56 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5015091B840EA212AC21733E /* Build configuration list for PBXNativeTarget "SAVY" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				377CFB8BE2AD3D588F9A36E1 /* Debug */,
+				EEF21691D2CC21239BA5B2DC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8AF41F8D788E5D130FB2F4A5 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.41.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DA2690AEE3BFD895ADF76812 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8AF41F8D788E5D130FB2F4A5 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 3DA3A1EAB03B2D0873868AC9 /* Project object */;
+}

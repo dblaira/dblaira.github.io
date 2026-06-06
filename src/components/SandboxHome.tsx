@@ -16,7 +16,7 @@ const DEFAULT_TITLE         = CRIMSON;
 const DEFAULT_CARD          = "#FFFFFF";
 const DEFAULT_SECTION_STRIP = "rgba(0,0,0,0.03)";
 
-interface ExperimentCard {
+interface LeverageCard {
   label: string;
   title: string;
   desc: string;
@@ -24,42 +24,7 @@ interface ExperimentCard {
   href?: string;
 }
 
-const EXPERIMENTS: ExperimentCard[] = [
-  {
-    label: "NUTRITION",
-    title: "Macro Tracker",
-    desc: "Every ounce, every macro. Barcode scanning, rotation library, meal history with re-log. Built to replace MFP.",
-    status: "live",
-    href: "/nutrition",
-  },
-  {
-    label: "MOOD",
-    title: "Emotion Check-in",
-    desc: "Tap the wheel. Tag the trigger. Track how you feel over time.",
-    status: "live",
-    href: "/mood",
-  },
-  {
-    label: "ONTOLOGY",
-    title: "Adam's Ontology",
-    desc: "How 13 life categories connect. Pearson correlations across 92 weeks of data.",
-    status: "live",
-    href: "/ontology",
-  },
-  {
-    label: "BELIEFS",
-    title: "Belief Library",
-    desc: "Your personal connections — identity anchors, pattern interrupts, validated principles.",
-    status: "live",
-    href: "/beliefs",
-  },
-  {
-    label: "PARABLES",
-    title: "Field Essays",
-    desc: "Patterns that trace back before modern society\nand still apply today.",
-    status: "live",
-    href: "/parables",
-  },
+const LEVERAGE_ITEMS: LeverageCard[] = [
   {
     label: "NEWS CHANNEL",
     title: "News Channel",
@@ -68,17 +33,31 @@ const EXPERIMENTS: ExperimentCard[] = [
     href: "/news-channel",
   },
   {
-    label: "STUDIO",
-    title: "Design Studio",
-    desc: "Live theme editor for every room. Canvas, accents, fonts, component kind. Add, delete, rearrange features.",
+    label: "FIELD ESSAYS",
+    title: "Field Essays",
+    desc: "Patterns that trace back before modern society\nand still apply today.",
     status: "live",
-    href: "/studio",
+    href: "/parables",
+  },
+  {
+    label: "ONTOLOGY",
+    title: "Adam's Ontology",
+    desc: "How the 80/20 rule, leverage, and recurring life categories fit reality.",
+    status: "live",
+    href: "/ontology",
+  },
+  {
+    label: "BELIEFS",
+    title: "Belief Library",
+    desc: "Personal leverage principles, identity anchors, and patterns worth preserving.",
+    status: "live",
+    href: "/beliefs",
   },
 ];
 
 // QUOTE removed — replaced by live BeliefCarousel component
 
-function StatusDot({ status }: { status: ExperimentCard["status"] }) {
+function StatusDot({ status }: { status: LeverageCard["status"] }) {
   const color =
     status === "live"
       ? "#22C55E"
@@ -153,7 +132,7 @@ export default function SandboxHome() {
         <Editable
           id="home-subtitle"
           label="Subtitle"
-          description="The small 'EXPERIMENTS IN PROGRESS' line under the SAVY title."
+          description="The small leverage framing line under the SAVY title."
           value={colorFor("home-subtitle", "rgba(0,0,0,0.4)")}
           onChange={(v) => saveOverride("home-subtitle", "Subtitle", v)}
           allowFills={false}
@@ -169,7 +148,7 @@ export default function SandboxHome() {
               margin: 0,
             }}
           >
-            EXPERIMENTS IN PROGRESS
+            A STUDY IN LEVERAGE
           </p>
         </Editable>
       </div>
@@ -204,7 +183,7 @@ export default function SandboxHome() {
       <Editable
         id="section-strip-bg"
         label="Section Strip Background"
-        description="The thin gray band behind the 'LATEST EXPERIMENTS' header."
+        description="The thin gray band behind the 'LATEST LEVERAGE' header."
         value={fillFor("section-strip-bg", stripBg)}
         onChange={(v) => saveOverride("section-strip-bg", "Section Strip Background", v)}
       >
@@ -218,7 +197,7 @@ export default function SandboxHome() {
           <Editable
             id="section-strip-label"
             label="Section Label"
-            description="The 'LATEST EXPERIMENTS' uppercase text."
+            description="The 'LATEST LEVERAGE' uppercase text."
             value={colorFor("section-strip-label", ink)}
             onChange={(v) => saveOverride("section-strip-label", "Section Label", v)}
             allowFills={false}
@@ -234,20 +213,20 @@ export default function SandboxHome() {
                 margin: 0,
               }}
             >
-              LATEST EXPERIMENTS
+              LATEST LEVERAGE
             </h2>
           </Editable>
         </div>
       </Editable>
 
-      {/* Experiment cards */}
+      {/* Leverage cards */}
       <div
         className="content-width responsive-card-grid"
         style={{
           padding: "12px 24px 80px",
         }}
       >
-        {EXPERIMENTS.map((card, idx) => {
+        {LEVERAGE_ITEMS.map((card, idx) => {
           const inner = (
             <div
               key={card.label}
@@ -324,10 +303,10 @@ export default function SandboxHome() {
               <Editable
                 key={card.label}
                 id="experiment-card-bg"
-                label="Experiment Card Background"
-                description="The white background behind every experiment tile (nutrition, sleep, mood, etc.). One override applies to all cards."
+                label="Leverage Card Background"
+                description="The white background behind every leverage tile. One override applies to all cards."
                 value={fillFor("experiment-card-bg", cardBg)}
-                onChange={(v) => saveOverride("experiment-card-bg", "Experiment Card Background", v)}
+                onChange={(v) => saveOverride("experiment-card-bg", "Leverage Card Background", v)}
               >
                 {inner}
               </Editable>

@@ -15,11 +15,12 @@ struct SavySupabase {
         )
     }
 
-    func fetchBeliefs(limit: Int = 12) async throws -> [LeverageItem] {
+    func fetchBeliefs(limit: Int = 50) async throws -> [LeverageItem] {
         let rows: [BeliefEntryRow] = try await client
             .from("entries")
-            .select("id, headline, content, entry_type, connection_type, pinned_at, created_at")
+            .select("id, headline, content, entry_type, pinned_at, created_at")
             .eq("entry_type", value: "connection")
+            .order("pinned_at", ascending: false, nullsFirst: false)
             .order("created_at", ascending: false)
             .limit(limit)
             .execute()
@@ -28,13 +29,15 @@ struct SavySupabase {
         return rows.compactMap { row in
             let title = row.headline?.trimmedNonEmpty ?? row.content?.trimmedNonEmpty
             guard let title else { return nil }
+            let content = row.content?.trimmedNonEmpty
+            let summary = content == title ? "" : content ?? ""
 
             return LeverageItem(
                 id: row.id,
-                kicker: row.connectionTypeLabel,
+                kicker: "BELIEF",
                 title: title,
-                summary: row.content?.trimmedNonEmpty ?? title,
-                body: row.content?.trimmedNonEmpty ?? title
+                summary: summary,
+                body: content ?? title
             )
         }
     }
@@ -44,23 +47,11 @@ private struct BeliefEntryRow: Decodable {
     let id: String
     let headline: String?
     let content: String?
-    let connectionType: String?
-
-    var connectionTypeLabel: String {
-        switch connectionType {
-        case "identity_anchor": return "IDENTITY ANCHOR"
-        case "pattern_interrupt": return "PATTERN INTERRUPT"
-        case "validated_principle": return "VALIDATED PRINCIPLE"
-        case "process_anchor": return "PROCESS ANCHOR"
-        default: return "BELIEF"
-        }
-    }
 
     enum CodingKeys: String, CodingKey {
         case id
         case headline
         case content
-        case connectionType = "connection_type"
     }
 }
 

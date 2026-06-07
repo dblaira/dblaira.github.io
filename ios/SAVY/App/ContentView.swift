@@ -258,8 +258,20 @@ private struct StoryFeedView: View {
     let stories: [LabStory]
     let selectedTab: LabTab
 
-    private var singleStory: LabStory? {
-        stories.first
+    @State private var visibleStoryCount = pageSize
+
+    private static let pageSize = 4
+
+    private var visibleStories: [LabStory] {
+        Array(stories.prefix(visibleStoryCount))
+    }
+
+    private var hasMoreStories: Bool {
+        visibleStoryCount < stories.count
+    }
+
+    private var storyIdentity: String {
+        stories.map(\.id).joined(separator: "|")
     }
 
     var body: some View {
@@ -287,15 +299,31 @@ private struct StoryFeedView: View {
             .padding(.bottom, 34)
             .background(Color.savyPaper)
 
-            if let singleStory {
-                VStack(alignment: .leading, spacing: 0) {
-                    NavigationLink {
-                        LabStoryDetailView(story: singleStory)
-                    } label: {
-                        FeedStoryCard(story: singleStory)
+            if !visibleStories.isEmpty {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    ForEach(visibleStories) { story in
+                        NavigationLink {
+                            LabStoryDetailView(story: story)
+                        } label: {
+                            FeedStoryCard(story: story)
+                        }
+                        .buttonStyle(.plain)
+                        .onAppear {
+                            loadMoreStoriesIfNeeded(currentStory: story)
+                        }
                     }
-                    .buttonStyle(.plain)
+
+                    if hasMoreStories {
+                        ProgressView("Loading more signals")
+                            .font(LabFonts.ui(size: 12, weight: .bold))
+                            .tint(Color.savyCrimson)
+                            .foregroundStyle(Color.savyMuted)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.top, 18)
+                            .padding(.bottom, 10)
+                    }
                 }
+                .accessibilityIdentifier("news-channel-infinite-feed")
                 .padding(.horizontal, 22)
                 .padding(.top, 34)
                 .padding(.bottom, 150)
@@ -305,6 +333,24 @@ private struct StoryFeedView: View {
             }
         }
         .background(Color.white)
+        .onChange(of: selectedTab) { _, _ in
+            resetVisibleStories()
+        }
+        .onChange(of: storyIdentity) { _, _ in
+            resetVisibleStories()
+        }
+    }
+
+    private func loadMoreStoriesIfNeeded(currentStory: LabStory) {
+        guard hasMoreStories, currentStory.id == visibleStories.last?.id else {
+            return
+        }
+
+        visibleStoryCount = min(visibleStoryCount + Self.pageSize, stories.count)
+    }
+
+    private func resetVisibleStories() {
+        visibleStoryCount = Self.pageSize
     }
 }
 

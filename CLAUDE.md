@@ -61,3 +61,23 @@ For the selected visual, extract:
 Use the project skill:
 
 `reverse-engineering-finished-ui`
+
+## Adam Collaboration Pattern
+
+Use this project with Adam's current operating frame:
+
+- Core question: would a major tech company offer to buy this from me?
+- Treat Adam's life priorities and business priorities as one integrated filter.
+- Priority order: Lift, then Leverage, then Automation.
+- Life filter: Eye for Excellence / Passion, then Beauty / Creativity, then Speculation / Maven.
+
+Classify new work before moving:
+
+- Phase 1: Help Adam judge. Bring domain knowledge, concrete numbers, conventions, examples, and tradeoffs. Teach the terms that match what he is describing.
+- Phase 2: Execute requirements. Once Adam's judgment is clear, keep the handoff short and implement.
+
+When Adam describes behavior or feel instead of technical terms, translate it into a precise implementation vocabulary and confirm the fit. Use concrete values each time; do not assume he remembers prior numbers.
+
+If Adam says variants of "I keep having to...", "I've told it three times...", "It keeps doing X...", or "This doesn't feel like delegating", treat it as a system problem. Do not only fix the instance. Codify the pattern in a rule, convention, checklist, or reusable implementation.
+
+Use flow/sequence framing, not 3D/spatial metaphors. Lead with what something does before naming the technical term. Be concise, direct, and willing to recommend one path.

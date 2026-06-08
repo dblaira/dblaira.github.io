@@ -38,11 +38,11 @@ extension LeverageSection {
             summary: "AI and technology briefings translated into context, systems, and product implications.",
             items: [
                 LeverageItem(
-                    id: "ai-build-tools",
-                    kicker: "AI BRIEF",
-                    title: "Coding models are becoming product systems",
-                    summary: "The leverage is no longer just faster code. It is the ability to move from idea to testable surface in one loop.",
-                    body: "News Channel is the place for live technical change to become personal operating context. The native app keeps that stream constrained: fewer items, clearer implications, and a bias toward what changes your next move."
+                    id: "weekly-ai-brief-2026-06-01",
+                    kicker: "JUN 1-6, 2026",
+                    title: "This Week's AI Brief",
+                    summary: "AI is moving from chat to work systems: models, agents, context graphs, guardrails, and business rails are becoming one stack.",
+                    body: "The main story is not one model. AI tools now need memory, rules, context, payments, permissions, and workflows. The useful direction for Understood is not a chatbot. It is a relationship engine built around structured entries, triples, workflow guardrails, and provenance."
                 ),
                 LeverageItem(
                     id: "context-graphs",

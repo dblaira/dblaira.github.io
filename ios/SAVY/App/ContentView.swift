@@ -1,4 +1,5 @@
 import AVFoundation
+import Charts
 import Speech
 import SwiftUI
 
@@ -45,8 +46,8 @@ struct ContentView: View {
             return stories.filter { $0.sectionID == "field-essays" }
         case .connections:
             return stories.filter { $0.sectionID == "beliefs" }
-        case .patterns:
-            return stories.filter { $0.sectionID == "ontology" }
+        case .news:
+            return stories.filter { $0.sectionID == "news-channel" }
         }
     }
 
@@ -102,7 +103,7 @@ private enum LabTab: String, CaseIterable, Identifiable {
     case now
     case stories
     case connections
-    case patterns
+    case news
 
     var id: String { rawValue }
 
@@ -111,7 +112,7 @@ private enum LabTab: String, CaseIterable, Identifiable {
         case .now: return "Now"
         case .stories: return "Essays"
         case .connections: return "Beliefs"
-        case .patterns: return "Ontology"
+        case .news: return "News"
         }
     }
 
@@ -120,7 +121,7 @@ private enum LabTab: String, CaseIterable, Identifiable {
         case .now: return "house.fill"
         case .stories: return "doc.text"
         case .connections: return "chart.line.uptrend.xyaxis"
-        case .patterns: return "point.3.connected.trianglepath.dotted"
+        case .news: return "newspaper"
         }
     }
 
@@ -129,7 +130,7 @@ private enum LabTab: String, CaseIterable, Identifiable {
         case .now: return "news-channel"
         case .stories: return "field-essays"
         case .connections: return "beliefs"
-        case .patterns: return "ontology"
+        case .news: return "news-channel"
         }
     }
 
@@ -575,7 +576,7 @@ private struct LabBottomBar: View {
                 .frame(maxWidth: .infinity)
 
                 BottomTabButton(tab: .connections, selectedTab: $selectedTab)
-                BottomTabButton(tab: .patterns, selectedTab: $selectedTab)
+                BottomTabButton(tab: .news, selectedTab: $selectedTab)
             }
             .padding(.horizontal, 12)
             .padding(.top, 1)
@@ -626,13 +627,19 @@ private struct LabStoryDetailView: View {
         story.sectionID == "field-essays"
     }
 
+    private var isNewsReport: Bool {
+        story.sectionID == "news-channel"
+    }
+
     private var isReaderMode: Bool {
         readerMode != .styled
     }
 
     var body: some View {
         Group {
-            if isFieldEssay && isReaderMode {
+            if isNewsReport {
+                NewsReportDetailView(story: story)
+            } else if isFieldEssay && isReaderMode {
                 EssayReaderView(story: story, isDark: readerMode == .dark)
             } else {
                 ScrollView {
@@ -732,6 +739,435 @@ private struct LabStoryDetailView: View {
         case .light: return .white
         }
     }
+}
+
+private struct NewsReportDetailView: View {
+    let story: LabStory
+
+    private let report = WeeklyAIReport.current
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                reportHero
+
+                VStack(alignment: .leading, spacing: 22) {
+                    NewsSummaryCard(report: report)
+                    SignalStrengthChart(signals: report.signals)
+                    CenterGravityMapView()
+                    TopSignalsTable(rows: report.topSignals)
+                    UpdateCards(updates: report.updates)
+                    AIStackView(layers: report.stackLayers)
+                    ReportCardTable(rows: report.reportCard)
+                }
+                .padding(.horizontal, 18)
+                .padding(.top, 22)
+                .padding(.bottom, 72)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.white)
+            }
+        }
+        .background(Color.white.ignoresSafeArea())
+    }
+
+    private var reportHero: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(story.category)
+                .font(LabFonts.label(size: 12))
+                .tracking(3)
+                .foregroundStyle(Color.savyCrimson)
+
+            Text(story.title)
+                .font(LabFonts.display(size: 36))
+                .lineSpacing(0)
+                .foregroundStyle(.white)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(report.date)
+                .font(LabFonts.body(size: 15))
+                .italic()
+                .foregroundStyle(.white.opacity(0.64))
+
+            Text(story.summary)
+                .font(LabFonts.body(size: 17))
+                .lineSpacing(3)
+                .foregroundStyle(.white.opacity(0.74))
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 4)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 54)
+        .padding(.bottom, 20)
+        .frame(maxWidth: .infinity, minHeight: 245, alignment: .leading)
+        .background(Color.black.ignoresSafeArea(edges: .top))
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color.savyCrimson)
+                .frame(height: 4)
+        }
+    }
+}
+
+private struct NewsSummaryCard: View {
+    let report: WeeklyAIReport
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            SectionLabel("Conclusion First")
+
+            Text(report.conclusion)
+                .font(LabFonts.display(size: 28))
+                .lineSpacing(2)
+                .foregroundStyle(Color.black)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(report.mainStory)
+                .font(LabFonts.body(size: 17))
+                .lineSpacing(5)
+                .foregroundStyle(Color.black.opacity(0.72))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(18)
+        .background(Color.savyCard)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+private struct SignalStrengthChart: View {
+    let signals: [SignalStrength]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            SectionLabel("Signal Strength")
+
+            Chart(signals) { signal in
+                BarMark(
+                    x: .value("Strength", signal.score),
+                    y: .value("Signal", signal.name)
+                )
+                .foregroundStyle(signal.name == "Context" ? Color.savyCrimson : Color.black.opacity(0.84))
+                .annotation(position: .trailing) {
+                    Text(signal.note)
+                        .font(LabFonts.ui(size: 10, weight: .bold))
+                        .foregroundStyle(Color.savyMuted)
+                }
+            }
+            .chartXScale(domain: 0...10)
+            .chartXAxis(.hidden)
+            .chartYAxis {
+                AxisMarks { _ in
+                    AxisValueLabel()
+                        .font(.system(size: 11, weight: .bold))
+                }
+            }
+            .frame(height: 220)
+        }
+        .padding(18)
+        .background(Color.savyPaper)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+private struct CenterGravityMapView: View {
+    private let nodes = [
+        ("Coding models", -92.0, -52.0),
+        ("Agent workflows", 92.0, -52.0),
+        ("Guardrails", -92.0, 52.0),
+        ("Context graphs", 92.0, 52.0),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            SectionLabel("Center of Gravity")
+
+            ZStack {
+                ForEach(nodes, id: \.0) { node in
+                    ConnectorLine(x: node.1, y: node.2)
+                        .stroke(Color.black.opacity(0.18), lineWidth: 1.5)
+                }
+
+                MapNode(title: "AI is becoming infrastructure", isCenter: true)
+
+                ForEach(nodes, id: \.0) { node in
+                    MapNode(title: node.0, isCenter: false)
+                        .offset(x: node.1, y: node.2)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 230)
+            .padding(.vertical, 8)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        .padding(18)
+        .background(Color.savyCard)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+private struct ConnectorLine: Shape {
+    let x: CGFloat
+    let y: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        path.move(to: center)
+        path.addLine(to: CGPoint(x: center.x + x, y: center.y + y))
+        return path
+    }
+}
+
+private struct MapNode: View {
+    let title: String
+    let isCenter: Bool
+
+    var body: some View {
+        Text(title)
+            .font(LabFonts.ui(size: isCenter ? 12 : 11, weight: .heavy))
+            .multilineTextAlignment(.center)
+            .foregroundStyle(isCenter ? Color.white : Color.black)
+            .padding(.horizontal, isCenter ? 14 : 10)
+            .padding(.vertical, isCenter ? 12 : 9)
+            .frame(width: isCenter ? 142 : 108)
+            .background(isCenter ? Color.black : Color.savyPaper)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(isCenter ? Color.savyCrimson : Color.black.opacity(0.12), lineWidth: 1)
+            }
+    }
+}
+
+private struct TopSignalsTable: View {
+    let rows: [TopSignal]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionLabel("Top 5 Signals")
+
+            VStack(spacing: 0) {
+                ForEach(rows) { row in
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(alignment: .firstTextBaseline, spacing: 10) {
+                            Text("\(row.rank)")
+                                .font(LabFonts.label(size: 13))
+                                .foregroundStyle(Color.savyCrimson)
+                                .frame(width: 18, alignment: .leading)
+
+                            Text(row.signal)
+                                .font(LabFonts.ui(size: 15, weight: .heavy))
+                                .foregroundStyle(Color.black)
+
+                            Spacer(minLength: 0)
+                        }
+
+                        Text(row.meaning)
+                            .font(LabFonts.body(size: 15))
+                            .foregroundStyle(Color.black.opacity(0.74))
+
+                        Text(row.relevance)
+                            .font(LabFonts.ui(size: 12, weight: .bold))
+                            .foregroundStyle(Color.savyMuted)
+                    }
+                    .padding(.vertical, 13)
+                    .overlay(alignment: .bottom) {
+                        Rectangle()
+                            .fill(Color.black.opacity(0.08))
+                            .frame(height: 1)
+                    }
+                }
+            }
+        }
+        .padding(18)
+        .background(Color.white)
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.black.opacity(0.1), lineWidth: 1)
+        }
+    }
+}
+
+private struct UpdateCards: View {
+    let updates: [ReportUpdate]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            SectionLabel("What Happened")
+
+            ForEach(updates) { update in
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(update.source)
+                        .font(LabFonts.label(size: 12))
+                        .tracking(2.2)
+                        .foregroundStyle(Color.savyCrimson)
+
+                    Text(update.title)
+                        .font(LabFonts.display(size: 25))
+                        .lineSpacing(1)
+                        .foregroundStyle(Color.black)
+
+                    Text(update.takeaway)
+                        .font(LabFonts.body(size: 16))
+                        .lineSpacing(4)
+                        .foregroundStyle(Color.black.opacity(0.72))
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.savyPaper)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+        }
+    }
+}
+
+private struct AIStackView: View {
+    let layers: [String]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            SectionLabel("Biggest Pattern")
+
+            Text("AI is becoming a stack.")
+                .font(LabFonts.display(size: 27))
+                .foregroundStyle(Color.black)
+
+            VStack(spacing: 8) {
+                ForEach(Array(layers.enumerated()), id: \.offset) { index, layer in
+                    HStack(spacing: 12) {
+                        Text("\(index + 1)")
+                            .font(LabFonts.label(size: 11))
+                            .foregroundStyle(Color.white)
+                            .frame(width: 24, height: 24)
+                            .background(Color.black)
+                            .clipShape(Circle())
+
+                        Text(layer)
+                            .font(LabFonts.ui(size: 15, weight: .heavy))
+                            .foregroundStyle(Color.black)
+
+                        Spacer()
+                    }
+                    .padding(12)
+                    .background(index == 3 ? Color.savyCrimson.opacity(0.12) : Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+            }
+        }
+        .padding(18)
+        .background(Color.savyCard)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+private struct ReportCardTable: View {
+    let rows: [ReportGrade]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionLabel("Report Card")
+
+            ForEach(rows) { row in
+                HStack(alignment: .top, spacing: 12) {
+                    Text(row.grade)
+                        .font(LabFonts.label(size: 14))
+                        .foregroundStyle(Color.savyCrimson)
+                        .frame(width: 34, alignment: .leading)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(row.area)
+                            .font(LabFonts.ui(size: 15, weight: .heavy))
+                            .foregroundStyle(Color.black)
+
+                        Text(row.why)
+                            .font(LabFonts.body(size: 14))
+                            .foregroundStyle(Color.black.opacity(0.68))
+                    }
+                }
+                .padding(.vertical, 8)
+            }
+        }
+        .padding(18)
+        .background(Color.white)
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.black.opacity(0.1), lineWidth: 1)
+        }
+    }
+}
+
+private struct WeeklyAIReport {
+    let date: String
+    let conclusion: String
+    let mainStory: String
+    let signals: [SignalStrength]
+    let topSignals: [TopSignal]
+    let updates: [ReportUpdate]
+    let stackLayers: [String]
+    let reportCard: [ReportGrade]
+
+    static let current = WeeklyAIReport(
+        date: "June 1-6, 2026",
+        conclusion: "AI is moving from chat to work systems.",
+        mainStory: "The main story is not one single model. AI tools now need memory, rules, context, payments, permissions, and workflows.",
+        signals: [
+            SignalStrength(name: "Models", score: 8, note: "Stronger"),
+            SignalStrength(name: "Agents", score: 9, note: "More useful"),
+            SignalStrength(name: "Guardrails", score: 8, note: "More needed"),
+            SignalStrength(name: "Context", score: 9, note: "Biggest theme"),
+            SignalStrength(name: "Business", score: 8, note: "Getting serious"),
+        ],
+        topSignals: [
+            TopSignal(rank: 1, signal: "Agent workflows", meaning: "AI is being turned into repeatable work loops.", relevance: "Supports Understood-style systems."),
+            TopSignal(rank: 2, signal: "Context graphs", meaning: "AI needs structured memory.", relevance: "This is the ontology lane."),
+            TopSignal(rank: 3, signal: "Guardrails", meaning: "AI tools need rules and limits.", relevance: "This is where trust gets built."),
+            TopSignal(rank: 4, signal: "Coding models", meaning: "More models are built for software work.", relevance: "Faster building for solo founders."),
+            TopSignal(rank: 5, signal: "Vendor AI stacks", meaning: "AI is moving into existing tools.", relevance: "Less blank-page building. More assembly."),
+        ],
+        updates: [
+            ReportUpdate(source: "xAI", title: "Coding models are becoming their own class", takeaway: "Grok Build 0.1 points toward idea to code to test to fix to ship loops."),
+            ReportUpdate(source: "OpenRouter", title: "Guardrails moved into the control layer", takeaway: "The model menu is becoming models plus rules plus voice plus routing."),
+            ReportUpdate(source: "Neo4j", title: "Context graphs keep owning the message", takeaway: "AI alone is not enough. Useful answers need connected facts."),
+            ReportUpdate(source: "Docker MCP", title: "AI tools need safe hands", takeaway: "MCP turns calendars, files, browsers, databases, and code into governed tool doorways."),
+        ],
+        stackLayers: ["MODEL - the brain", "TOOLS - the hands", "MEMORY - the past", "GRAPH - the relationships", "RULES - the guardrails", "WORKFLOW - repeatable action", "PAYMENTS - the business layer"],
+        reportCard: [
+            ReportGrade(area: "Agent tools", grade: "A", why: "MCP, Jam, Docker, and Claude permissions all moved."),
+            ReportGrade(area: "Context graphs", grade: "A", why: "Neo4j keeps owning the enterprise message."),
+            ReportGrade(area: "Coding models", grade: "A-", why: "xAI pushed a coding model."),
+            ReportGrade(area: "Guardrails", grade: "A-", why: "OpenRouter added useful control features."),
+            ReportGrade(area: "Business rails", grade: "B+", why: "Stripe and vendor updates matter for builders."),
+        ]
+    )
+}
+
+private struct SignalStrength: Identifiable {
+    var id: String { name }
+    let name: String
+    let score: Int
+    let note: String
+}
+
+private struct TopSignal: Identifiable {
+    var id: Int { rank }
+    let rank: Int
+    let signal: String
+    let meaning: String
+    let relevance: String
+}
+
+private struct ReportUpdate: Identifiable {
+    var id: String { source }
+    let source: String
+    let title: String
+    let takeaway: String
+}
+
+private struct ReportGrade: Identifiable {
+    var id: String { area }
+    let area: String
+    let grade: String
+    let why: String
 }
 
 private struct ReaderGlyph: View {

@@ -101,7 +101,9 @@ export function BeliefCarousel() {
             color: "#1A1A1A",
             lineHeight: 1.5,
             margin: 0,
+            minWidth: 0,
             minHeight: 60,
+            overflowWrap: "break-word",
             opacity: fading ? 0 : 1,
             transition: "opacity 0.2s ease",
           }}

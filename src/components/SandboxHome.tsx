@@ -221,9 +221,12 @@ export default function SandboxHome() {
 
       {/* Leverage cards */}
       <div
-        className="content-width responsive-card-grid"
+        className="content-width home-leverage-grid"
         style={{
-          padding: "12px 24px 80px",
+          display: "grid",
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+          gap: 12,
+          padding: "12px 24px calc(120px + env(safe-area-inset-bottom, 0px))",
         }}
       >
         {LEVERAGE_ITEMS.map((card, idx) => {
@@ -233,7 +236,8 @@ export default function SandboxHome() {
               style={{
                 ...fillStyle(fillFor("experiment-card-bg", cardBg), cardBg),
                 borderRadius: 12,
-                padding: "24px",
+                padding: "20px 18px",
+                minHeight: 168,
                 cursor: card.href ? "pointer" : "default",
                 transition: "box-shadow 0.2s ease",
               }}
@@ -262,6 +266,7 @@ export default function SandboxHome() {
                     letterSpacing: "0.12em",
                     textTransform: "uppercase",
                     color: colorFor("experiment-card-label", "rgba(0,0,0,0.4)"),
+                    overflowWrap: "anywhere",
                   }}
                 >
                   {card.label}
@@ -271,10 +276,11 @@ export default function SandboxHome() {
               <h3
                 style={{
                   fontFamily: "'Playfair Display', Georgia, serif",
-                  fontSize: 22,
+                  fontSize: "clamp(20px, 5.8vw, 22px)",
                   fontWeight: 400,
                   color: colorFor("experiment-card-title", ink),
                   margin: "0 0 8px 0",
+                  lineHeight: 1.12,
                 }}
               >
                 {card.title}
@@ -283,9 +289,9 @@ export default function SandboxHome() {
               <p
                 style={{
                   fontFamily: "'Inter', sans-serif",
-                  fontSize: 14,
+                  fontSize: 13,
                   color: colorFor("experiment-card-desc", "rgba(0,0,0,0.5)"),
-                  lineHeight: 1.6,
+                  lineHeight: 1.45,
                   margin: 0,
                   whiteSpace: "pre-line",
                 }}
@@ -332,17 +338,19 @@ export default function SandboxHome() {
       <div
         style={{
           position: "fixed",
-          bottom: 24,
-          right: 24,
+          bottom: "calc(24px + env(safe-area-inset-bottom, 0px))",
+          left: "50%",
+          transform: "translateX(-50%)",
           width: 56,
           height: 56,
           borderRadius: "50%",
-          background: colorFor("home-fab", CRIMSON),
+          background: colorFor("home-fab", "#000000"),
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: "0 4px 16px rgba(220, 20, 60, 0.3)",
+          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.22)",
           cursor: "pointer",
+          zIndex: 30,
         }}
       >
         <span style={{ color: "#FFF", fontSize: 28, lineHeight: 1 }}>+</span>

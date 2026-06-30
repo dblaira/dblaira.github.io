@@ -7,27 +7,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing brief" }, { status: 400 });
   }
 
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const gatewayUrl = process.env.OPENCLAW_GATEWAY_URL ?? "http://127.0.0.1:18789";
+  const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN;
 
-  if (!token || !chatId) {
-    return NextResponse.json({ error: "Telegram not configured" }, { status: 500 });
+  if (!gatewayToken) {
+    return NextResponse.json({ error: "OpenClaw gateway not configured" }, { status: 500 });
   }
 
-  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+  const res = await fetch(`${gatewayUrl}/tools/invoke`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${gatewayToken}`,
+    },
     body: JSON.stringify({
-      chat_id: chatId,
-      text: brief,
-      parse_mode: "Markdown",
+      tool: "sessions_send",
+      args: {
+        sessionKey: "agent:main:telegram:direct:8201014705",
+        message: brief,
+      },
     }),
   });
 
   if (!res.ok) {
     const err = await res.text();
-    console.error("Telegram error:", err);
-    return NextResponse.json({ error: "Telegram send failed" }, { status: 500 });
+    console.error("OpenClaw gateway error:", err);
+    return NextResponse.json({ error: "Gateway send failed" }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

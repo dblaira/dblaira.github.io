@@ -49,3 +49,6 @@ ios/SAVY/Config/Secrets.xcconfig
 next-env.d.ts
 .env*.local
 .env*
+
+# Claude Code local worktrees/tooling
+.claude/

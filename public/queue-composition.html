@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Move Queue — Composition Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0A0A0A; font-family: 'Inter', sans-serif; color: #fff; min-height: 100vh; }
+
+  /* ── COMPOSITION BOARD ── */
+  .board { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 40px 32px; max-width: 1400px; margin: 0 auto; }
+  .board-title { grid-column: 1 / -1; color: rgba(255,255,255,0.4); font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 4px; }
+  .board-label { grid-column: 1 / -1; margin-bottom: 8px; }
+  .board-label h1 { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; font-size: clamp(28px, 4vw, 42px); color: #fff; }
+  .board-label p { color: rgba(255,255,255,0.4); font-size: 13px; margin-top: 8px; max-width: 600px; line-height: 1.6; }
+  .variant-label { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 12px; }
+
+  /* ── VARIANT A: DENSE STACK ── */
+  .variant-a { background: #F7F5F2; border-radius: 20px; padding: 28px; }
+  .variant-a .eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: #DC143C; margin-bottom: 6px; }
+  .variant-a h2 { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; font-size: 26px; color: #111; margin-bottom: 20px; }
+
+  .capacity-bar { background: #EEEBE7; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
+  .capacity-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .capacity-row:last-child { margin-bottom: 0; }
+  .capacity-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(0,0,0,0.5); min-width: 60px; }
+  .pip-row { display: flex; gap: 4px; }
+  .pip { width: 22px; height: 8px; border-radius: 4px; background: rgba(0,0,0,0.1); }
+  .pip.filled { background: #111; }
+  .pip.mid { background: #8B5CF6; }
+  .pip.low { background: #DC143C; }
+
+  .move-card { background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px; position: relative; cursor: pointer; }
+  .move-card:last-child { margin-bottom: 0; }
+  .move-card.top-pick { border: 1.5px solid rgba(16,185,129,0.35); background: #FAFFF9; }
+  .move-rank { font-size: 11px; font-weight: 700; color: rgba(0,0,0,0.25); min-width: 18px; }
+  .move-rank.top { color: #10B981; }
+  .move-body { flex: 1; min-width: 0; }
+  .move-action { font-size: 14px; font-weight: 600; color: #111; margin-bottom: 4px; line-height: 1.3; }
+  .move-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .move-cat { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border-radius: 100px; }
+  .move-time { font-size: 11px; color: rgba(0,0,0,0.4); }
+  .move-why { font-size: 11px; color: rgba(0,0,0,0.45); margin-top: 5px; line-height: 1.4; }
+  .move-causal { display: flex; align-items: center; gap: 4px; font-size: 10px; color: rgba(0,0,0,0.4); margin-top: 6px; }
+  .causal-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* ── VARIANT B: CARD MASONRY ── */
+  .variant-b { background: #111111; border-radius: 20px; padding: 28px; }
+  .variant-b .eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: #DC143C; margin-bottom: 6px; }
+  .variant-b h2 { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; font-size: 26px; color: #fff; margin-bottom: 20px; }
+
+  .capacity-ring-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .cap-ring { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .ring-outer { width: 44px; height: 44px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; position: relative; }
+  .ring-fill { width: 44px; height: 44px; border-radius: 50%; position: absolute; top: -3px; left: -3px; }
+  .ring-val { font-size: 13px; font-weight: 700; color: #fff; position: relative; z-index: 1; }
+  .ring-name { font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+
+  .dark-move { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.06); cursor: pointer; }
+  .dark-move.highlight { background: rgba(139,92,246,0.12); border-color: rgba(139,92,246,0.3); }
+  .dark-move-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .dark-move-action { font-size: 14px; font-weight: 600; color: #fff; line-height: 1.3; max-width: 200px; }
+  .dark-move-score { font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.15); font-variant-numeric: tabular-nums; }
+  .dark-move-score.hot { color: #8B5CF6; }
+  .dark-move-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .dark-move-cat { font-size: 10px; padding: 2px 8px; border-radius: 100px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .dark-move-time { font-size: 11px; color: rgba(255,255,255,0.3); }
+  .dark-chain { display: flex; align-items: center; gap: 3px; margin-top: 8px; }
+  .chain-node { font-size: 10px; color: rgba(255,255,255,0.35); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .chain-arrow { font-size: 10px; color: rgba(139,92,246,0.6); }
+
+  /* ── VARIANT C: FULLSCREEN FOCUS ── */
+  .variant-c { grid-column: 1 / -1; background: #1A0A2E; border-radius: 20px; padding: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .variant-c .eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: #DC143C; margin-bottom: 6px; }
+  .variant-c h2 { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; font-size: 30px; color: #fff; margin-bottom: 6px; }
+  .variant-c .sub { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 24px; }
+
+  .focus-big { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); border-radius: 16px; padding: 24px; margin-bottom: 16px; }
+  .focus-big-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #8B5CF6; margin-bottom: 10px; }
+  .focus-big-action { font-size: 22px; font-weight: 600; color: #fff; line-height: 1.3; margin-bottom: 12px; }
+  .focus-big-why { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6; }
+  .focus-tag-row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .focus-tag { font-size: 11px; padding: 4px 10px; border-radius: 100px; font-weight: 600; }
+
+  .focus-queue { display: flex; flex-direction: column; gap: 8px; }
+  .focus-q-item { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start; border: 1px solid transparent; cursor: pointer; }
+  .focus-q-item.active { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.25); }
+  .focus-q-num { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.2); min-width: 20px; padding-top: 1px; }
+  .focus-q-num.top { color: #8B5CF6; }
+  .focus-q-text { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.75); line-height: 1.4; }
+  .focus-q-foot { display: flex; gap: 8px; margin-top: 6px; align-items: center; }
+  .focus-q-cat { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+  .focus-q-time { font-size: 10px; color: rgba(255,255,255,0.25); }
+
+  .cap-summary { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .cap-summary-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 12px; }
+  .cap-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .cap-row:last-child { margin-bottom: 0; }
+  .cap-name { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.4); min-width: 80px; }
+  .cap-track { flex: 1; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; position: relative; }
+  .cap-fill { height: 100%; border-radius: 2px; }
+  .cap-val { font-size: 11px; color: rgba(255,255,255,0.3); font-variant-numeric: tabular-nums; min-width: 24px; text-align: right; }
+
+  /* annotation chips */
+  .annotation { background: rgba(255,220,50,0.12); border: 1px solid rgba(255,220,50,0.3); border-radius: 8px; padding: 8px 12px; font-size: 11px; color: rgba(255,220,50,0.85); line-height: 1.5; }
+  .annotations { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+</style>
+</head>
+<body>
+
+<div class="board">
+  <div class="board-title">Material Health — Move Queue</div>
+  <div class="board-label">
+    <h1>Composition Board: Three Layout Directions</h1>
+    <p>The queue is the action layer on top of the ontology — a ranked list of behavioral moves filtered by current capacity. Three visual directions below. The key design decision: how much cognitive friction does the capacity input carry?</p>
+  </div>
+
+  <!-- VARIANT A: LIGHT / DENSE STACK -->
+  <div>
+    <div class="variant-label">A — Light surface, dense stack, explicit pip capacity</div>
+    <div class="variant-a">
+      <div class="eyebrow">Material Health</div>
+      <h2>Your moves right now</h2>
+
+      <div class="capacity-bar">
+        <div class="capacity-row">
+          <span class="capacity-label">Energy</span>
+          <div class="pip-row">
+            <div class="pip filled"></div><div class="pip filled"></div><div class="pip filled"></div><div class="pip"></div><div class="pip"></div>
+          </div>
+          <span style="font-size:11px;color:rgba(0,0,0,0.4);min-width:28px;text-align:right">3/5</span>
+        </div>
+        <div class="capacity-row">
+          <span class="capacity-label">Time</span>
+          <div class="pip-row">
+            <div class="pip mid"></div><div class="pip mid"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div>
+          </div>
+          <span style="font-size:11px;color:rgba(0,0,0,0.4);min-width:28px;text-align:right">2/5</span>
+        </div>
+        <div class="capacity-row">
+          <span class="capacity-label">Focus</span>
+          <div class="pip-row">
+            <div class="pip low"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div>
+          </div>
+          <span style="font-size:11px;color:rgba(0,0,0,0.4);min-width:28px;text-align:right">1/5</span>
+        </div>
+      </div>
+
+      <div class="move-card top-pick">
+        <span class="move-rank top">#1</span>
+        <div class="move-body">
+          <div class="move-action">15-min walk outside</div>
+          <div class="move-meta">
+            <span class="move-cat" style="background:#D1FAE5;color:#065F46">exercise</span>
+            <span class="move-time">15 min</span>
+          </div>
+          <div class="move-causal">
+            <span class="causal-dot" style="background:#6366F1"></span>
+            <span>sleep was low →</span>
+            <span class="causal-dot" style="background:#10B981"></span>
+            <span>exercise predicts recovery</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="move-card">
+        <span class="move-rank">#2</span>
+        <div class="move-body">
+          <div class="move-action">Write 3 sentences about what you're avoiding</div>
+          <div class="move-meta">
+            <span class="move-cat" style="background:#EDE9FE;color:#5B21B6">insight</span>
+            <span class="move-time">5 min</span>
+          </div>
+          <div class="move-causal">
+            <span class="causal-dot" style="background:#7C3AED"></span>
+            <span>belief → insight is a 0.71 co-movement</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="move-card">
+        <span class="move-rank">#3</span>
+        <div class="move-body">
+          <div class="move-action">No screens for 20 min before bed</div>
+          <div class="move-meta">
+            <span class="move-cat" style="background:#E0E7FF;color:#3730A3">sleep</span>
+            <span class="move-time">passive</span>
+          </div>
+          <div class="move-causal">
+            <span class="causal-dot" style="background:#6366F1"></span>
+            <span>sleep predicts affect (+2 days)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="move-card" style="opacity:0.5">
+        <span class="move-rank">#4</span>
+        <div class="move-body">
+          <div class="move-action">Deep work block — 90 min</div>
+          <div class="move-meta">
+            <span class="move-cat" style="background:#E0F2FE;color:#0369A1">work</span>
+            <span class="move-time">90 min · low focus → deprioritized</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="annotations">
+        <div class="annotation">← Capacity pips: fastest input, but 3 separate sliders = friction. Could collapse to single "How are you right now? 1–5"</div>
+        <div class="annotation">← #4 grayed = move filtered by capacity. Visible but clearly unavailable — shows the queue isn't hiding moves.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VARIANT B: DARK / SCORE PROMINENT -->
+  <div>
+    <div class="variant-label">B — Dark surface, score-forward, causal chain visible</div>
+    <div class="variant-b">
+      <div class="eyebrow">Material Health</div>
+      <h2>Queue</h2>
+
+      <div class="capacity-ring-row">
+        <div class="cap-ring">
+          <div class="ring-outer">
+            <svg width="44" height="44" style="position:absolute;top:-3px;left:-3px;transform:rotate(-90deg)">
+              <circle cx="22" cy="22" r="19" fill="none" stroke="#10B981" stroke-width="3" stroke-dasharray="89 120" stroke-linecap="round"/>
+            </svg>
+            <span class="ring-val">3</span>
+          </div>
+          <span class="ring-name">Energy</span>
+        </div>
+        <div class="cap-ring">
+          <div class="ring-outer">
+            <svg width="44" height="44" style="position:absolute;top:-3px;left:-3px;transform:rotate(-90deg)">
+              <circle cx="22" cy="22" r="19" fill="none" stroke="#8B5CF6" stroke-width="3" stroke-dasharray="48 120" stroke-linecap="round"/>
+            </svg>
+            <span class="ring-val">2</span>
+          </div>
+          <span class="ring-name">Time</span>
+        </div>
+        <div class="cap-ring">
+          <div class="ring-outer">
+            <svg width="44" height="44" style="position:absolute;top:-3px;left:-3px;transform:rotate(-90deg)">
+              <circle cx="22" cy="22" r="19" fill="none" stroke="#DC143C" stroke-width="3" stroke-dasharray="24 120" stroke-linecap="round"/>
+            </svg>
+            <span class="ring-val">1</span>
+          </div>
+          <span class="ring-name">Focus</span>
+        </div>
+        <div style="flex:1"></div>
+        <div style="display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:11px;color:rgba(255,255,255,0.3);text-align:right">Showing 12 moves</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.2);text-align:right">3 filtered out</div>
+        </div>
+      </div>
+
+      <div class="dark-move highlight">
+        <div class="dark-move-top">
+          <div class="dark-move-action">15-min walk outside</div>
+          <div class="dark-move-score hot">94</div>
+        </div>
+        <div class="dark-move-foot">
+          <span class="dark-move-cat" style="background:rgba(16,185,129,0.15);color:#6EE7B7">exercise</span>
+          <span class="dark-move-time">15 min</span>
+        </div>
+        <div class="dark-chain">
+          <span class="chain-node">sleep 1/5</span>
+          <span class="chain-arrow">→</span>
+          <span class="chain-node">exercise</span>
+          <span class="chain-arrow">→</span>
+          <span class="chain-node">affect +2d</span>
+        </div>
+      </div>
+
+      <div class="dark-move">
+        <div class="dark-move-top">
+          <div class="dark-move-action">Write 3 sentences about what you're avoiding</div>
+          <div class="dark-move-score hot">81</div>
+        </div>
+        <div class="dark-move-foot">
+          <span class="dark-move-cat" style="background:rgba(139,92,246,0.15);color:#C4B5FD">insight</span>
+          <span class="dark-move-time">5 min</span>
+        </div>
+      </div>
+
+      <div class="dark-move">
+        <div class="dark-move-top">
+          <div class="dark-move-action">No screens 20 min before bed</div>
+          <div class="dark-move-score hot">77</div>
+        </div>
+        <div class="dark-move-foot">
+          <span class="dark-move-cat" style="background:rgba(99,102,241,0.15);color:#A5B4FC">sleep</span>
+          <span class="dark-move-time">passive</span>
+        </div>
+        <div class="dark-chain">
+          <span class="chain-node">sleep</span>
+          <span class="chain-arrow">→</span>
+          <span class="chain-node">affect +2d</span>
+          <span class="chain-arrow">→</span>
+          <span class="chain-node">work +1w</span>
+        </div>
+      </div>
+
+      <div class="dark-move" style="opacity:0.35">
+        <div class="dark-move-top">
+          <div class="dark-move-action">Deep work block — 90 min</div>
+          <div class="dark-move-score">41</div>
+        </div>
+        <div class="dark-move-foot">
+          <span class="dark-move-cat" style="background:rgba(14,165,233,0.15);color:#7DD3FC">work</span>
+          <span class="dark-move-time">90 min · focus too low</span>
+        </div>
+      </div>
+
+      <div class="annotations">
+        <div class="annotation">← Score (0–100) makes ranking legible as data, not opinion. Risk: score without explanation feels opaque.</div>
+        <div class="annotation">← Causal chain is the killer feature — makes the ontology tangible. "sleep→affect+2d" is the reason why.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VARIANT C: FOCUS MODE -->
+  <div style="grid-column: 1 / -1">
+    <div class="variant-label">C — Focus mode: one big move + queue sidebar. Single-dim capacity. "Most leveraged right now."</div>
+    <div class="variant-c">
+      <div>
+        <div class="eyebrow">Material Health</div>
+        <h2>Most leveraged right now</h2>
+        <div class="sub">Based on your 3/5 capacity and this week's correlations.</div>
+
+        <div class="cap-summary">
+          <div class="cap-summary-label">Your capacity</div>
+          <div class="cap-row">
+            <span class="cap-name">Energy</span>
+            <div class="cap-track"><div class="cap-fill" style="width:60%;background:#10B981"></div></div>
+            <span class="cap-val">3</span>
+          </div>
+          <div class="cap-row">
+            <span class="cap-name">Time</span>
+            <div class="cap-track"><div class="cap-fill" style="width:40%;background:#8B5CF6"></div></div>
+            <span class="cap-val">2</span>
+          </div>
+          <div class="cap-row">
+            <span class="cap-name">Focus</span>
+            <div class="cap-track"><div class="cap-fill" style="width:20%;background:#DC143C"></div></div>
+            <span class="cap-val">1</span>
+          </div>
+        </div>
+
+        <div class="focus-big">
+          <div class="focus-big-label">Top move</div>
+          <div class="focus-big-action">Take a 15-minute walk outside — no phone.</div>
+          <div class="focus-big-why">Your sleep score has been low for 3 days. The ontology shows a 0.68 lagged correlation: exercise predicts affect recovery 2 days later. Low focus makes this the highest-leverage move you can execute right now — it requires almost nothing.</div>
+          <div class="focus-tag-row">
+            <span class="focus-tag" style="background:rgba(16,185,129,0.15);color:#6EE7B7">exercise</span>
+            <span class="focus-tag" style="background:rgba(99,102,241,0.1);color:#A5B4FC">sleep → exercise chain</span>
+            <span class="focus-tag" style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4)">15 min</span>
+          </div>
+        </div>
+
+        <div class="annotations">
+          <div class="annotation">← Single big card forces one commitment. No decision paralysis. The copy explains WHY using the ontology data — the graph becomes prose.</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:12px">Also available</div>
+        <div class="focus-queue">
+          <div class="focus-q-item active">
+            <span class="focus-q-num top">1</span>
+            <div>
+              <div class="focus-q-text">15-min walk outside</div>
+              <div class="focus-q-foot">
+                <span class="focus-q-cat">exercise</span>
+                <span class="focus-q-time">15 min</span>
+              </div>
+            </div>
+          </div>
+          <div class="focus-q-item">
+            <span class="focus-q-num">2</span>
+            <div>
+              <div class="focus-q-text">Write 3 sentences about what you're avoiding</div>
+              <div class="focus-q-foot">
+                <span class="focus-q-cat">insight</span>
+                <span class="focus-q-time">5 min</span>
+              </div>
+            </div>
+          </div>
+          <div class="focus-q-item">
+            <span class="focus-q-num">3</span>
+            <div>
+              <div class="focus-q-text">No screens 20 min before bed tonight</div>
+              <div class="focus-q-foot">
+                <span class="focus-q-cat">sleep</span>
+                <span class="focus-q-time">passive</span>
+              </div>
+            </div>
+          </div>
+          <div class="focus-q-item">
+            <span class="focus-q-num">4</span>
+            <div>
+              <div class="focus-q-text">Check in with one friend — text is fine</div>
+              <div class="focus-q-foot">
+                <span class="focus-q-cat">social</span>
+                <span class="focus-q-time">5 min</span>
+              </div>
+            </div>
+          </div>
+          <div class="focus-q-item" style="opacity:0.4">
+            <span class="focus-q-num">5</span>
+            <div>
+              <div class="focus-q-text">Deep work block — 90 min</div>
+              <div class="focus-q-foot">
+                <span class="focus-q-cat">work</span>
+                <span class="focus-q-time">90 min · focus too low</span>
+              </div>
+            </div>
+          </div>
+          <div class="focus-q-item" style="opacity:0.4">
+            <span class="focus-q-num">6</span>
+            <div>
+              <div class="focus-q-text">Read 20 pages of a technical book</div>
+              <div class="focus-q-foot">
+                <span class="focus-q-cat">learning</span>
+                <span class="focus-q-time">30 min · focus too low</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="annotations" style="margin-top:16px">
+          <div class="annotation">← Items 5 & 6 visible but grayed = still honest, not hidden. User can override if they feel the capacity read was wrong.</div>
+          <div class="annotation" style="margin-top:8px">← Clicking a queue item promotes it to the "big card" left. Queue acts as a commitment surface, not just a list.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- REVERSE SPEC EXTRACT -->
+<div style="padding: 40px 32px; max-width: 1400px; margin: 0 auto; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 8px;">
+  <div style="font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:20px">Reverse-spec extract (derived from compositions above)</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+    <div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:10px">Implied components</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6">
+        <div>→ <code style="font-size:11px;color:#8B5CF6">CapacityInput</code> — 3-dim self-rating</div>
+        <div>→ <code style="font-size:11px;color:#8B5CF6">MoveCard</code> — action + category + chain</div>
+        <div>→ <code style="font-size:11px;color:#8B5CF6">MoveQueue</code> — ranked list with filtering</div>
+        <div>→ <code style="font-size:11px;color:#8B5CF6">CausalChain</code> — ontology path rendered as text</div>
+        <div>→ <code style="font-size:11px;color:#8B5CF6">Move</code> type in types.ts</div>
+        <div>→ <code style="font-size:11px;color:#8B5CF6">rankMoves()</code> scoring function</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:10px">Key design decisions</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6">
+        <div>1. How many capacity dims? (1 vs 3)</div>
+        <div>2. Score visible or hidden?</div>
+        <div>3. Show filtered moves or hide them?</div>
+        <div>4. Focus-one vs ranked-list layout?</div>
+        <div>5. Where do moves come from? (hardcoded seed vs user-defined)</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:10px">Center of gravity</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.8">
+        The causal chain is the product. The move list is the delivery mechanism. The capacity input is the filter.<br><br>
+        "sleep → exercise → affect +2d" is worth more than any design chrome. It makes the ontology tangible.
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

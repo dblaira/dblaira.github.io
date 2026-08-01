@@ -11,6 +11,7 @@ import { usePageEditing } from "@/lib/usePageEditing";
 import { Editable } from "@/components/Editable";
 import { fillStyle } from "@/lib/fills";
 import type { CorrelationPair, CategoryStats } from "@/lib/types";
+import { OntologyLevers } from "@/components/OntologyLevers";
 
 const CRIMSON = "#DC143C";
 const DEFAULT_NETWORK_CARD = "#FFFFFF";
@@ -187,6 +188,30 @@ function OntologyPageBody() {
           </div>
           </Editable>
         </div>
+
+        {/* Levers panel — what the network means in action terms */}
+        {!loading && !error && (correlations.length > 0 || lagged.length > 0) && (
+          <div className="content-width" style={{ padding: "0 16px 40px" }}>
+            <Editable
+              id="levers-card-bg"
+              label="Levers Card Background"
+              description="The card showing which categories have the highest cascade effect."
+              value={fillFor("levers-card-bg", DEFAULT_NETWORK_CARD)}
+              onChange={(v) => saveOverride("levers-card-bg", "Levers Card Background", v)}
+            >
+              <div
+                style={{
+                  ...fillStyle(fillFor("levers-card-bg", DEFAULT_NETWORK_CARD), DEFAULT_NETWORK_CARD),
+                  borderRadius: 16,
+                  padding: "24px 16px",
+                  boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                }}
+              >
+                <OntologyLevers correlations={correlations} lagged={lagged} />
+              </div>
+            </Editable>
+          </div>
+        )}
       </div>
     </div>
   );
